@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 10 — User Profile & Cyber Identity Hub ✅
-- [x] [PLAN] User profile page with customizable cyber frames, avatar emoji selection, unlockable title badges, skill mastery matrix, and certificate gallery
-- [x] [BUILD] `src/app/profile/page.tsx` (/profile route), `updateProfile` action in `src/lib/store.tsx`, user interface fields in `src/lib/types.ts`, and navigation link in `AppShell.tsx`
-- [x] [TEST] `npm run build` green (11/11 routes generated)
-- [x] [DEPLOY] Committed as `feat(profile)`
+## PHASE 11 — Global Leaderboard Hub ✅
+- [x] [PLAN] Multi-category global leaderboard with XP/Coin/Streak/Cert filters, top 3 podium showcase, and learner search
+- [x] [BUILD] `src/app/leaderboard/page.tsx` (/leaderboard route) and navigation link in `AppShell.tsx`
+- [x] [TEST] `npm run build` green (12/12 routes generated)
+- [x] [DEPLOY] Committed as `feat(leaderboard)`
 
 ---
 
@@ -63,10 +63,10 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-07-31: Phases 2-8 built and verified — full production build green. Initial commits pushed to GitHub origin.
 - 2026-07-31: Phase 9 Web Audio SFX engine created, integrated, and pushed to GitHub (`feat(audio)`).
 - 2026-07-31: Phase 10 User Profile & Cyber Identity page created and pushed to GitHub (`feat(profile)`).
+- 2026-07-31: Phase 11 Global Leaderboard Hub created and pushed to GitHub (`feat(leaderboard)`).
 
 ## Backlog / Next iteration
 
-- Global Leaderboard Hub (/leaderboard)
 - Daily Quests & Missions engine
 - Flashcard Practice Deck engine (/learn/[skillId]/practice)
 - Real-time Skill Search modal (Ctrl+K)

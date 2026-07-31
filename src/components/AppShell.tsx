@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ShieldCheck,
   Swords,
+  Trophy,
   UserRound,
   Volume2,
   VolumeX,
@@ -49,6 +50,7 @@ function SoundToggle() {
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/quizzes", label: "Tournaments", icon: Swords },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/payment", label: "Wallet", icon: Wallet2 },
   { href: "/profile", label: "Profile", icon: UserRound },
 ];
