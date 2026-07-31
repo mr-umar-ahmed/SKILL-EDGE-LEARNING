@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Check, Crown, Lock, Play, Star } from "lucide-react";
+import { ArrowLeft, Check, Crown, Layers, Lock, Play, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
@@ -41,17 +41,26 @@ export default function SkillMapPage() {
             className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-3xl"
             style={{ background: skill.color }}
           />
-          <div className="flex items-center gap-4">
-            <ProgressRing progress={done / 10} size={72} stroke={6} color={skill.color}>
-              <SkillIcon name={skill.iconName} className="h-7 w-7" style={{ color: skill.color }} />
-            </ProgressRing>
-            <div className="min-w-0">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">{skill.category}</div>
-              <h1 className="font-mono text-xl font-bold text-zinc-50 sm:text-2xl">{skill.title}</h1>
-              <div className="mt-1 font-mono text-xs" style={{ color: skill.color }}>
-                {done}/10 tiers cleared {premiumUnlocked && "· 👑 Premium unlocked"}
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-4">
+              <ProgressRing progress={done / 10} size={72} stroke={6} color={skill.color}>
+                <SkillIcon name={skill.iconName} className="h-7 w-7" style={{ color: skill.color }} />
+              </ProgressRing>
+              <div className="min-w-0">
+                <div className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">{skill.category}</div>
+                <h1 className="font-mono text-xl font-bold text-zinc-50 sm:text-2xl">{skill.title}</h1>
+                <div className="mt-1 font-mono text-xs" style={{ color: skill.color }}>
+                  {done}/10 tiers cleared {premiumUnlocked && "· 👑 Premium unlocked"}
+                </div>
               </div>
             </div>
+
+            <Link
+              href={`/learn/${skill.id}/practice`}
+              className="btn-ghost flex items-center gap-2 border-white/10 font-mono text-xs text-cyan-300 hover:border-cyan-400/40 hover:bg-cyan-500/10"
+            >
+              <Layers className="h-4 w-4 text-cyan-400" /> Practice Deck
+            </Link>
           </div>
           <p className="mt-3 text-sm text-zinc-400">{skill.description}</p>
         </div>

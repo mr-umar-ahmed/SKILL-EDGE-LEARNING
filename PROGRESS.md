@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 12 — Daily Cyber Quests & Missions Engine ✅
-- [x] [PLAN] Daily quest system with progress tracking, coin & XP rewards, SFX triggers, and persistent claim state
-- [x] [BUILD] `src/components/DailyMissionsModal.tsx` modal, `claimDailyMission` action in `src/lib/store.tsx`, and topbar launcher in `AppShell.tsx`
-- [x] [TEST] `npm run build` green (12/12 routes generated)
-- [x] [DEPLOY] Committed as `feat(missions)`
+## PHASE 13 — Rapid Recall Flashcards Practice Engine ✅
+- [x] [PLAN] Interactive 3D flip card deck engine with self-evaluation, bonus XP rewards, and SFX triggers
+- [x] [BUILD] `src/app/learn/[skillId]/practice/page.tsx` (/learn/[skillId]/practice route) and CTA button in `src/app/learn/[skillId]/page.tsx`
+- [x] [TEST] `npm run build` green (13/13 routes generated)
+- [x] [DEPLOY] Committed as `feat(practice)`
 
 ---
 
@@ -65,9 +65,10 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-07-31: Phase 10 User Profile & Cyber Identity page created and pushed to GitHub (`feat(profile)`).
 - 2026-07-31: Phase 11 Global Leaderboard Hub created and pushed to GitHub (`feat(leaderboard)`).
 - 2026-07-31: Phase 12 Daily Quests & Missions engine created and pushed to GitHub (`feat(missions)`).
+- 2026-07-31: Phase 13 Rapid Recall Flashcards Practice engine created and pushed to GitHub (`feat(practice)`).
 
 ## Backlog / Next iteration
 
-- Flashcard Practice Deck engine (/learn/[skillId]/practice)
 - Real-time Skill Search modal (Ctrl+K)
+- Real auth & Supabase integration
 
