@@ -49,6 +49,7 @@ interface AppApi {
   joinQuiz: (quizId: string) => { ok: boolean; reason?: string };
   submitQuizScore: (quizId: string, score: number) => void;
   markNotificationsRead: () => void;
+  updateProfile: (avatar: string, title?: string, avatarFrame?: string) => void;
   resetDemoData: () => void;
 }
 
@@ -483,6 +484,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const updateProfile = useCallback((avatar: string, title?: string, avatarFrame?: string) => {
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) => (u.id === s.currentUserId ? { ...u, avatar, title, avatarFrame } : u)),
+      notifications: [
+        makeNotification(s.currentUserId, "Profile customization saved!"),
+        ...s.notifications,
+      ],
+    }));
+  }, []);
+
   const resetDemoData = useCallback(() => {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -513,6 +525,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     joinQuiz,
     submitQuizScore,
     markNotificationsRead,
+    updateProfile,
     resetDemoData,
   };
 

@@ -50,6 +50,7 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/quizzes", label: "Tournaments", icon: Swords },
   { href: "/payment", label: "Wallet", icon: Wallet2 },
+  { href: "/profile", label: "Profile", icon: UserRound },
 ];
 
 function useClickOutside(onClose: () => void) {

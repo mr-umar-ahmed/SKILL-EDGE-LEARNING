@@ -6,6 +6,8 @@ export interface User {
   email: string;
   role: Role;
   avatar: string; // emoji avatar
+  title?: string; // custom title badge (e.g. "Prompt Architect")
+  avatarFrame?: string; // custom frame style ("cyan" | "gold" | "violet" | "emerald")
   edgeCoins: number;
   xp: number;
   streakCount: number;
