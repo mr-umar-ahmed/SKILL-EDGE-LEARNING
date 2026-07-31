@@ -17,6 +17,7 @@ import {
   Home,
   Layers,
   LayoutDashboard,
+  LogOut,
   Moon,
   Radio,
   Search,
@@ -34,7 +35,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
 import { cn, fmtNum, levelForXp, timeAgo, xpProgress } from "@/lib/utils";
@@ -66,7 +67,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="neo-button p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
+      className="header-chip-btn p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
       title={theme === "dark" ? "Switch to Oatmilk Latte Light Theme" : "Switch to Rich Black Dark Theme"}
       aria-label="Theme toggle"
     >
@@ -96,7 +97,7 @@ function SoundToggle() {
   return (
     <button
       onClick={toggle}
-      className="neo-button p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
+      className="header-chip-btn p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
       title={muted ? "Unmute sound effects" : "Mute sound effects"}
       aria-label="Sound toggle"
     >
@@ -131,7 +132,7 @@ function NotificationsBell() {
           setOpen((o) => !o);
           if (!open && unread > 0) markNotificationsRead();
         }}
-        className="neo-button relative p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
+        className="header-chip-btn relative p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
         aria-label="Notifications"
       >
         <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
@@ -163,7 +164,8 @@ function NotificationsBell() {
 
 /* Interactive Role & Session Switcher Modal / Dropdown */
 function RoleSwitcherDropdown({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { state, currentUser, switchUser } = useApp();
+  const router = useRouter();
+  const { state, currentUser, switchUser, logout } = useApp();
   const ref = useClickOutside(onClose);
 
   if (!open) return null;
@@ -178,9 +180,9 @@ function RoleSwitcherDropdown({ open, onClose }: { open: boolean; onClose: () =>
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div>
             <h3 className="font-mono text-sm font-bold tracking-tight text-white flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-amber-400" /> Demo Role Switcher
+              <ShieldCheck className="h-4 w-4 text-amber-400" /> Account & Role Switcher
             </h3>
-            <p className="text-[11px] text-zinc-400">Switch instantly between Student & Admin roles</p>
+            <p className="text-[11px] text-zinc-400">Switch active account or sign out</p>
           </div>
           <button onClick={onClose} className="text-xs text-zinc-400 hover:text-white px-2 py-1">✕</button>
         </div>
@@ -227,6 +229,29 @@ function RoleSwitcherDropdown({ open, onClose }: { open: boolean; onClose: () =>
             );
           })}
         </div>
+
+        {/* Auth Sign Out Button */}
+        <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2">
+          <Link
+            href="/login"
+            onClick={onClose}
+            className="text-xs font-bold text-amber-400 hover:underline"
+          >
+            + Add / Login Account
+          </Link>
+
+          <button
+            onClick={() => {
+              logout();
+              playClickSound();
+              onClose();
+              router.push("/login");
+            }}
+            className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 transition"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Sign Out
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -259,7 +284,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* 1. Far-Left Floating Primary Command Rail */}
       <aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col items-center justify-between py-6 px-2 lg:flex z-50">
         {/* Floating Rail Capsule */}
-        <div className="neo-box flex flex-col items-center gap-5 py-4 px-2.5 border border-white/10 rounded-full shadow-2xl">
+        <div className="sidebar-floating-capsule flex flex-col items-center gap-5 py-4 px-2.5 rounded-full shadow-2xl">
           {/* Top Brand Star Icon */}
           <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full btn-primary font-mono text-xl font-black shadow-lg hover:scale-110 transition">
             ✳
@@ -279,7 +304,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "relative flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300",
                   active
-                    ? "btn-primary shadow-lg scale-105"
+                    ? "nav-active-pill shadow-lg scale-105"
                     : "text-zinc-400 hover:bg-white/10 hover:text-white"
                 )}
               >
@@ -290,11 +315,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom Floating Settings Capsule */}
-        <div className="neo-box flex flex-col items-center py-2 px-2 border border-white/10 rounded-full shadow-2xl">
+        <div className="sidebar-floating-capsule flex flex-col items-center py-2 px-2 rounded-full shadow-2xl">
           <button
             onClick={() => setRoleSwitcherOpen(true)}
             title="Switch User Role (Student / Admin)"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-amber-400 hover:bg-white/10 transition"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-amber-500 hover:bg-white/10 transition"
           >
             <ShieldCheck className="h-5 w-5" strokeWidth={1.75} />
           </button>
@@ -302,7 +327,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* 2. Secondary Expanded Navigation Panel */}
-      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex backdrop-blur-3xl overflow-y-auto">
+      <aside className="sidebar-expanded-panel sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex backdrop-blur-3xl overflow-y-auto">
         {/* User Card Header — Clickable Role Switcher Trigger */}
         <button
           onClick={() => setRoleSwitcherOpen(true)}
@@ -315,7 +340,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <span className="truncate text-sm font-bold text-white">{currentUser.name}</span>
-              <span className="chip border-amber-400/40 text-[9px] font-mono py-0 px-1 font-bold text-amber-400">
+              <span className="chip border-amber-400/40 text-[9px] font-mono py-0 px-1 font-bold text-amber-500">
                 {currentUser.role}
               </span>
               <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0 group-hover:translate-y-0.5 transition" />
@@ -334,7 +359,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname === "/dashboard"
-                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
+                ? "nav-active-pill shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
@@ -342,14 +367,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <LayoutDashboard className="h-4 w-4" strokeWidth={1.75} />
               <span>Dashboard</span>
             </div>
-            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-zinc-300">0</span>
+            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px]">0</span>
           </Link>
           <Link
             href="/learn/ai-prompt-engineering/practice"
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.includes("practice")
-                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
+                ? "nav-active-pill shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
@@ -370,15 +395,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.startsWith("/quizzes")
-                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
+                ? "nav-active-pill shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
             <div className="flex items-center gap-2.5">
-              <Swords className="h-4 w-4 text-rose-400" strokeWidth={1.75} />
+              <Swords className="h-4 w-4" strokeWidth={1.75} />
               <span>Tournaments</span>
             </div>
-            <span className="rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 px-2 py-0.5 font-mono text-[10px]">
+            <span className="rounded-full bg-rose-500/20 text-rose-400 border border-rose-400/40 px-2 py-0.5 font-mono text-[10px]">
               3
             </span>
           </Link>
@@ -387,15 +412,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.startsWith("/leaderboard")
-                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
+                ? "nav-active-pill shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
             <div className="flex items-center gap-2.5">
-              <Trophy className="h-4 w-4 text-amber-400" strokeWidth={1.75} />
+              <Trophy className="h-4 w-4" strokeWidth={1.75} />
               <span>Hall of Fame</span>
             </div>
-            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-zinc-300">2</span>
+            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px]">2</span>
           </Link>
         </div>
 
@@ -409,15 +434,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.startsWith("/payment")
-                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
+                ? "nav-active-pill shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
             <div className="flex items-center gap-2.5">
-              <Wallet2 className="h-4 w-4 text-yellow-300" strokeWidth={1.75} />
+              <Wallet2 className="h-4 w-4" strokeWidth={1.75} />
               <span>EdgeCoin Wallet</span>
             </div>
-            <span className="rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-400/40 px-2 py-0.5 font-mono text-[10px] font-bold">
+            <span className="rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-400/40 px-2 py-0.5 font-mono text-[10px] font-bold">
               ↁ {fmtNum(currentUser.edgeCoins)}
             </span>
           </Link>
@@ -446,7 +471,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {SKILL_CATEGORIES.map((cat) => (
               <div key={cat} className="space-y-1">
                 <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300 py-1 px-2">
-                  <Folder className="h-3.5 w-3.5 text-amber-400" />
+                  <Folder className="h-3.5 w-3.5 text-amber-500" />
                   <span className="truncate">{cat}</span>
                 </div>
                 <div className="pl-4 space-y-1 border-l border-white/10 ml-3">
@@ -472,40 +497,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* 3. Main Full-Width Content Container */}
       <div className="flex min-w-0 flex-1 flex-col bg-transparent">
-        {/* Top Header */}
-        <header className="sticky top-0 z-40 border-b border-white/[0.08] backdrop-blur-2xl bg-zinc-950/30">
+        {/* Top Sticky Header */}
+        <header className="top-header-bar sticky top-0 z-40 backdrop-blur-2xl">
           <div className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6">
             <Link href="/" className="flex items-center gap-2 lg:hidden">
-              <span className="clay-badge flex h-8 w-8 items-center justify-center bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-base font-black text-black">
+              <span className="clay-badge flex h-8 w-8 items-center justify-center btn-primary font-mono text-base font-black">
                 S
               </span>
               <span className="font-mono font-bold text-white">
-                SKILL<span className="text-amber-400">EDGE</span>
+                SKILL<span className="text-amber-500">EDGE</span>
               </span>
             </Link>
             <div className="hidden lg:block" />
             <div className="flex items-center gap-1.5 overflow-x-auto py-1 sm:gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="neo-button chip hidden font-mono transition hover:scale-105 sm:inline-flex"
+                className="header-chip-btn hidden font-mono transition hover:scale-105 sm:inline-flex"
                 title="Search skills (Ctrl+K)"
               >
-                <Search className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} /> Search <span className="text-[10px] text-zinc-500">Ctrl+K</span>
+                <Search className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} /> Search <span className="text-[10px] text-zinc-400">Ctrl+K</span>
               </button>
               <button
                 onClick={() => setMissionsOpen(true)}
-                className="neo-button chip font-mono text-amber-300 transition hover:scale-105"
+                className="header-chip-btn font-mono text-amber-500 transition hover:scale-105"
                 title="Daily Cyber Quests"
               >
-                <Target className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.75} /> Quests
+                <Target className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} /> Quests
               </button>
-              <div className="chip font-mono text-orange-400">
+              <div className="header-chip-btn font-mono text-orange-500">
                 <Flame className="h-3.5 w-3.5" strokeWidth={1.75} /> {currentUser.streakCount}
               </div>
-              <Link href="/payment" className="chip font-mono text-yellow-300 transition hover:scale-105">
+              <Link href="/payment" className="header-chip-btn font-mono text-yellow-600 transition hover:scale-105">
                 <span className="font-bold">ↁ</span> {fmtNum(currentUser.edgeCoins)}
               </Link>
-              <div className="chip hidden font-mono text-violet-300 sm:inline-flex">
+              <div className="header-chip-btn hidden font-mono text-violet-500 sm:inline-flex">
                 <Zap className="h-3.5 w-3.5" strokeWidth={1.75} /> LVL {badgeLevel}
               </div>
 
@@ -516,12 +541,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {/* Role Switcher Trigger Button */}
               <button
                 onClick={() => setRoleSwitcherOpen(true)}
-                className="neo-button flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
-                title="Switch Role (Student / Admin)"
+                className="header-chip-btn flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
+                title="Switch Account & Role"
               >
                 <span className="text-lg leading-none">{currentUser.avatar}</span>
-                <span className="hidden max-w-28 truncate text-xs font-semibold md:block text-white">{currentUser.name}</span>
-                {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.75} />}
+                <span className="hidden max-w-28 truncate text-xs font-semibold md:block">{currentUser.name}</span>
+                {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} />}
                 <ChevronDown className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
               </button>
             </div>
@@ -553,10 +578,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className={cn(
                   "flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-semibold transition",
-                  active ? "text-amber-300 font-bold" : "text-zinc-400 hover:text-white"
+                  active ? "text-amber-400 font-bold" : "text-zinc-400 hover:text-white"
                 )}
               >
-                <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_8px_rgba(253,228,195,0.7)]")} strokeWidth={active ? 2 : 1.5} />
+                <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_8px_rgba(233,99,26,0.7)]")} strokeWidth={active ? 2 : 1.5} />
                 {item.label}
               </Link>
             );

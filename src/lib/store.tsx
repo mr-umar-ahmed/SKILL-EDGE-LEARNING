@@ -55,6 +55,9 @@ interface AppApi {
   adminIssueCertificate: (userId: string, skillId: string, levelTier: number) => void;
   importDatabase: (jsonStr: string) => { ok: boolean; reason?: string };
   resetDemoData: () => void;
+  login: (email: string, password?: string) => { ok: boolean; user?: User; reason?: string };
+  register: (name: string, email: string, password?: string, role?: "USER" | "ADMIN", avatar?: string) => { ok: boolean; user: User };
+  logout: () => void;
 }
 
 const AppContext = createContext<AppApi | null>(null);
@@ -599,6 +602,59 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState(seedState());
   }, []);
 
+  const login = useCallback(
+    (email: string, password?: string) => {
+      const u = state.users.find((x) => x.email.toLowerCase() === email.toLowerCase());
+      if (u) {
+        setState((s) => ({ ...s, currentUserId: u.id }));
+        return { ok: true, user: u };
+      }
+      return { ok: false, reason: "Account not found with this email." };
+    },
+    [state.users]
+  );
+
+  const register = useCallback(
+    (name: string, email: string, password?: string, role: "USER" | "ADMIN" = "USER", avatar: string = "🚀") => {
+      const existing = state.users.find((x) => x.email.toLowerCase() === email.toLowerCase());
+      if (existing) {
+        setState((s) => ({ ...s, currentUserId: existing.id }));
+        return { ok: true, user: existing };
+      }
+      const newId = uid("u");
+      const newUser: User = {
+        id: newId,
+        name: name || email.split("@")[0],
+        email,
+        password,
+        role,
+        avatar,
+        title: role === "ADMIN" ? "System Admin" : "Novice Builder",
+        avatarFrame: "cyan",
+        edgeCoins: 100,
+        xp: 0,
+        streakCount: 1,
+        lastActiveDay: todayKey(),
+        createdAt: new Date().toISOString(),
+      };
+      setState((s) => ({
+        ...s,
+        users: [...s.users, newUser],
+        currentUserId: newId,
+        notifications: [
+          makeNotification(newId, `🎉 Welcome to Skill Edge OS, ${newUser.name}! +100 ↁ bonus credited!`),
+          ...s.notifications,
+        ],
+      }));
+      return { ok: true, user: newUser };
+    },
+    [state.users]
+  );
+
+  const logout = useCallback(() => {
+    setState((s) => ({ ...s, currentUserId: "u-student" }));
+  }, []);
+
   const api: AppApi = {
     state,
     hydrated,
@@ -628,6 +684,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     adminIssueCertificate,
     importDatabase,
     resetDemoData,
+    login,
+    register,
+    logout,
   };
 
   return <AppContext.Provider value={api}>{children}</AppContext.Provider>;

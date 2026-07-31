@@ -4,6 +4,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: Role;
   avatar: string; // emoji avatar
   title?: string; // custom title badge (e.g. "Prompt Architect")
