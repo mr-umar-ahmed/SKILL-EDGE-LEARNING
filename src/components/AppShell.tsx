@@ -242,9 +242,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* 1. Far-Left Floating Primary Command Rail (Ref Image Rail) */}
       <aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col items-center justify-between py-6 px-2 lg:flex z-50">
         {/* Floating Rail Capsule */}
-        <div className="neo-box flex flex-col items-center gap-5 py-4 px-2.5 bg-zinc-900/90 border border-white/10 rounded-full shadow-2xl">
+        <div className="neo-box flex flex-col items-center gap-5 py-4 px-2.5 bg-zinc-950/80 border border-white/10 rounded-full shadow-2xl">
           {/* Top Brand Star Icon */}
-          <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-xl font-black text-black shadow-lg shadow-amber-500/20 hover:scale-110 transition">
+          <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full btn-primary font-mono text-xl font-black shadow-lg hover:scale-110 transition">
             ✳
           </Link>
 
@@ -262,7 +262,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "relative flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300",
                   active
-                    ? "bg-amber-400 text-black font-black shadow-lg shadow-amber-400/40 scale-105"
+                    ? "btn-primary shadow-lg scale-105"
                     : "text-zinc-400 hover:bg-white/10 hover:text-white"
                 )}
               >
@@ -273,7 +273,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom Floating Settings Capsule */}
-        <div className="neo-box flex flex-col items-center py-2 px-2 bg-zinc-900/90 border border-white/10 rounded-full shadow-2xl">
+        <div className="neo-box flex flex-col items-center py-2 px-2 bg-zinc-950/80 border border-white/10 rounded-full shadow-2xl">
           <Link
             href="/profile"
             title="Settings & Customization"
@@ -285,7 +285,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* 2. Secondary Expanded Navigation Panel (Ref Image Sidebar) */}
-      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex bg-zinc-950/60 backdrop-blur-3xl overflow-y-auto">
+      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex bg-zinc-950/50 backdrop-blur-3xl overflow-y-auto">
         {/* User Card Header */}
         <div className="flex items-center gap-3 border-b border-white/[0.08] pb-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 border border-amber-400/40 text-2xl shadow-md">
@@ -310,7 +310,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname === "/dashboard"
-                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
@@ -325,7 +325,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.includes("practice")
-                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
@@ -346,7 +346,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.startsWith("/quizzes")
-                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
@@ -363,7 +363,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.startsWith("/leaderboard")
-                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >

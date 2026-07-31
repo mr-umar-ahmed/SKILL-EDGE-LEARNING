@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 19 — Dual-Rail Capsule Sidebar & Full-Page Layout ✅
-- [x] [PLAN] Rebuild sidebar into a Dual-Rail Command Bar matching the user's reference design: far-left floating primary capsule rail, secondary expanded sub-navigation panel with user header, section categories (Projects, Status, Economy, Skill Tracks tree), pill counter badges, and edge-to-edge full-page layout coverage.
-- [x] [BUILD] `src/components/AppShell.tsx` updated with dual-rail floating capsule, nested skills tree folders, and full flex row layout.
+## PHASE 20 — Precise Theme Palette (Oatmilk Latte & Rich Black) & High Contrast ✅
+- [x] [PLAN] Strictly implement the user's exact color schemes: Light Theme (Oatmilk Latte `#EBEBDF` + Atomic Orange `#E9631A`) and Dark Theme (Rich Black `#000F0F` + Pale Azure `#68C7EC`). Ensure 100% text visibility and high-contrast readability across all components.
+- [x] [BUILD] Updated `src/app/globals.css` with exact color variables, radial backdrop glows, light mode text overrides (`#1C1917`), and dark mode text overrides (`#FFFFFF`).
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(dual-rail-sidebar)`
+- [x] [DEPLOY] Committed as `feat(precise-themes)`
 
 ---
 
@@ -72,6 +72,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-01: Phase 17 Contrast & Mobile Responsiveness Polish created and pushed to GitHub (`fix(mobile-contrast)`).
 - 2026-08-01: Phase 18 Production-Level SaaS Sidebar Navigation created and pushed to GitHub (`feat(saas-sidebar)`).
 - 2026-08-01: Phase 19 Dual-Rail Capsule Sidebar Navigation created and pushed to GitHub (`feat(dual-rail-sidebar)`).
+- 2026-08-01: Phase 20 Precise Theme Palette (Oatmilk Latte & Rich Black) & High Contrast created and pushed to GitHub (`feat(precise-themes)`).
 
 ## Backlog / Next iteration
 
