@@ -1,13 +1,19 @@
 "use client";
 
 import {
+  Award,
   Bell,
   ChevronDown,
+  Compass,
   Flame,
+  Globe,
+  Layers,
   LayoutDashboard,
   Moon,
+  Radio,
   Search,
   ShieldCheck,
+  Sparkles,
   Sun,
   Swords,
   Target,
@@ -22,7 +28,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
-import { cn, fmtNum, levelForXp, timeAgo } from "@/lib/utils";
+import { cn, fmtNum, levelForXp, timeAgo, xpProgress } from "@/lib/utils";
 import { getAudioMuted, playClickSound, setAudioMuted } from "@/lib/sound";
 import { DailyMissionsModal } from "./DailyMissionsModal";
 import { SearchModal } from "./SearchModal";
@@ -90,14 +96,6 @@ function SoundToggle() {
   );
 }
 
-const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/quizzes", label: "Tournaments", icon: Swords },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/payment", label: "Wallet", icon: Wallet2 },
-  { href: "/profile", label: "Profile", icon: UserRound },
-];
-
 function useClickOutside(onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -140,11 +138,11 @@ function NotificationsBell() {
             Notifications
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {mine.length === 0 && <div className="px-2 py-6 text-center text-sm text-zinc-500">All quiet for now.</div>}
+            {mine.length === 0 && <div className="px-2 py-6 text-center text-xs text-zinc-400">All quiet for now.</div>}
             {mine.map((n) => (
-              <div key={n.id} className="rounded-xl px-2 py-2 text-sm text-zinc-300 hover:bg-white/[0.04]">
+              <div key={n.id} className="rounded-xl px-2 py-2 text-xs text-zinc-200 hover:bg-white/[0.04]">
                 <div>{n.message}</div>
-                <div className="mt-0.5 text-[11px] text-zinc-500">{timeAgo(n.createdAt)}</div>
+                <div className="mt-0.5 text-[10px] text-zinc-400">{timeAgo(n.createdAt)}</div>
               </div>
             ))}
           </div>
@@ -167,7 +165,7 @@ function UserSwitcher() {
         className="neo-button flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
       >
         <span className="text-lg leading-none">{currentUser.avatar}</span>
-        <span className="hidden max-w-28 truncate text-xs font-semibold md:block">{currentUser.name}</span>
+        <span className="hidden max-w-28 truncate text-xs font-semibold md:block text-white">{currentUser.name}</span>
         {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.75} />}
         <ChevronDown className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
       </button>
@@ -190,13 +188,13 @@ function UserSwitcher() {
             >
               <span className="text-xl">{u.avatar}</span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold">{u.name}</span>
+                <span className="block truncate text-xs font-bold text-white">{u.name}</span>
                 <span className="block truncate text-[11px] text-zinc-400">{u.email}</span>
               </span>
               <span
                 className={cn(
-                  "chip",
-                  u.role === "ADMIN" ? "border-amber-400/30 text-amber-400" : "border-amber-400/30 text-amber-300"
+                  "chip text-[10px]",
+                  u.role === "ADMIN" ? "border-amber-400/40 text-amber-400 font-mono font-bold" : "border-amber-400/40 text-amber-300 font-mono"
                 )}
               >
                 {u.role === "ADMIN" ? "Admin" : "Student"}
@@ -211,51 +209,144 @@ function UserSwitcher() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { currentUser, isAdmin } = useApp();
+  const { state, currentUser, isAdmin } = useApp();
   const [missionsOpen, setMissionsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const badgeLevel = levelForXp(currentUser.xp);
-  const nav = isAdmin ? [...NAV, { href: "/admin", label: "Admin", icon: ShieldCheck }] : NAV;
+  const pendingTxns = state.transactions.filter((t) => t.status === "PENDING").length;
+
+  const NAV_GROUPS = [
+    {
+      group: "CORE PLATFORM",
+      items: [
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/learn/ai-prompt-engineering/practice", label: "Practice Deck", icon: Layers },
+      ],
+    },
+    {
+      group: "COMMUNITY & REWARDS",
+      items: [
+        { href: "/quizzes", label: "Tournaments", icon: Swords, badge: "● LIVE" },
+        { href: "/leaderboard", label: "Hall of Fame", icon: Trophy },
+        { href: "/profile", label: "Identity & Profile", icon: UserRound },
+      ],
+    },
+    {
+      group: "ECONOMY & VAULT",
+      items: [
+        { href: "/payment", label: "EdgeCoin Wallet", icon: Wallet2, badge: `ↁ ${fmtNum(currentUser.edgeCoins)}` },
+      ],
+    },
+  ];
+
+  if (isAdmin) {
+    NAV_GROUPS.push({
+      group: "ADMINISTRATION",
+      items: [
+        { href: "/admin", label: "Command Center", icon: ShieldCheck, badge: pendingTxns > 0 ? `${pendingTxns} Review` : undefined },
+      ],
+    });
+  }
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-7xl">
-      {/* Desktop Sidebar */}
-      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col gap-1 border-r border-white/[0.06] p-4 lg:flex">
-        <Link href="/" className="mb-6 flex items-center gap-3 px-2">
-          <span className="clay-badge flex h-10 w-10 items-center justify-center bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-xl font-black text-black shadow-lg">
-            S
-          </span>
-          <span className="font-mono text-lg font-bold tracking-tight">
-            SKILL<span className="text-amber-400">EDGE</span>
-          </span>
-        </Link>
-        {nav.map((item) => {
-          const active = pathname.startsWith(item.href);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold transition-all duration-200",
-                active
-                  ? "neo-box bg-amber-400/10 text-amber-300 shadow-inner"
-                  : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
-              )}
-            >
-              <Icon className="h-4.5 w-4.5 h-[18px] w-[18px]" strokeWidth={1.5} />
-              {item.label}
-            </Link>
-          );
-        })}
+      {/* Production Level SaaS Sidebar */}
+      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-4 border-r border-white/[0.08] p-4 lg:flex bg-zinc-950/40 backdrop-blur-3xl">
+        {/* Brand Header */}
+        <div className="flex flex-col gap-3 px-2 pt-1">
+          <Link href="/" className="flex items-center gap-3">
+            <span className="clay-badge flex h-10 w-10 items-center justify-center bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500 font-mono text-xl font-black text-black shadow-lg shadow-amber-500/20">
+              S
+            </span>
+            <div>
+              <div className="font-mono text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+                SKILL<span className="text-amber-400">EDGE</span>
+                <span className="chip border-amber-400/40 bg-amber-500/10 text-[9px] font-mono text-amber-300 py-0.5 px-1.5">
+                  OS v1.0
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-400 font-mono">Gamified Skill Learning System</p>
+            </div>
+          </Link>
 
-        {/* User Card in Sidebar */}
-        <div className="mt-auto clay-card p-4">
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-2xl">{currentUser.avatar}</span>
-            <div className="min-w-0">
-              <div className="truncate font-bold">{currentUser.name}</div>
-              <div className="font-mono text-[11px] text-zinc-400">LVL {badgeLevel} · {fmtNum(currentUser.xp)} XP</div>
+          {/* Quick Workspace Switcher Pill */}
+          <div className="neo-box flex items-center justify-between px-3 py-2 text-xs font-mono text-zinc-300">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="font-bold text-white">Pro Builder Workspace</span>
+            </div>
+            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          </div>
+        </div>
+
+        {/* Grouped SaaS Navigation */}
+        <div className="flex-1 space-y-6 overflow-y-auto pr-1">
+          {NAV_GROUPS.map((grp) => (
+            <div key={grp.group} className="space-y-1">
+              <div className="px-3 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                {grp.group}
+              </div>
+              {grp.items.map((item) => {
+                const active = pathname.startsWith(item.href);
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "group relative flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all duration-200",
+                      active
+                        ? "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1.5 before:rounded-r-full before:bg-amber-400 bg-amber-400/10 text-amber-300 border border-amber-400/20 shadow-md"
+                        : "text-zinc-400 hover:bg-white/[0.05] hover:text-white hover:translate-x-0.5"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        className={cn("h-4 w-4 transition-colors", active ? "text-amber-400" : "text-zinc-400 group-hover:text-zinc-200")}
+                        strokeWidth={active ? 2 : 1.75}
+                      />
+                      <span>{item.label}</span>
+                    </div>
+
+                    {item.badge && (
+                      <span className={cn(
+                        "chip font-mono text-[9px] py-0.5 px-1.5",
+                        item.badge.includes("LIVE") ? "animate-pulse border-rose-500/40 text-rose-400" : "border-amber-400/30 text-amber-300"
+                      )}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Production SaaS User Footer */}
+        <div className="clay-card p-3.5 space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{currentUser.avatar}</span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-bold text-white">{currentUser.name}</div>
+              <div className="font-mono text-[10px] text-amber-300 font-semibold">
+                LVL {badgeLevel} · {fmtNum(currentUser.xp)} XP
+              </div>
+            </div>
+          </div>
+
+          {/* XP Progress Bar in Sidebar */}
+          <div className="space-y-1">
+            <div className="flex justify-between font-mono text-[9px] text-zinc-400">
+              <span>Badge Progress</span>
+              <span className="text-amber-300">{Math.round(xpProgress(currentUser.xp) * 100)}%</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full transition-all duration-500"
+                style={{ width: `${xpProgress(currentUser.xp) * 100}%` }}
+              />
             </div>
           </div>
         </div>
@@ -263,13 +354,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top Header */}
-        <header className="sticky top-0 z-40 border-b border-white/[0.06] backdrop-blur-2xl">
+        <header className="sticky top-0 z-40 border-b border-white/[0.08] backdrop-blur-2xl bg-zinc-950/30">
           <div className="flex items-center justify-between gap-2 px-4 py-3">
             <Link href="/" className="flex items-center gap-2 lg:hidden">
               <span className="clay-badge flex h-8 w-8 items-center justify-center bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-base font-black text-black">
                 S
               </span>
-              <span className="font-mono font-bold">
+              <span className="font-mono font-bold text-white">
                 SKILL<span className="text-amber-400">EDGE</span>
               </span>
             </Link>
@@ -313,10 +404,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 px-3 pb-28 pt-4 sm:px-6 lg:pb-10">{children}</main>
       </div>
 
-      {/* Mobile Bottom Nav with Linear Outline Icons */}
+      {/* Mobile Bottom Nav */}
       <nav className="pb-safe glass-strong fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] lg:hidden">
         <div className="mx-auto flex max-w-md items-stretch justify-around">
-          {nav.map((item) => {
+          {[
+            { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+            { href: "/quizzes", label: "Tournaments", icon: Swords },
+            { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+            { href: "/payment", label: "Wallet", icon: Wallet2 },
+            { href: "/profile", label: "Profile", icon: UserRound },
+          ].map((item) => {
             const active = pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
