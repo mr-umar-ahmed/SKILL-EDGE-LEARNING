@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { CompleteLevelResult } from "@/lib/store";
 import type { Level, Question, Skill } from "@/lib/types";
 import { fmtNum } from "@/lib/utils";
+import { playClickSound, playCoinSound, playVictorySound, playXpSound } from "@/lib/sound";
 import { fireBigConfetti, fireConfetti } from "./confetti";
 import { Modal } from "./ui";
 
@@ -45,12 +46,16 @@ export function AssessmentModal({
     const res = onSubmit(score);
     setResult({ score, res });
     if (res.passed) {
+      playVictorySound();
+      playXpSound();
+      if (res.coinsEarned > 0) setTimeout(() => playCoinSound(), 300);
       if (res.certificate) fireBigConfetti();
       else fireConfetti();
     }
   };
 
   const pick = (option: number) => {
+    playClickSound();
     if (!q) return;
     const next = { ...answers, [q.id]: option };
     setAnswers(next);

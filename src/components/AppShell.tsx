@@ -8,6 +8,8 @@ import {
   ShieldCheck,
   Swords,
   UserRound,
+  Volume2,
+  VolumeX,
   Wallet2,
   Zap,
 } from "lucide-react";
@@ -16,6 +18,33 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
 import { cn, fmtNum, levelForXp, timeAgo } from "@/lib/utils";
+import { getAudioMuted, playClickSound, setAudioMuted } from "@/lib/sound";
+
+function SoundToggle() {
+  const [muted, setMute] = useState(false);
+
+  useEffect(() => {
+    setMute(getAudioMuted());
+  }, []);
+
+  const toggle = () => {
+    const next = !muted;
+    setAudioMuted(next);
+    setMute(next);
+    if (!next) playClickSound();
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className="relative rounded-xl border border-white/10 bg-white/[0.04] p-2 text-zinc-300 transition hover:bg-white/[0.1]"
+      title={muted ? "Unmute sound effects" : "Mute sound effects"}
+      aria-label="Sound toggle"
+    >
+      {muted ? <VolumeX className="h-[18px] w-[18px] text-zinc-500" /> : <Volume2 className="h-[18px] w-[18px] text-cyan-400" />}
+    </button>
+  );
+}
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -204,6 +233,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="chip hidden border-violet-400/30 font-mono text-violet-300 sm:inline-flex">
                 <Zap className="h-3.5 w-3.5" /> LVL {badgeLevel}
               </div>
+              <SoundToggle />
               <NotificationsBell />
               <UserSwitcher />
             </div>

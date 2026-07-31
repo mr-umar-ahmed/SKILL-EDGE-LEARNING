@@ -49,19 +49,25 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-- [x] [DEPLOY] Committed as `feat(certificate)`
+## PHASE 9 — Web Audio SFX Engine ✅
+- [x] [PLAN] Zero-latency synthesized arcade audio engine with mute controls
+- [x] [BUILD] `src/lib/sound.ts` (Web Audio API synth for XP gain, coin pickup, victory fanfare, button click, timer tick, cert minting), `<SoundToggle />` topbar control in `AppShell.tsx`, SFX triggers in `AssessmentModal.tsx`
+- [x] [TEST] `npm run build` green
+- [x] [DEPLOY] Committed as `feat(audio)`
 
 ---
 
 ## Log
 
 - 2026-07-31: Phase 1 scaffold; npm install; git repo on `main`.
-- 2026-07-31: Phases 2-8 built and verified — full production build green (First Load JS ≈ 119-124 kB/route). Feature commits pushed to local `main`. GitHub remote not yet configured (needs owner's repo URL / permission).
+- 2026-07-31: Phases 2-8 built and verified — full production build green. Initial commits pushed to GitHub origin.
+- 2026-07-31: Phase 9 Web Audio SFX engine created, integrated, and pushed to GitHub (`feat(audio)`).
 
 ## Backlog / Next iteration
 
-- Swap mock store for Supabase (schema already mirrored in AGENTS.md §4)
-- Real auth (email OTP) replacing the demo session switcher
-- Admin-editable question banks per level
-- Real UPI QR image upload in admin settings
-- Sound-effect hooks on XP gain (optional audio triggers)
+- User Profile & Cyber Avatar Customizer (/profile)
+- Global Leaderboard Hub (/leaderboard)
+- Daily Quests & Missions engine
+- Flashcard Practice Deck engine (/learn/[skillId]/practice)
+- Real-time Skill Search modal (Ctrl+K)
+
