@@ -3,6 +3,7 @@
 import {
   Award,
   Bell,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -49,7 +50,7 @@ function ThemeToggle() {
     if (saved) {
       setTheme(saved);
       document.documentElement.className = saved;
-      document.body.className = `${saved} font-sans antialiased selection:bg-yellow-400 selection:text-black`;
+      document.body.className = `${saved} font-sans antialiased selection:bg-amber-400 selection:text-black`;
     }
   }, []);
 
@@ -58,7 +59,7 @@ function ThemeToggle() {
     setTheme(next);
     localStorage.setItem("skilledge-theme", next);
     document.documentElement.className = next;
-    document.body.className = `${next} font-sans antialiased selection:bg-yellow-400 selection:text-black`;
+    document.body.className = `${next} font-sans antialiased selection:bg-amber-400 selection:text-black`;
     playClickSound();
   };
 
@@ -66,13 +67,13 @@ function ThemeToggle() {
     <button
       onClick={toggle}
       className="neo-button p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
-      title={theme === "dark" ? "Switch to Soft Linen Light Theme" : "Switch to Anima Agrawal Dark Theme"}
+      title={theme === "dark" ? "Switch to Oatmilk Latte Light Theme" : "Switch to Rich Black Dark Theme"}
       aria-label="Theme toggle"
     >
       {theme === "dark" ? (
         <Sun className="h-[18px] w-[18px] text-amber-300" strokeWidth={1.75} />
       ) : (
-        <Moon className="h-[18px] w-[18px] text-stone-700" strokeWidth={1.75} />
+        <Moon className="h-[18px] w-[18px] text-amber-600" strokeWidth={1.75} />
       )}
     </button>
   );
@@ -160,57 +161,73 @@ function NotificationsBell() {
   );
 }
 
-function UserSwitcher() {
+/* Interactive Role & Session Switcher Modal / Dropdown */
+function RoleSwitcherDropdown({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { state, currentUser, switchUser } = useApp();
-  const [open, setOpen] = useState(false);
-  const ref = useClickOutside(() => setOpen(false));
-  const switchable = state.users.filter((u) => u.id === "u-student" || u.id === "u-admin");
+  const ref = useClickOutside(onClose);
+
+  if (!open) return null;
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="neo-button flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
+      <div
+        ref={ref}
+        onClick={(e) => e.stopPropagation()}
+        className="glass-strong w-full max-w-sm p-5 space-y-4 shadow-2xl border border-white/20 animate-in fade-in zoom-in-95 duration-200"
       >
-        <span className="text-lg leading-none">{currentUser.avatar}</span>
-        <span className="hidden max-w-28 truncate text-xs font-semibold md:block text-white">{currentUser.name}</span>
-        {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.75} />}
-        <ChevronDown className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
-      </button>
-      {open && (
-        <div className="glass-strong absolute right-0 z-50 mt-2 w-64 p-2 shadow-2xl">
-          <div className="px-2 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
-            Demo Session Switcher
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div>
+            <h3 className="font-mono text-sm font-bold tracking-tight text-white flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-amber-400" /> Demo Role Switcher
+            </h3>
+            <p className="text-[11px] text-zinc-400">Switch instantly between Student & Admin roles</p>
           </div>
-          {switchable.map((u) => (
-            <button
-              key={u.id}
-              onClick={() => {
-                switchUser(u.id);
-                setOpen(false);
-              }}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-white/[0.06]",
-                u.id === currentUser.id && "bg-white/[0.06]"
-              )}
-            >
-              <span className="text-xl">{u.avatar}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-xs font-bold text-white">{u.name}</span>
-                <span className="block truncate text-[11px] text-zinc-400">{u.email}</span>
-              </span>
-              <span
+          <button onClick={onClose} className="text-xs text-zinc-400 hover:text-white px-2 py-1">✕</button>
+        </div>
+
+        <div className="space-y-2">
+          {state.users.map((u) => {
+            const isSelected = u.id === currentUser.id;
+            return (
+              <button
+                key={u.id}
+                onClick={() => {
+                  switchUser(u.id);
+                  playClickSound();
+                  onClose();
+                }}
                 className={cn(
-                  "chip text-[10px]",
-                  u.role === "ADMIN" ? "border-amber-400/40 text-amber-400 font-mono font-bold" : "border-amber-400/40 text-amber-300 font-mono"
+                  "flex w-full items-center justify-between rounded-2xl p-3 text-left transition-all duration-200",
+                  isSelected
+                    ? "neo-box bg-amber-500/20 border border-amber-400/40 shadow-lg"
+                    : "hover:bg-white/[0.08] border border-transparent"
                 )}
               >
-                {u.role === "ADMIN" ? "Admin" : "Student"}
-              </span>
-            </button>
-          ))}
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{u.avatar}</span>
+                  <div>
+                    <div className="font-bold text-sm text-white flex items-center gap-1.5">
+                      {u.name}
+                      {u.role === "ADMIN" && (
+                        <span className="chip border-amber-400/40 bg-amber-500/20 text-amber-300 font-mono text-[9px] py-0 px-1.5">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-zinc-400 font-mono">{u.email}</div>
+                  </div>
+                </div>
+
+                {isSelected ? (
+                  <Check className="h-5 w-5 text-amber-400 shrink-0" strokeWidth={2.5} />
+                ) : (
+                  <span className="text-xs text-zinc-400 font-mono">Switch →</span>
+                )}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -220,8 +237,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { state, currentUser, isAdmin, skills } = useApp();
   const [missionsOpen, setMissionsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
   const badgeLevel = levelForXp(currentUser.xp);
-  const pendingTxns = state.transactions.filter((t) => t.status === "PENDING").length;
 
   const PRIMARY_RAIL = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -239,10 +256,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh w-full overflow-x-hidden selection:bg-amber-400 selection:text-black">
-      {/* 1. Far-Left Floating Primary Command Rail (Ref Image Rail) */}
+      {/* 1. Far-Left Floating Primary Command Rail */}
       <aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col items-center justify-between py-6 px-2 lg:flex z-50">
         {/* Floating Rail Capsule */}
-        <div className="neo-box flex flex-col items-center gap-5 py-4 px-2.5 bg-zinc-950/80 border border-white/10 rounded-full shadow-2xl">
+        <div className="neo-box flex flex-col items-center gap-5 py-4 px-2.5 border border-white/10 rounded-full shadow-2xl">
           {/* Top Brand Star Icon */}
           <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full btn-primary font-mono text-xl font-black shadow-lg hover:scale-110 transition">
             ✳
@@ -273,32 +290,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom Floating Settings Capsule */}
-        <div className="neo-box flex flex-col items-center py-2 px-2 bg-zinc-950/80 border border-white/10 rounded-full shadow-2xl">
-          <Link
-            href="/profile"
-            title="Settings & Customization"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-white/10 hover:text-white transition"
+        <div className="neo-box flex flex-col items-center py-2 px-2 border border-white/10 rounded-full shadow-2xl">
+          <button
+            onClick={() => setRoleSwitcherOpen(true)}
+            title="Switch User Role (Student / Admin)"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-amber-400 hover:bg-white/10 transition"
           >
-            <Settings className="h-5 w-5" strokeWidth={1.75} />
-          </Link>
+            <ShieldCheck className="h-5 w-5" strokeWidth={1.75} />
+          </button>
         </div>
       </aside>
 
-      {/* 2. Secondary Expanded Navigation Panel (Ref Image Sidebar) */}
-      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex bg-zinc-950/50 backdrop-blur-3xl overflow-y-auto">
-        {/* User Card Header */}
-        <div className="flex items-center gap-3 border-b border-white/[0.08] pb-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 border border-amber-400/40 text-2xl shadow-md">
+      {/* 2. Secondary Expanded Navigation Panel */}
+      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex backdrop-blur-3xl overflow-y-auto">
+        {/* User Card Header — Clickable Role Switcher Trigger */}
+        <button
+          onClick={() => setRoleSwitcherOpen(true)}
+          title="Click to Switch Role (Student / Admin)"
+          className="flex items-center gap-3 border-b border-white/[0.08] pb-4 text-left group hover:opacity-90 transition"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl neo-box border border-amber-400/40 text-2xl shadow-md group-hover:scale-105 transition">
             {currentUser.avatar}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <span className="truncate text-sm font-bold text-white">{currentUser.name}</span>
-              <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+              <span className="chip border-amber-400/40 text-[9px] font-mono py-0 px-1 font-bold text-amber-400">
+                {currentUser.role}
+              </span>
+              <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0 group-hover:translate-y-0.5 transition" />
             </div>
             <div className="truncate text-[11px] text-zinc-400 font-mono">{currentUser.email}</div>
           </div>
-        </div>
+        </button>
 
         {/* Category Section: Navigation */}
         <div className="space-y-1.5">
@@ -385,7 +409,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
               pathname.startsWith("/payment")
-                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                ? "neo-box bg-amber-500/20 text-white border border-amber-400/30 shadow-lg"
                 : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
             )}
           >
@@ -488,13 +512,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <ThemeToggle />
               <SoundToggle />
               <NotificationsBell />
-              <UserSwitcher />
+
+              {/* Role Switcher Trigger Button */}
+              <button
+                onClick={() => setRoleSwitcherOpen(true)}
+                className="neo-button flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
+                title="Switch Role (Student / Admin)"
+              >
+                <span className="text-lg leading-none">{currentUser.avatar}</span>
+                <span className="hidden max-w-28 truncate text-xs font-semibold md:block text-white">{currentUser.name}</span>
+                {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.75} />}
+                <ChevronDown className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
+              </button>
             </div>
           </div>
         </header>
 
         <DailyMissionsModal open={missionsOpen} onClose={() => setMissionsOpen(false)} />
         <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+        <RoleSwitcherDropdown open={roleSwitcherOpen} onClose={() => setRoleSwitcherOpen(false)} />
 
         <main className="flex-1 w-full px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10">{children}</main>
       </div>

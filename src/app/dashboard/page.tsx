@@ -181,7 +181,7 @@ export default function DashboardPage() {
                       alt={skill.title}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
                     <div className="absolute left-3 top-3">
                       <span className="chip border-white/20 bg-black/60 font-mono text-[10px] text-white backdrop-blur-md">
