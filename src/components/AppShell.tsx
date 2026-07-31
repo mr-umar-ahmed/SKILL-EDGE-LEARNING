@@ -3,15 +3,23 @@
 import {
   Award,
   Bell,
+  CheckCircle2,
   ChevronDown,
+  ChevronRight,
+  Clock,
   Compass,
+  FileText,
   Flame,
+  Folder,
   Globe,
+  Grid,
+  Home,
   Layers,
   LayoutDashboard,
   Moon,
   Radio,
   Search,
+  Settings,
   ShieldCheck,
   Sparkles,
   Sun,
@@ -209,153 +217,240 @@ function UserSwitcher() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { state, currentUser, isAdmin } = useApp();
+  const { state, currentUser, isAdmin, skills } = useApp();
   const [missionsOpen, setMissionsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const badgeLevel = levelForXp(currentUser.xp);
   const pendingTxns = state.transactions.filter((t) => t.status === "PENDING").length;
 
-  const NAV_GROUPS = [
-    {
-      group: "CORE PLATFORM",
-      items: [
-        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/learn/ai-prompt-engineering/practice", label: "Practice Deck", icon: Layers },
-      ],
-    },
-    {
-      group: "COMMUNITY & REWARDS",
-      items: [
-        { href: "/quizzes", label: "Tournaments", icon: Swords, badge: "● LIVE" },
-        { href: "/leaderboard", label: "Hall of Fame", icon: Trophy },
-        { href: "/profile", label: "Identity & Profile", icon: UserRound },
-      ],
-    },
-    {
-      group: "ECONOMY & VAULT",
-      items: [
-        { href: "/payment", label: "EdgeCoin Wallet", icon: Wallet2, badge: `ↁ ${fmtNum(currentUser.edgeCoins)}` },
-      ],
-    },
+  const PRIMARY_RAIL = [
+    { href: "/dashboard", label: "Dashboard", icon: Home },
+    { href: "/quizzes", label: "Tournaments", icon: Swords },
+    { href: "/leaderboard", label: "Hall of Fame", icon: Trophy },
+    { href: "/payment", label: "Wallet", icon: Wallet2 },
+    { href: "/profile", label: "Identity & Profile", icon: UserRound },
   ];
 
   if (isAdmin) {
-    NAV_GROUPS.push({
-      group: "ADMINISTRATION",
-      items: [
-        { href: "/admin", label: "Command Center", icon: ShieldCheck, badge: pendingTxns > 0 ? `${pendingTxns} Review` : undefined },
-      ],
-    });
+    PRIMARY_RAIL.push({ href: "/admin", label: "Admin Panel", icon: ShieldCheck });
   }
 
+  const SKILL_CATEGORIES = Array.from(new Set(skills.map((s) => s.category)));
+
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-7xl">
-      {/* Production Level SaaS Sidebar */}
-      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-4 border-r border-white/[0.08] p-4 lg:flex bg-zinc-950/40 backdrop-blur-3xl">
-        {/* Brand Header */}
-        <div className="flex flex-col gap-3 px-2 pt-1">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="clay-badge flex h-10 w-10 items-center justify-center bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500 font-mono text-xl font-black text-black shadow-lg shadow-amber-500/20">
-              S
-            </span>
-            <div>
-              <div className="font-mono text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-                SKILL<span className="text-amber-400">EDGE</span>
-                <span className="chip border-amber-400/40 bg-amber-500/10 text-[9px] font-mono text-amber-300 py-0.5 px-1.5">
-                  OS v1.0
-                </span>
-              </div>
-              <p className="text-[10px] text-zinc-400 font-mono">Gamified Skill Learning System</p>
-            </div>
+    <div className="flex min-h-dvh w-full overflow-x-hidden selection:bg-amber-400 selection:text-black">
+      {/* 1. Far-Left Floating Primary Command Rail (Ref Image Rail) */}
+      <aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col items-center justify-between py-6 px-2 lg:flex z-50">
+        {/* Floating Rail Capsule */}
+        <div className="neo-box flex flex-col items-center gap-5 py-4 px-2.5 bg-zinc-900/90 border border-white/10 rounded-full shadow-2xl">
+          {/* Top Brand Star Icon */}
+          <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-xl font-black text-black shadow-lg shadow-amber-500/20 hover:scale-110 transition">
+            ✳
           </Link>
 
-          {/* Quick Workspace Switcher Pill */}
-          <div className="neo-box flex items-center justify-between px-3 py-2 text-xs font-mono text-zinc-300">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-              <span className="font-bold text-white">Pro Builder Workspace</span>
+          <div className="h-px w-6 bg-white/10" />
+
+          {/* Primary Nav Icons */}
+          {PRIMARY_RAIL.map((item) => {
+            const active = pathname.startsWith(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={item.label}
+                className={cn(
+                  "relative flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300",
+                  active
+                    ? "bg-amber-400 text-black font-black shadow-lg shadow-amber-400/40 scale-105"
+                    : "text-zinc-400 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 1.75} />
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Bottom Floating Settings Capsule */}
+        <div className="neo-box flex flex-col items-center py-2 px-2 bg-zinc-900/90 border border-white/10 rounded-full shadow-2xl">
+          <Link
+            href="/profile"
+            title="Settings & Customization"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-white/10 hover:text-white transition"
+          >
+            <Settings className="h-5 w-5" strokeWidth={1.75} />
+          </Link>
+        </div>
+      </aside>
+
+      {/* 2. Secondary Expanded Navigation Panel (Ref Image Sidebar) */}
+      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex bg-zinc-950/60 backdrop-blur-3xl overflow-y-auto">
+        {/* User Card Header */}
+        <div className="flex items-center gap-3 border-b border-white/[0.08] pb-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 border border-amber-400/40 text-2xl shadow-md">
+            {currentUser.avatar}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1">
+              <span className="truncate text-sm font-bold text-white">{currentUser.name}</span>
+              <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
             </div>
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+            <div className="truncate text-[11px] text-zinc-400 font-mono">{currentUser.email}</div>
           </div>
         </div>
 
-        {/* Grouped SaaS Navigation */}
-        <div className="flex-1 space-y-6 overflow-y-auto pr-1">
-          {NAV_GROUPS.map((grp) => (
-            <div key={grp.group} className="space-y-1">
-              <div className="px-3 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                {grp.group}
-              </div>
-              {grp.items.map((item) => {
-                const active = pathname.startsWith(item.href);
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "group relative flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all duration-200",
-                      active
-                        ? "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1.5 before:rounded-r-full before:bg-amber-400 bg-amber-400/10 text-amber-300 border border-amber-400/20 shadow-md"
-                        : "text-zinc-400 hover:bg-white/[0.05] hover:text-white hover:translate-x-0.5"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon
-                        className={cn("h-4 w-4 transition-colors", active ? "text-amber-400" : "text-zinc-400 group-hover:text-zinc-200")}
-                        strokeWidth={active ? 2 : 1.75}
-                      />
-                      <span>{item.label}</span>
-                    </div>
-
-                    {item.badge && (
-                      <span className={cn(
-                        "chip font-mono text-[9px] py-0.5 px-1.5",
-                        item.badge.includes("LIVE") ? "animate-pulse border-rose-500/40 text-rose-400" : "border-amber-400/30 text-amber-300"
-                      )}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+        {/* Category Section: Navigation */}
+        <div className="space-y-1.5">
+          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500 px-2">
+            Projects & Navigation
+          </div>
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
+              pathname === "/dashboard"
+                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
+            )}
+          >
+            <div className="flex items-center gap-2.5">
+              <LayoutDashboard className="h-4 w-4" strokeWidth={1.75} />
+              <span>Dashboard</span>
             </div>
-          ))}
+            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-zinc-300">0</span>
+          </Link>
+          <Link
+            href="/learn/ai-prompt-engineering/practice"
+            className={cn(
+              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
+              pathname.includes("practice")
+                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
+            )}
+          >
+            <div className="flex items-center gap-2.5">
+              <Layers className="h-4 w-4" strokeWidth={1.75} />
+              <span>Practice Deck</span>
+            </div>
+          </Link>
         </div>
 
-        {/* Production SaaS User Footer */}
-        <div className="clay-card p-3.5 space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{currentUser.avatar}</span>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-xs font-bold text-white">{currentUser.name}</div>
-              <div className="font-mono text-[10px] text-amber-300 font-semibold">
-                LVL {badgeLevel} · {fmtNum(currentUser.xp)} XP
-              </div>
+        {/* Category Section: Status & Competitions */}
+        <div className="space-y-1.5">
+          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500 px-2">
+            Status & Events
+          </div>
+          <Link
+            href="/quizzes"
+            className={cn(
+              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
+              pathname.startsWith("/quizzes")
+                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
+            )}
+          >
+            <div className="flex items-center gap-2.5">
+              <Swords className="h-4 w-4 text-rose-400" strokeWidth={1.75} />
+              <span>Tournaments</span>
             </div>
+            <span className="rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 px-2 py-0.5 font-mono text-[10px]">
+              3
+            </span>
+          </Link>
+          <Link
+            href="/leaderboard"
+            className={cn(
+              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
+              pathname.startsWith("/leaderboard")
+                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
+            )}
+          >
+            <div className="flex items-center gap-2.5">
+              <Trophy className="h-4 w-4 text-amber-400" strokeWidth={1.75} />
+              <span>Hall of Fame</span>
+            </div>
+            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-zinc-300">2</span>
+          </Link>
+        </div>
+
+        {/* Category Section: Economy & Vault */}
+        <div className="space-y-1.5">
+          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500 px-2">
+            Economy & Vault
+          </div>
+          <Link
+            href="/payment"
+            className={cn(
+              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
+              pathname.startsWith("/payment")
+                ? "neo-box bg-white/10 text-white border border-white/20 shadow-lg"
+                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
+            )}
+          >
+            <div className="flex items-center gap-2.5">
+              <Wallet2 className="h-4 w-4 text-yellow-300" strokeWidth={1.75} />
+              <span>EdgeCoin Wallet</span>
+            </div>
+            <span className="rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-400/40 px-2 py-0.5 font-mono text-[10px] font-bold">
+              ↁ {fmtNum(currentUser.edgeCoins)}
+            </span>
+          </Link>
+        </div>
+
+        {/* Category Section: Documents & Skills Tree */}
+        <div className="space-y-2 pt-2 border-t border-white/[0.08]">
+          <div className="flex items-center justify-between px-2 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+            <span>Skill Tracks</span>
+            <button onClick={() => setSearchOpen(true)} className="text-zinc-400 hover:text-white">
+              +
+            </button>
           </div>
 
-          {/* XP Progress Bar in Sidebar */}
-          <div className="space-y-1">
-            <div className="flex justify-between font-mono text-[9px] text-zinc-400">
-              <span>Badge Progress</span>
-              <span className="text-amber-300">{Math.round(xpProgress(currentUser.xp) * 100)}%</span>
-            </div>
-            <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full transition-all duration-500"
-                style={{ width: `${xpProgress(currentUser.xp) * 100}%` }}
-              />
-            </div>
+          {/* Search Pill Input */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="neo-inset flex w-full items-center gap-2 px-3 py-2 text-xs text-zinc-400 hover:text-white transition"
+          >
+            <Search className="h-3.5 w-3.5 text-zinc-400" />
+            <span className="font-mono text-[11px]">Search skills...</span>
+          </button>
+
+          {/* Tree Skill Folders */}
+          <div className="space-y-1 pl-1">
+            {SKILL_CATEGORIES.map((cat) => (
+              <div key={cat} className="space-y-1">
+                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300 py-1 px-2">
+                  <Folder className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="truncate">{cat}</span>
+                </div>
+                <div className="pl-4 space-y-1 border-l border-white/10 ml-3">
+                  {skills
+                    .filter((s) => s.category === cat)
+                    .slice(0, 3)
+                    .map((s) => (
+                      <Link
+                        key={s.id}
+                        href={`/learn/${s.id}`}
+                        className="flex items-center justify-between text-[11px] font-medium text-zinc-400 hover:text-white py-1 px-2 rounded-lg hover:bg-white/[0.04]"
+                      >
+                        <span className="truncate">{s.title}</span>
+                        <span className="font-mono text-[9px] text-zinc-500">10L</span>
+                      </Link>
+                    ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      {/* 3. Main Full-Width Content Container */}
+      <div className="flex min-w-0 flex-1 flex-col bg-transparent">
         {/* Top Header */}
         <header className="sticky top-0 z-40 border-b border-white/[0.08] backdrop-blur-2xl bg-zinc-950/30">
-          <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <div className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6">
             <Link href="/" className="flex items-center gap-2 lg:hidden">
               <span className="clay-badge flex h-8 w-8 items-center justify-center bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-base font-black text-black">
                 S
@@ -401,14 +496,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <DailyMissionsModal open={missionsOpen} onClose={() => setMissionsOpen(false)} />
         <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-        <main className="flex-1 px-3 pb-28 pt-4 sm:px-6 lg:pb-10">{children}</main>
+        <main className="flex-1 w-full px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10">{children}</main>
       </div>
 
       {/* Mobile Bottom Nav */}
       <nav className="pb-safe glass-strong fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] lg:hidden">
         <div className="mx-auto flex max-w-md items-stretch justify-around">
           {[
-            { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+            { href: "/dashboard", label: "Dashboard", icon: Home },
             { href: "/quizzes", label: "Tournaments", icon: Swords },
             { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
             { href: "/payment", label: "Wallet", icon: Wallet2 },

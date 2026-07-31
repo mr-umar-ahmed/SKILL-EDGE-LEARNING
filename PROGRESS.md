@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 18 — Production-Level SaaS Sidebar Navigation ✅
-- [x] [PLAN] Redesign sidebar navigation into a world-class production SaaS sidebar with workspace pill, grouped menu categories (Core Platform, Community & Rewards, Economy & Vault, Administration), live badges, left active indicator bar, and interactive user XP progress footer.
-- [x] [BUILD] Updated `src/components/AppShell.tsx` with production SaaS layout, grouped links, live badge counts, active left border highlights, and expanded user footer card.
+## PHASE 19 — Dual-Rail Capsule Sidebar & Full-Page Layout ✅
+- [x] [PLAN] Rebuild sidebar into a Dual-Rail Command Bar matching the user's reference design: far-left floating primary capsule rail, secondary expanded sub-navigation panel with user header, section categories (Projects, Status, Economy, Skill Tracks tree), pill counter badges, and edge-to-edge full-page layout coverage.
+- [x] [BUILD] `src/components/AppShell.tsx` updated with dual-rail floating capsule, nested skills tree folders, and full flex row layout.
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(saas-sidebar)`
+- [x] [DEPLOY] Committed as `feat(dual-rail-sidebar)`
 
 ---
 
@@ -71,6 +71,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-01: Phase 16 Master UI/UX Transformation created and pushed to GitHub (`feat(ui-redesign)`).
 - 2026-08-01: Phase 17 Contrast & Mobile Responsiveness Polish created and pushed to GitHub (`fix(mobile-contrast)`).
 - 2026-08-01: Phase 18 Production-Level SaaS Sidebar Navigation created and pushed to GitHub (`feat(saas-sidebar)`).
+- 2026-08-01: Phase 19 Dual-Rail Capsule Sidebar Navigation created and pushed to GitHub (`feat(dual-rail-sidebar)`).
 
 ## Backlog / Next iteration
 
