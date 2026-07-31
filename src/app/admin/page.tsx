@@ -94,10 +94,10 @@ export default function AdminPage() {
                 setTab(t.id);
               }}
               className={cn(
-                "flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold transition",
+                "neo-button flex shrink-0 items-center gap-2 px-3.5 py-2 text-xs font-semibold transition",
                 tab === t.id
-                  ? "border-amber-400/50 bg-amber-500/10 text-amber-300 shadow-inner"
-                  : "border-white/10 bg-white/[0.03] text-zinc-400 hover:bg-white/[0.06]"
+                  ? "border-amber-400/50 bg-amber-500/10 text-amber-300"
+                  : "text-zinc-400 hover:text-white"
               )}
             >
               {t.icon} {t.label}

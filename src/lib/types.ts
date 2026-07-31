@@ -45,6 +45,7 @@ export interface Skill {
   iconName: string;
   description: string;
   color: string; // accent hex
+  imageUrl: string; // online visual cover image URL (Unsplash/Pixabay)
   premiumCost: number; // EdgeCoins to unlock tiers 7-10
   levels: Level[];
 }

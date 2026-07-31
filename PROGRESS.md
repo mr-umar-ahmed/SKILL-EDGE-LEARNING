@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 15 — Supercharged Admin Command Center ✅
-- [x] [PLAN] 7-hub admin command center with Level Question Bank Manager, Manual Cert Minting, System Broadcasts, Audit Trail, and JSON Backup/Restore
-- [x] [BUILD] `src/app/admin/page.tsx` (/admin route), `adminBroadcastNotification`, `adminIssueCertificate`, `importDatabase` in `src/lib/store.tsx`
-- [x] [TEST] `npx tsc --noEmit` green (0 type errors across all 13 routes)
-- [x] [DEPLOY] Committed as `feat(admin)`
+## PHASE 16 — Master UI/UX Redesign (Neomorphism, Claymorphism, Bento Grid & Dual Themes) ✅
+- [x] [PLAN] Comprehensive UI/UX overhaul incorporating Neomorphism, Claymorphism 3D, Glassmorphism, Master Bento Grid layout, realistic skill cover images, linear outline icons, and dual-theme engine.
+- [x] [BUILD] Custom theme variables in `globals.css` (Dark Anima Agrawal `#1C1C1C` / `#302A18` / `#FDE4C3` + Light Stone Grey `#8C8A7F` / Soft Linen `#F7F2DA`), `Outfit` display font in `layout.tsx`, `ThemeToggle` in `AppShell.tsx`, realistic visual cover images for 12 skills in `data.ts`, and Bento Grid layouts on `/dashboard`, `/learn/[skillId]`, `/profile`, and `/admin`.
+- [x] [TEST] `npx tsc --noEmit` green (0 errors)
+- [x] [DEPLOY] Committed as `feat(ui-redesign)`
 
 ---
 
@@ -68,6 +68,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-07-31: Phase 13 Rapid Recall Flashcards Practice engine created and pushed to GitHub (`feat(practice)`).
 - 2026-07-31: Phase 14 Global Search & Command Palette engine created and pushed to GitHub (`feat(search)`).
 - 2026-07-31: Phase 15 Supercharged Admin Command Center created and pushed to GitHub (`feat(admin)`).
+- 2026-08-01: Phase 16 Master UI/UX Transformation created and pushed to GitHub (`feat(ui-redesign)`).
 
 ## Backlog / Next iteration
 

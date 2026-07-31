@@ -5,8 +5,10 @@ import {
   ChevronDown,
   Flame,
   LayoutDashboard,
+  Moon,
   Search,
   ShieldCheck,
+  Sun,
   Swords,
   Target,
   Trophy,
@@ -25,6 +27,43 @@ import { getAudioMuted, playClickSound, setAudioMuted } from "@/lib/sound";
 import { DailyMissionsModal } from "./DailyMissionsModal";
 import { SearchModal } from "./SearchModal";
 
+function ThemeToggle() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("skilledge-theme") as "dark" | "light";
+    if (saved) {
+      setTheme(saved);
+      document.documentElement.className = saved;
+      document.body.className = `${saved} font-sans antialiased selection:bg-yellow-400 selection:text-black`;
+    }
+  }, []);
+
+  const toggle = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("skilledge-theme", next);
+    document.documentElement.className = next;
+    document.body.className = `${next} font-sans antialiased selection:bg-yellow-400 selection:text-black`;
+    playClickSound();
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className="neo-button p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
+      title={theme === "dark" ? "Switch to Soft Linen Light Theme" : "Switch to Anima Agrawal Dark Theme"}
+      aria-label="Theme toggle"
+    >
+      {theme === "dark" ? (
+        <Sun className="h-[18px] w-[18px] text-amber-300" strokeWidth={1.75} />
+      ) : (
+        <Moon className="h-[18px] w-[18px] text-stone-700" strokeWidth={1.75} />
+      )}
+    </button>
+  );
+}
+
 function SoundToggle() {
   const [muted, setMute] = useState(false);
 
@@ -42,11 +81,11 @@ function SoundToggle() {
   return (
     <button
       onClick={toggle}
-      className="relative rounded-xl border border-white/10 bg-white/[0.04] p-2 text-zinc-300 transition hover:bg-white/[0.1]"
+      className="neo-button p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
       title={muted ? "Unmute sound effects" : "Mute sound effects"}
       aria-label="Sound toggle"
     >
-      {muted ? <VolumeX className="h-[18px] w-[18px] text-zinc-500" /> : <Volume2 className="h-[18px] w-[18px] text-cyan-400" />}
+      {muted ? <VolumeX className="h-[18px] w-[18px] text-zinc-500" strokeWidth={1.75} /> : <Volume2 className="h-[18px] w-[18px] text-amber-400" strokeWidth={1.75} />}
     </button>
   );
 }
@@ -85,18 +124,18 @@ function NotificationsBell() {
           setOpen((o) => !o);
           if (!open && unread > 0) markNotificationsRead();
         }}
-        className="relative rounded-xl border border-white/10 bg-white/[0.04] p-2 text-zinc-300 transition hover:bg-white/[0.1]"
+        className="neo-button relative p-2 text-zinc-300 transition hover:scale-105 active:scale-95"
         aria-label="Notifications"
       >
-        <Bell className="h-[18px] w-[18px]" />
+        <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
         {unread > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-mono text-[10px] font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-mono text-[10px] font-bold text-white shadow-md">
             {unread}
           </span>
         )}
       </button>
       {open && (
-        <div className="glass-strong absolute right-0 z-50 mt-2 w-80 max-w-[85vw] p-2">
+        <div className="glass-strong absolute right-0 z-50 mt-2 w-80 max-w-[85vw] p-2 shadow-2xl">
           <div className="px-2 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
             Notifications
           </div>
@@ -125,17 +164,17 @@ function UserSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-1.5 pl-2 pr-2.5 transition hover:bg-white/[0.1]"
+        className="neo-button flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
       >
         <span className="text-lg leading-none">{currentUser.avatar}</span>
-        <span className="hidden max-w-28 truncate text-sm font-medium text-zinc-200 md:block">{currentUser.name}</span>
-        {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />}
-        <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+        <span className="hidden max-w-28 truncate text-xs font-semibold md:block">{currentUser.name}</span>
+        {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.75} />}
+        <ChevronDown className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
       </button>
       {open && (
-        <div className="glass-strong absolute right-0 z-50 mt-2 w-64 p-2">
+        <div className="glass-strong absolute right-0 z-50 mt-2 w-64 p-2 shadow-2xl">
           <div className="px-2 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
-            Demo session switcher
+            Demo Session Switcher
           </div>
           {switchable.map((u) => (
             <button
@@ -151,13 +190,13 @@ function UserSwitcher() {
             >
               <span className="text-xl">{u.avatar}</span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-zinc-100">{u.name}</span>
-                <span className="block truncate text-[11px] text-zinc-500">{u.email}</span>
+                <span className="block truncate text-sm font-semibold">{u.name}</span>
+                <span className="block truncate text-[11px] text-zinc-400">{u.email}</span>
               </span>
               <span
                 className={cn(
                   "chip",
-                  u.role === "ADMIN" ? "border-amber-400/30 text-amber-300" : "border-cyan-400/30 text-cyan-300"
+                  u.role === "ADMIN" ? "border-amber-400/30 text-amber-400" : "border-amber-400/30 text-amber-300"
                 )}
               >
                 {u.role === "ADMIN" ? "Admin" : "Student"}
@@ -180,82 +219,87 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-7xl">
-      {/* desktop sidebar */}
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 border-r border-white/[0.06] p-4 lg:flex">
-        <Link href="/" className="mb-6 flex items-center gap-2 px-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-violet-600 font-mono text-lg font-black text-white shadow-lg shadow-cyan-500/30">
+      {/* Desktop Sidebar */}
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col gap-1 border-r border-white/[0.06] p-4 lg:flex">
+        <Link href="/" className="mb-6 flex items-center gap-3 px-2">
+          <span className="clay-badge flex h-10 w-10 items-center justify-center bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-xl font-black text-black shadow-lg">
             S
           </span>
-          <span className="font-mono text-lg font-bold tracking-tight text-zinc-100">
-            SKILL<span className="neon-text-cyan">EDGE</span>
+          <span className="font-mono text-lg font-bold tracking-tight">
+            SKILL<span className="text-amber-400">EDGE</span>
           </span>
         </Link>
         {nav.map((item) => {
           const active = pathname.startsWith(item.href);
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold transition-all duration-200",
                 active
-                  ? "bg-gradient-to-r from-cyan-500/15 to-violet-500/15 text-cyan-300 shadow-inner"
-                  : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200"
+                  ? "neo-box bg-amber-400/10 text-amber-300 shadow-inner"
+                  : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
               )}
             >
-              <item.icon className="h-4.5 w-4.5 h-[18px] w-[18px]" />
+              <Icon className="h-4.5 w-4.5 h-[18px] w-[18px]" strokeWidth={1.5} />
               {item.label}
             </Link>
           );
         })}
-        <div className="mt-auto glass p-3">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-xl">{currentUser.avatar}</span>
+
+        {/* User Card in Sidebar */}
+        <div className="mt-auto clay-card p-4">
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-2xl">{currentUser.avatar}</span>
             <div className="min-w-0">
-              <div className="truncate font-medium text-zinc-200">{currentUser.name}</div>
-              <div className="font-mono text-[11px] text-zinc-500">LVL {badgeLevel} · {fmtNum(currentUser.xp)} XP</div>
+              <div className="truncate font-bold">{currentUser.name}</div>
+              <div className="font-mono text-[11px] text-zinc-400">LVL {badgeLevel} · {fmtNum(currentUser.xp)} XP</div>
             </div>
           </div>
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* top bar */}
-        <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#030303cc] backdrop-blur-xl">
+        {/* Top Header */}
+        <header className="sticky top-0 z-40 border-b border-white/[0.06] backdrop-blur-2xl">
           <div className="flex items-center justify-between gap-2 px-4 py-3">
             <Link href="/" className="flex items-center gap-2 lg:hidden">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 font-mono text-base font-black text-white">
+              <span className="clay-badge flex h-8 w-8 items-center justify-center bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-base font-black text-black">
                 S
               </span>
-              <span className="font-mono font-bold text-zinc-100">
-                SKILL<span className="neon-text-cyan">EDGE</span>
+              <span className="font-mono font-bold">
+                SKILL<span className="text-amber-400">EDGE</span>
               </span>
             </Link>
             <div className="hidden lg:block" />
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="chip hidden border-white/10 bg-white/[0.04] font-mono text-zinc-300 transition hover:bg-white/10 sm:inline-flex"
+                className="neo-button chip hidden font-mono transition hover:scale-105 sm:inline-flex"
                 title="Search skills (Ctrl+K)"
               >
-                <Search className="h-3.5 w-3.5 text-zinc-400" /> Search <span className="text-[10px] text-zinc-500">Ctrl+K</span>
+                <Search className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} /> Search <span className="text-[10px] text-zinc-500">Ctrl+K</span>
               </button>
               <button
                 onClick={() => setMissionsOpen(true)}
-                className="chip border-cyan-400/40 bg-cyan-500/10 font-mono text-cyan-300 transition hover:bg-cyan-500/20"
+                className="neo-button chip font-mono text-amber-300 transition hover:scale-105"
                 title="Daily Cyber Quests"
               >
-                <Target className="h-3.5 w-3.5 text-cyan-400" /> Quests
+                <Target className="h-3.5 w-3.5 text-amber-400" strokeWidth={1.75} /> Quests
               </button>
-              <div className="chip border-orange-400/30 font-mono text-orange-300">
-                <Flame className="h-3.5 w-3.5" /> {currentUser.streakCount}
+              <div className="chip font-mono text-orange-400">
+                <Flame className="h-3.5 w-3.5" strokeWidth={1.75} /> {currentUser.streakCount}
               </div>
-              <Link href="/payment" className="chip border-yellow-400/30 font-mono text-yellow-300 transition hover:bg-yellow-400/10">
+              <Link href="/payment" className="chip font-mono text-yellow-300 transition hover:scale-105">
                 <span className="font-bold">ↁ</span> {fmtNum(currentUser.edgeCoins)}
               </Link>
-              <div className="chip hidden border-violet-400/30 font-mono text-violet-300 sm:inline-flex">
-                <Zap className="h-3.5 w-3.5" /> LVL {badgeLevel}
+              <div className="chip hidden font-mono text-violet-300 sm:inline-flex">
+                <Zap className="h-3.5 w-3.5" strokeWidth={1.75} /> LVL {badgeLevel}
               </div>
+
+              <ThemeToggle />
               <SoundToggle />
               <NotificationsBell />
               <UserSwitcher />
@@ -269,21 +313,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 px-4 pb-28 pt-5 lg:pb-10">{children}</main>
       </div>
 
-      {/* mobile bottom nav */}
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-[#0a0a0ce6] backdrop-blur-2xl lg:hidden">
+      {/* Mobile Bottom Nav with Linear Outline Icons */}
+      <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] backdrop-blur-2xl lg:hidden">
         <div className="mx-auto flex max-w-md items-stretch justify-around">
           {nav.map((item) => {
             const active = pathname.startsWith(item.href);
+            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition",
-                  active ? "text-cyan-300" : "text-zinc-500 hover:text-zinc-300"
+                  "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition",
+                  active ? "text-amber-300" : "text-zinc-400 hover:text-white"
                 )}
               >
-                <item.icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]")} />
+                <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_8px_rgba(253,228,195,0.7)]")} strokeWidth={1.5} />
                 {item.label}
               </Link>
             );
@@ -291,9 +336,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {!isAdmin && (
             <Link
               href="/profile"
-              className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-300"
+              className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold text-zinc-400 hover:text-white"
             >
-              <UserRound className="h-5 w-5" />
+              <UserRound className="h-5 w-5" strokeWidth={1.5} />
               Profile
             </Link>
           )}

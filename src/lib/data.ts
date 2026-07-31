@@ -441,6 +441,21 @@ function buildLevels(seed: SkillSeed): Level[] {
   });
 }
 
+const SKILL_IMAGES: Record<string, string> = {
+  "ai-prompt-engineering": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+  "vibe-coding": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+  "personal-branding": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
+  "digital-marketing": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+  "personal-finance": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
+  "freelancing": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
+  "ui-ux-design": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=800&q=80",
+  "video-editing": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80",
+  "sales-negotiation": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80",
+  "communication": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80",
+  "public-speaking": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
+  "productivity": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80",
+};
+
 export const SKILLS: Skill[] = SEEDS.map((seed) => ({
   id: seed.id,
   title: seed.title,
@@ -448,6 +463,7 @@ export const SKILLS: Skill[] = SEEDS.map((seed) => ({
   iconName: seed.iconName,
   description: seed.description,
   color: seed.color,
+  imageUrl: SEEDS && SKILL_IMAGES[seed.id] ? SKILL_IMAGES[seed.id] : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
   premiumCost: 200,
   levels: buildLevels(seed),
 }));
