@@ -50,6 +50,7 @@ interface AppApi {
   submitQuizScore: (quizId: string, score: number) => void;
   markNotificationsRead: () => void;
   updateProfile: (avatar: string, title?: string, avatarFrame?: string) => void;
+  claimDailyMission: (missionId: string, coinReward: number, xpReward: number) => void;
   resetDemoData: () => void;
 }
 
@@ -495,6 +496,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const claimDailyMission = useCallback((missionId: string, coinReward: number, xpReward: number) => {
+    setState((s) => {
+      const u = s.users.find((x) => x.id === s.currentUserId);
+      if (!u) return s;
+
+      const userProg = s.progress[s.currentUserId] || { completed: {}, premiumUnlocks: {} };
+      if (userProg.claimedMissions?.[missionId]) return s;
+
+      const updatedProg: UserProgress = {
+        ...userProg,
+        claimedMissions: { ...(userProg.claimedMissions || {}), [missionId]: true },
+      };
+
+      const updatedUser: User = {
+        ...u,
+        edgeCoins: u.edgeCoins + coinReward,
+        xp: u.xp + xpReward,
+      };
+
+      const txn: Transaction = {
+        id: uid("txn"),
+        userId: s.currentUserId,
+        amountCoins: coinReward,
+        amountInr: null,
+        type: "EARNED",
+        status: "APPROVED",
+        note: `Daily quest reward (${missionId})`,
+        createdAt: new Date().toISOString(),
+      };
+
+      return {
+        ...s,
+        users: s.users.map((x) => (x.id === s.currentUserId ? updatedUser : x)),
+        progress: { ...s.progress, [s.currentUserId]: updatedProg },
+        transactions: [txn, ...s.transactions],
+        notifications: [
+          makeNotification(s.currentUserId, `Claimed Daily Quest: +ↁ${coinReward} & +${xpReward} XP!`),
+          ...s.notifications,
+        ],
+      };
+    });
+  }, []);
+
   const resetDemoData = useCallback(() => {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -526,6 +570,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     submitQuizScore,
     markNotificationsRead,
     updateProfile,
+    claimDailyMission,
     resetDemoData,
   };
 

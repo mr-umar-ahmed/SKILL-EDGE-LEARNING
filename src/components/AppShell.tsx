@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ShieldCheck,
   Swords,
+  Target,
   Trophy,
   UserRound,
   Volume2,
@@ -20,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
 import { cn, fmtNum, levelForXp, timeAgo } from "@/lib/utils";
 import { getAudioMuted, playClickSound, setAudioMuted } from "@/lib/sound";
+import { DailyMissionsModal } from "./DailyMissionsModal";
 
 function SoundToggle() {
   const [muted, setMute] = useState(false);
@@ -169,6 +171,7 @@ function UserSwitcher() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { currentUser, isAdmin } = useApp();
+  const [missionsOpen, setMissionsOpen] = useState(false);
   const badgeLevel = levelForXp(currentUser.xp);
   const nav = isAdmin ? [...NAV, { href: "/admin", label: "Admin", icon: ShieldCheck }] : NAV;
 
@@ -227,6 +230,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
             <div className="hidden lg:block" />
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setMissionsOpen(true)}
+                className="chip border-cyan-400/40 bg-cyan-500/10 font-mono text-cyan-300 transition hover:bg-cyan-500/20"
+                title="Daily Cyber Quests"
+              >
+                <Target className="h-3.5 w-3.5 text-cyan-400" /> Quests
+              </button>
               <div className="chip border-orange-400/30 font-mono text-orange-300">
                 <Flame className="h-3.5 w-3.5" /> {currentUser.streakCount}
               </div>
@@ -242,6 +252,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
+
+        <DailyMissionsModal open={missionsOpen} onClose={() => setMissionsOpen(false)} />
 
         <main className="flex-1 px-4 pb-28 pt-5 lg:pb-10">{children}</main>
       </div>

@@ -120,6 +120,7 @@ export interface ProgressEntry {
 export interface UserProgress {
   completed: Record<string, ProgressEntry>; // levelId -> entry
   premiumUnlocks: Record<string, boolean>; // skillId -> unlocked tiers 7-10
+  claimedMissions?: Record<string, boolean>; // missionId -> claimed
 }
 
 export interface LevelOverride {
