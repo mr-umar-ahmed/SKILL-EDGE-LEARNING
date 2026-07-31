@@ -28,8 +28,8 @@ export default function LevelPage() {
     return (
       <AppShell>
         <div className="mx-auto max-w-lg py-16 text-center">
-          <Lock className="mx-auto h-12 w-12 text-zinc-600" />
-          <h1 className="mt-4 font-mono text-xl font-bold text-zinc-200">Tier {level.levelNumber} is locked</h1>
+          <Lock className="mx-auto h-12 w-12 text-zinc-500" />
+          <h1 className="mt-4 font-mono text-xl font-bold text-white">Tier {level.levelNumber} is locked</h1>
           <p className="mt-2 text-sm text-zinc-400">
             {level.isPremium && !myProgress.premiumUnlocks[skill.id]
               ? "This is a premium tier — unlock Tiers 7-10 from the skill map with EdgeCoins."
@@ -50,17 +50,13 @@ export default function LevelPage() {
       <div className="mx-auto max-w-3xl">
         <Link
           href={`/learn/${skill.id}`}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200"
+          className="mb-4 inline-flex items-center gap-1.5 font-mono text-xs text-zinc-400 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" /> {skill.title}
         </Link>
 
-        {/* header */}
-        <div className="glass relative mb-5 overflow-hidden p-5">
-          <div
-            className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-3xl"
-            style={{ background: skill.color }}
-          />
+        {/* Level Header Card */}
+        <div className="clay-card relative mb-5 overflow-hidden p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-wider">
             <span style={{ color: skill.color }}>
               Tier {level.levelNumber} · {level.tier}
@@ -72,56 +68,56 @@ export default function LevelPage() {
             )}
             {completed && <span className="text-emerald-400">✓ Cleared at {completed.score}%</span>}
           </div>
-          <h1 className="mt-1 font-mono text-2xl font-bold text-zinc-50">{level.title}</h1>
-          <p className="mt-2 text-sm text-zinc-400">{level.description}</p>
-          <div className="mt-3 flex items-center gap-2 text-xs">
-            <span className="chip border-yellow-400/30 font-mono text-yellow-300">Reward +ↁ{level.coinReward}</span>
-            <span className="chip border-violet-400/30 font-mono text-violet-300">+{fmtNum(level.xpReward)} XP</span>
-            <span className="chip font-mono">Pass ≥ {level.minPassScore}%</span>
+          <h1 className="mt-1 font-mono text-xl font-bold text-white sm:text-2xl">{level.title}</h1>
+          <p className="mt-2 text-xs text-zinc-300 sm:text-sm">{level.description}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <span className="chip border-yellow-400/40 font-mono text-amber-300">Reward +ↁ{level.coinReward}</span>
+            <span className="chip border-violet-400/40 font-mono text-violet-300">+{fmtNum(level.xpReward)} XP</span>
+            <span className="chip font-mono text-zinc-300">Pass ≥ {level.minPassScore}%</span>
           </div>
         </div>
 
-        {/* dual-track tabs */}
+        {/* Dual-Track Tabs */}
         <div className="mb-4 grid grid-cols-2 gap-2">
           <button
             onClick={() => setTab("activity")}
             className={cn(
-              "flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition",
+              "neo-button flex items-center justify-center gap-2 px-4 py-3 text-xs font-bold transition sm:text-sm",
               tab === "activity"
-                ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-300 shadow-lg shadow-cyan-500/10"
-                : "border-white/10 bg-white/[0.03] text-zinc-400 hover:bg-white/[0.06]"
+                ? "border-amber-400/50 bg-amber-500/15 text-amber-300"
+                : "text-zinc-400 hover:text-white"
             )}
           >
-            <ListChecks className="h-4 w-4" /> Activity Mission
+            <ListChecks className="h-4 w-4" /> Activity Track
           </button>
           <button
             onClick={() => setTab("video")}
             className={cn(
-              "flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition",
+              "neo-button flex items-center justify-center gap-2 px-4 py-3 text-xs font-bold transition sm:text-sm",
               tab === "video"
-                ? "border-rose-400/50 bg-rose-500/15 text-rose-300 shadow-lg shadow-rose-500/10"
-                : "border-white/10 bg-white/[0.03] text-zinc-400 hover:bg-white/[0.06]"
+                ? "border-rose-400/50 bg-rose-500/15 text-rose-300"
+                : "text-zinc-400 hover:text-white"
             )}
           >
-            <Youtube className="h-4 w-4" /> Video Mission
+            <Youtube className="h-4 w-4" /> Video Track
           </button>
         </div>
 
         {tab === "activity" && (
-          <div className="glass p-5">
+          <div className="clay-card p-5 sm:p-6">
             <div className="mb-3 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
               Hands-on practical mission
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {level.activityContent.map((step, i) => (
                 <button
                   key={i}
                   onClick={() => setChecked((c) => ({ ...c, [i]: !c[i] }))}
                   className={cn(
-                    "flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left text-sm transition",
+                    "neo-button flex w-full items-start gap-3 p-3.5 text-left text-xs sm:text-sm transition",
                     checked[i]
-                      ? "border-emerald-400/30 bg-emerald-500/10 text-zinc-300"
-                      : "border-white/10 bg-white/[0.03] text-zinc-200 hover:bg-white/[0.06]"
+                      ? "border-emerald-400/40 bg-emerald-500/10 text-zinc-200"
+                      : "text-zinc-200 hover:text-white"
                   )}
                 >
                   {checked[i] ? (
@@ -133,18 +129,18 @@ export default function LevelPage() {
                 </button>
               ))}
             </div>
-            <div className="mt-3 text-xs text-zinc-500">
+            <div className="mt-3 text-xs text-zinc-400">
               Check off each step as you complete it, then prove your mastery in the assessment.
             </div>
           </div>
         )}
 
         {tab === "video" && (
-          <div className="glass p-5">
+          <div className="clay-card p-5 sm:p-6">
             <div className="mb-3 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
-              <PlaySquare className="h-4 w-4 text-rose-400" /> Curated guided mission
+              <PlaySquare className="h-4 w-4 text-rose-400" /> Guided video tutorial
             </div>
-            <div className="overflow-hidden rounded-xl border border-white/10">
+            <div className="overflow-hidden rounded-2xl border border-white/10 shadow-lg">
               <div className="relative aspect-video w-full">
                 <iframe
                   className="absolute inset-0 h-full w-full"
@@ -155,28 +151,26 @@ export default function LevelPage() {
                 />
               </div>
             </div>
-            <div className="mt-4 space-y-1.5 text-sm text-zinc-300">
-              <div className="font-semibold text-zinc-200">Watch notes</div>
-              <p className="text-zinc-400">
-                🎯 While watching, capture: the 3 core ideas, 1 technique you can apply within 24 hours, and 1 question
-                you still have. Then attempt the mission from the Activity tab — the assessment covers both tracks.
+            <div className="mt-4 space-y-1.5 text-xs sm:text-sm text-zinc-300">
+              <div className="font-bold text-white">Guided Watch Notes</div>
+              <p className="text-zinc-400 leading-relaxed">
+                🎯 While watching, capture 3 core ideas and 1 practical technique. Then attempt the assessment below — questions cover both practical & video tracks.
               </p>
             </div>
           </div>
         )}
 
-        {/* assessment CTA */}
-        <div className="glass-strong sticky bottom-24 mt-5 flex items-center gap-3 p-4 lg:bottom-6">
+        {/* Assessment CTA Bar */}
+        <div className="clay-card sticky bottom-20 mt-5 flex items-center justify-between gap-3 p-4 sm:bottom-6 z-30">
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-zinc-100">Gated Assessment</div>
-            <div className="text-xs text-zinc-500">
-              {level.questions.length} questions · score {level.minPassScore}%+ to unlock Tier {Math.min(10, level.levelNumber + 1)}
+            <div className="text-xs sm:text-sm font-bold text-white">Gated Assessment</div>
+            <div className="text-[11px] text-zinc-400">
+              {level.questions.length} questions · Pass ≥ {level.minPassScore}% to unlock Tier {Math.min(10, level.levelNumber + 1)}
             </div>
           </div>
           <button
             onClick={() => setQuizOpen(true)}
-            className="btn-primary"
-            style={tab === "activity" && !allChecked && !completed ? { opacity: 0.85 } : undefined}
+            className="btn-primary shrink-0 text-xs sm:text-sm"
           >
             <Swords className="h-4 w-4" /> {completed ? "Retake" : "Start"} Assessment
           </button>

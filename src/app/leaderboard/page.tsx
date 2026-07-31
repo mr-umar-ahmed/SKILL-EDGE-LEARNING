@@ -6,7 +6,6 @@ import {
   Flame,
   Medal,
   Search,
-  Shield,
   Trophy,
   Wallet,
   Zap,
@@ -19,7 +18,7 @@ import { cn, fmtNum, levelForXp } from "@/lib/utils";
 type SortTab = "xp" | "coins" | "streak" | "certs";
 
 export default function LeaderboardPage() {
-  const { state, currentUser, skills } = useApp();
+  const { state, currentUser } = useApp();
   const [tab, setTab] = useState<SortTab>("xp");
   const [query, setQuery] = useState("");
 
@@ -60,12 +59,9 @@ export default function LeaderboardPage() {
   return (
     <AppShell>
       <div className="space-y-8">
-        {/* Header Title */}
-        <div className="glass-strong relative overflow-hidden rounded-3xl p-6 sm:p-8">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-yellow-500/10 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
-
-          <div className="relative flex flex-col items-center justify-between gap-4 sm:flex-row">
+        {/* Header Banner */}
+        <div className="clay-card relative overflow-hidden p-6 sm:p-8">
+          <div className="relative flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-amber-400">
                 <Trophy className="h-4 w-4" /> Global Hall of Fame
@@ -74,17 +70,17 @@ export default function LeaderboardPage() {
                 Skill Edge Leaderboard
               </h1>
               <p className="mt-1 text-xs text-zinc-400">
-                Compete with top skill earners across the nation for glory, rank, and tournament bragging rights.
+                Compete with top learners nationwide for glory, rank, and tournament prizes.
               </p>
             </div>
 
             {/* Sort Filter Tabs */}
-            <div className="flex rounded-2xl border border-white/10 bg-black/40 p-1">
+            <div className="neo-inset flex gap-1 p-1.5 overflow-x-auto shrink-0">
               <button
                 onClick={() => setTab("xp")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition",
-                  tab === "xp" ? "bg-violet-500/20 text-violet-300 shadow-inner" : "text-zinc-400 hover:text-white"
+                  "neo-button flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition shrink-0",
+                  tab === "xp" ? "bg-amber-500/20 text-amber-300" : "text-zinc-400 hover:text-white"
                 )}
               >
                 <Zap className="h-3.5 w-3.5" /> Total XP
@@ -92,8 +88,8 @@ export default function LeaderboardPage() {
               <button
                 onClick={() => setTab("coins")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition",
-                  tab === "coins" ? "bg-yellow-500/20 text-yellow-300 shadow-inner" : "text-zinc-400 hover:text-white"
+                  "neo-button flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition shrink-0",
+                  tab === "coins" ? "bg-amber-500/20 text-amber-300" : "text-zinc-400 hover:text-white"
                 )}
               >
                 <Wallet className="h-3.5 w-3.5" /> Coins
@@ -101,8 +97,8 @@ export default function LeaderboardPage() {
               <button
                 onClick={() => setTab("streak")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition",
-                  tab === "streak" ? "bg-orange-500/20 text-orange-300 shadow-inner" : "text-zinc-400 hover:text-white"
+                  "neo-button flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition shrink-0",
+                  tab === "streak" ? "bg-orange-500/20 text-orange-300" : "text-zinc-400 hover:text-white"
                 )}
               >
                 <Flame className="h-3.5 w-3.5" /> Streak
@@ -110,8 +106,8 @@ export default function LeaderboardPage() {
               <button
                 onClick={() => setTab("certs")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition",
-                  tab === "certs" ? "bg-amber-500/20 text-amber-300 shadow-inner" : "text-zinc-400 hover:text-white"
+                  "neo-button flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition shrink-0",
+                  tab === "certs" ? "bg-amber-500/20 text-amber-300" : "text-zinc-400 hover:text-white"
                 )}
               >
                 <Award className="h-3.5 w-3.5" /> Certs
@@ -120,13 +116,13 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        {/* Top 3 Cyber Podium */}
+        {/* Top 3 Podium */}
         <div className="grid gap-4 sm:grid-cols-3">
           {/* #2 Rank */}
           {topThree[1] && (
-            <div className="glass order-2 flex flex-col items-center justify-between rounded-3xl p-6 text-center border-slate-400/30 sm:order-1">
+            <div className="clay-card order-2 flex flex-col items-center justify-between p-6 text-center border-slate-400/40 sm:order-1">
               <div className="relative">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-900 text-4xl border border-slate-300 shadow-[0_0_20px_rgba(203,213,225,0.3)]">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-900 text-4xl border border-slate-300 shadow-md">
                   {topThree[1].avatar}
                 </div>
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-300 p-1 text-black">
@@ -134,7 +130,7 @@ export default function LeaderboardPage() {
                 </div>
               </div>
               <div className="mt-4">
-                <div className="chip border-slate-400/30 font-mono text-[10px] text-slate-300 mb-1">Rank #2</div>
+                <div className="chip border-slate-400/40 font-mono text-[10px] text-slate-300 mb-1">Rank #2</div>
                 <h3 className="font-bold text-white">{topThree[1].name}</h3>
                 <div className="font-mono text-xs text-slate-400">{topThree[1].title || "Prompt Architect"}</div>
               </div>
@@ -149,23 +145,23 @@ export default function LeaderboardPage() {
 
           {/* #1 Rank Sovereign Podium */}
           {topThree[0] && (
-            <div className="glass-strong order-1 flex flex-col items-center justify-between rounded-3xl p-6 text-center border-yellow-400/50 shadow-[0_0_30px_rgba(234,179,8,0.2)] sm:order-2 sm:-mt-4">
+            <div className="clay-card order-1 flex flex-col items-center justify-between p-6 text-center border-amber-400/60 shadow-amber-500/20 sm:order-2 sm:-mt-4">
               <div className="relative">
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-zinc-900 text-5xl border-2 border-yellow-400 shadow-[0_0_25px_rgba(234,179,8,0.5)]">
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-zinc-900 text-5xl border-2 border-amber-400 shadow-lg">
                   {topThree[0].avatar}
                 </div>
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 p-1.5 text-black shadow-lg">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 p-1.5 text-black shadow-lg">
                   <Crown className="h-5 w-5 fill-black" />
                 </div>
               </div>
               <div className="mt-4">
-                <div className="chip border-yellow-400/40 bg-yellow-400/10 font-mono text-xs font-bold text-yellow-300 mb-1">
+                <div className="chip border-amber-400/50 bg-amber-400/10 font-mono text-xs font-bold text-amber-300 mb-1">
                   👑 Sovereign #1
                 </div>
                 <h3 className="text-lg font-bold text-white">{topThree[0].name}</h3>
-                <div className="font-mono text-xs text-yellow-400">{topThree[0].title || "Sovereign Master"}</div>
+                <div className="font-mono text-xs text-amber-300">{topThree[0].title || "Sovereign Master"}</div>
               </div>
-              <div className="mt-4 w-full rounded-2xl bg-yellow-500/15 p-3 font-mono text-sm font-black text-yellow-300">
+              <div className="mt-4 w-full rounded-2xl bg-amber-500/20 p-3 font-mono text-sm font-black text-amber-300">
                 {tab === "xp" && `${fmtNum(topThree[0].xp)} XP`}
                 {tab === "coins" && `ↁ ${fmtNum(topThree[0].edgeCoins)}`}
                 {tab === "streak" && `${topThree[0].streakCount} Days`}
@@ -176,9 +172,9 @@ export default function LeaderboardPage() {
 
           {/* #3 Rank */}
           {topThree[2] && (
-            <div className="glass order-3 flex flex-col items-center justify-between rounded-3xl p-6 text-center border-amber-700/30 sm:order-3">
+            <div className="clay-card order-3 flex flex-col items-center justify-between p-6 text-center border-amber-700/40 sm:order-3">
               <div className="relative">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-900 text-4xl border border-amber-600 shadow-[0_0_20px_rgba(217,119,6,0.3)]">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-900 text-4xl border border-amber-600 shadow-md">
                   {topThree[2].avatar}
                 </div>
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-600 p-1 text-black">
@@ -186,9 +182,9 @@ export default function LeaderboardPage() {
                 </div>
               </div>
               <div className="mt-4">
-                <div className="chip border-amber-600/30 font-mono text-[10px] text-amber-400 mb-1">Rank #3</div>
+                <div className="chip border-amber-600/40 font-mono text-[10px] text-amber-400 mb-1">Rank #3</div>
                 <h3 className="font-bold text-white">{topThree[2].name}</h3>
-                <div className="font-mono text-xs text-amber-500/80">{topThree[2].title || "AI Strategist"}</div>
+                <div className="font-mono text-xs text-amber-400/80">{topThree[2].title || "AI Strategist"}</div>
               </div>
               <div className="mt-4 w-full rounded-2xl bg-amber-600/10 p-3 font-mono text-xs font-bold text-amber-400">
                 {tab === "xp" && `${fmtNum(topThree[2].xp)} XP`}
@@ -201,25 +197,25 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Full Ranking Table */}
-        <div className="glass rounded-3xl p-6">
+        <div className="clay-card p-6">
           <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <h2 className="text-lg font-bold text-white">🏆 Full Ranking Standings</h2>
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
                 placeholder="Search learner..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-black/40 py-2 pl-9 pr-4 text-xs text-white placeholder-zinc-500 focus:border-cyan-400 focus:outline-none"
+                className="input-dark py-2 pl-9 pr-4 text-xs font-mono"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[500px]">
               <thead>
-                <tr className="border-b border-white/[0.08] font-mono text-zinc-500 uppercase">
+                <tr className="border-b border-white/[0.08] font-mono text-zinc-400 uppercase">
                   <th className="pb-3 pl-2">Rank</th>
                   <th className="pb-3">Learner</th>
                   <th className="pb-3">Level</th>
@@ -229,7 +225,7 @@ export default function LeaderboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {filteredData.map((u, idx) => {
+                {filteredData.map((u) => {
                   const rank = sortedData.findIndex((item) => item.id === u.id) + 1;
                   const isMe = u.id === currentUser.id;
 
@@ -238,31 +234,31 @@ export default function LeaderboardPage() {
                       key={u.id}
                       className={cn(
                         "transition hover:bg-white/[0.04]",
-                        isMe && "bg-cyan-500/10 font-medium"
+                        isMe && "bg-amber-400/10 font-bold"
                       )}
                     >
                       <td className="py-3.5 pl-2 font-mono font-bold">
-                        {rank === 1 && <span className="text-yellow-400">🥇 #1</span>}
+                        {rank === 1 && <span className="text-amber-300">🥇 #1</span>}
                         {rank === 2 && <span className="text-slate-300">🥈 #2</span>}
                         {rank === 3 && <span className="text-amber-500">🥉 #3</span>}
-                        {rank > 3 && <span className="text-zinc-500">#{rank}</span>}
+                        {rank > 3 && <span className="text-zinc-400">#{rank}</span>}
                       </td>
                       <td className="py-3.5">
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{u.avatar}</span>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-white">{u.name}</span>
-                              {isMe && <span className="chip border-cyan-400/40 text-[10px] text-cyan-300">You</span>}
+                              <span className="font-bold text-white">{u.name}</span>
+                              {isMe && <span className="chip border-amber-400/40 text-[10px] text-amber-300">You</span>}
                             </div>
-                            <div className="font-mono text-[10px] text-zinc-500">{u.title || "Learner"}</div>
+                            <div className="font-mono text-[10px] text-zinc-400">{u.title || "Learner"}</div>
                           </div>
                         </div>
                       </td>
                       <td className="py-3.5 font-mono text-violet-300">LVL {u.level}</td>
                       <td className="py-3.5 font-mono text-orange-400">🔥 {u.streakCount}d</td>
-                      <td className="py-3.5 font-mono text-yellow-300">ↁ {fmtNum(u.edgeCoins)}</td>
-                      <td className="py-3.5 pr-2 text-right font-mono font-bold text-cyan-300">
+                      <td className="py-3.5 font-mono text-amber-300 font-bold">ↁ {fmtNum(u.edgeCoins)}</td>
+                      <td className="py-3.5 pr-2 text-right font-mono font-bold text-white">
                         {fmtNum(u.xp)} XP
                       </td>
                     </tr>

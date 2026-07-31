@@ -22,13 +22,13 @@ function Countdown({ iso }: { iso: string }) {
   useNow();
   const { d, h, m, s } = countdownParts(msUntil(iso));
   const cell = (v: number, l: string) => (
-    <div className="rounded-lg bg-white/[0.06] px-2 py-1 text-center">
-      <div className="font-mono text-base font-bold text-zinc-100">{String(v).padStart(2, "0")}</div>
-      <div className="text-[9px] uppercase text-zinc-500">{l}</div>
+    <div className="neo-box px-2 py-1 text-center shrink-0">
+      <div className="font-mono text-xs sm:text-base font-bold text-white">{String(v).padStart(2, "0")}</div>
+      <div className="text-[8px] uppercase text-zinc-400 font-mono">{l}</div>
     </div>
   );
   return (
-    <div className="flex gap-1.5">
+    <div className="flex gap-1 sm:gap-1.5 shrink-0">
       {d > 0 && cell(d, "day")}
       {cell(h, "hrs")}
       {cell(m, "min")}
@@ -63,48 +63,50 @@ export default function QuizzesPage() {
         key={q.id}
         href={`/quiz/${q.id}`}
         className={cn(
-          "glass block p-4 transition hover:bg-white/[0.06]",
-          phase === "live" && "border-rose-400/40 shadow-lg shadow-rose-500/10"
+          "clay-card block p-4 sm:p-5 transition hover:scale-[1.01]",
+          phase === "live" && "border-rose-400/50 shadow-rose-500/20"
         )}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
               {phase === "live" && (
                 <span className="chip animate-pulse border-rose-400/50 font-mono text-rose-300">
                   <Radio className="h-3 w-3" /> LIVE
                 </span>
               )}
-              <span className="chip">{q.category}</span>
+              <span className="chip border-white/20 text-zinc-300">{q.category}</span>
             </div>
-            <div className="mt-1.5 truncate font-mono text-base font-bold text-zinc-100">{q.title}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
-              <span className="font-mono text-yellow-300">
+            <div className="mt-1.5 truncate font-mono text-base font-bold text-white sm:text-lg">{q.title}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-400">
+              <span className="font-mono text-amber-300 font-bold">
                 <Trophy className="mr-1 inline h-3.5 w-3.5" />
                 Prize ↁ{fmtNum(q.prizePoolCoins)}
               </span>
               <span className="font-mono">{q.entryFeeCoins > 0 ? `Entry ↁ${q.entryFeeCoins}` : "FREE entry"}</span>
               <span>
-                <Users className="mr-1 inline h-3.5 w-3.5" />
+                <Users className="mr-1 inline h-3.5 w-3.5 text-zinc-400" />
                 {people.length} joined
               </span>
               <span>
-                <Timer className="mr-1 inline h-3.5 w-3.5" />
+                <Timer className="mr-1 inline h-3.5 w-3.5 text-zinc-400" />
                 {q.durationMins} min
               </span>
             </div>
           </div>
-          {phase === "upcoming" && <Countdown iso={q.startTime} />}
-          {phase === "live" && <span className="btn-primary !px-4 !py-2 text-sm">Play →</span>}
+          <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
+            {phase === "upcoming" && <Countdown iso={q.startTime} />}
+            {phase === "live" && <span className="btn-primary !px-4 !py-2 text-xs sm:text-sm">Play →</span>}
+          </div>
         </div>
-        {phase === "upcoming" && <div className="mt-2 text-[11px] text-zinc-500">Starts {fmtDateTime(q.startTime)}</div>}
+        {phase === "upcoming" && <div className="mt-2 text-[11px] text-zinc-400 font-mono">Starts {fmtDateTime(q.startTime)}</div>}
         {phase === "ended" && winners.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-white/10">
             {winners.slice(0, 3).map((w) => {
               const u = state.users.find((x) => x.id === w.userId);
               return (
-                <span key={w.userId} className="chip border-amber-400/30 text-amber-300">
-                  <Crown className="h-3 w-3" /> #{w.rank} {u?.name.split(" ")[0]} · +ↁ{w.prizeWonCoins}
+                <span key={w.userId} className="chip border-amber-400/40 text-amber-300 font-mono">
+                  <Crown className="h-3 w-3 text-amber-400" /> #{w.rank} {u?.name.split(" ")[0]} · +ↁ{w.prizeWonCoins}
                 </span>
               );
             })}
@@ -118,11 +120,11 @@ export default function QuizzesPage() {
     <AppShell>
       <div className="mx-auto max-w-3xl space-y-8">
         <div>
-          <h1 className="flex items-center gap-2 font-mono text-2xl font-bold text-zinc-50">
-            <Swords className="h-6 w-6 text-violet-400" /> Weekly Tournaments
+          <h1 className="flex items-center gap-2 font-mono text-2xl font-bold text-white">
+            <Swords className="h-6 w-6 text-amber-400" strokeWidth={1.75} /> Weekly Tournaments
           </h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            Compete live, answer fast for score multipliers, and win EdgeCoin prize pools.
+          <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+            Compete live, answer fast for speed multipliers, and win EdgeCoin prize pools.
           </p>
         </div>
 

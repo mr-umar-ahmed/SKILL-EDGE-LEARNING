@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 16 — Master UI/UX Redesign (Neomorphism, Claymorphism, Bento Grid & Dual Themes) ✅
-- [x] [PLAN] Comprehensive UI/UX overhaul incorporating Neomorphism, Claymorphism 3D, Glassmorphism, Master Bento Grid layout, realistic skill cover images, linear outline icons, and dual-theme engine.
-- [x] [BUILD] Custom theme variables in `globals.css` (Dark Anima Agrawal `#1C1C1C` / `#302A18` / `#FDE4C3` + Light Stone Grey `#8C8A7F` / Soft Linen `#F7F2DA`), `Outfit` display font in `layout.tsx`, `ThemeToggle` in `AppShell.tsx`, realistic visual cover images for 12 skills in `data.ts`, and Bento Grid layouts on `/dashboard`, `/learn/[skillId]`, `/profile`, and `/admin`.
+## PHASE 17 — Contrast & Mobile Responsiveness Polish ✅
+- [x] [PLAN] Comprehensive audit of color contrast and text visibility across Light & Dark modes; complete mobile responsiveness overhaul across all 13 routes.
+- [x] [BUILD] Light mode high-contrast text color rules in `globals.css`, top header chip horizontal scrolling, mobile nav cleanup, Claymorphism 3D cards & Neomorphism updates across `/page`, `/dashboard`, `/learn/[skillId]`, `/learn/[skillId]/[levelId]`, `/quizzes`, `/payment`, `/leaderboard`, `/profile`, and `/practice`.
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(ui-redesign)`
+- [x] [DEPLOY] Committed as `fix(mobile-contrast)`
 
 ---
 
@@ -69,6 +69,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-07-31: Phase 14 Global Search & Command Palette engine created and pushed to GitHub (`feat(search)`).
 - 2026-07-31: Phase 15 Supercharged Admin Command Center created and pushed to GitHub (`feat(admin)`).
 - 2026-08-01: Phase 16 Master UI/UX Transformation created and pushed to GitHub (`feat(ui-redesign)`).
+- 2026-08-01: Phase 17 Contrast & Mobile Responsiveness Polish created and pushed to GitHub (`fix(mobile-contrast)`).
 
 ## Backlog / Next iteration
 

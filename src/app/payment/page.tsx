@@ -28,9 +28,9 @@ const PACKS = [
 ];
 
 const STATUS_UI: Record<TxnStatus, { icon: React.ReactNode; cls: string; label: string }> = {
-  APPROVED: { icon: <BadgeCheck className="h-3.5 w-3.5" />, cls: "border-emerald-400/30 text-emerald-300", label: "Approved" },
-  PENDING: { icon: <Clock className="h-3.5 w-3.5" />, cls: "border-amber-400/30 text-amber-300", label: "Pending verification" },
-  REJECTED: { icon: <XCircle className="h-3.5 w-3.5" />, cls: "border-rose-400/30 text-rose-300", label: "Rejected" },
+  APPROVED: { icon: <BadgeCheck className="h-3.5 w-3.5" />, cls: "border-emerald-400/40 text-emerald-300 font-mono", label: "Approved" },
+  PENDING: { icon: <Clock className="h-3.5 w-3.5" />, cls: "border-amber-400/40 text-amber-300 font-mono", label: "Pending" },
+  REJECTED: { icon: <XCircle className="h-3.5 w-3.5" />, cls: "border-rose-400/40 text-rose-300 font-mono", label: "Rejected" },
 };
 
 export default function PaymentPage() {
@@ -81,12 +81,12 @@ export default function PaymentPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="font-mono text-2xl font-bold text-zinc-50">EdgeCoin Wallet</h1>
-            <p className="mt-1 text-sm text-zinc-400">10 INR = 20 ↁ · 1 EdgeCoin = ₹0.50</p>
+            <h1 className="font-mono text-2xl font-bold text-white sm:text-3xl">EdgeCoin Wallet</h1>
+            <p className="mt-1 text-xs sm:text-sm text-zinc-400">10 INR = 20 ↁ · 1 EdgeCoin = ₹0.50</p>
           </div>
-          <button onClick={() => setBuyOpen(true)} className="btn-gold">
+          <button onClick={() => setBuyOpen(true)} className="btn-gold text-xs sm:text-sm">
             <QrCode className="h-4 w-4" /> Buy EdgeCoins
           </button>
         </div>
@@ -94,53 +94,55 @@ export default function PaymentPage() {
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard
             label="Balance"
-            value={<span className="neon-text-gold">{fmtCoins(currentUser.edgeCoins)}</span>}
+            value={<span className="text-amber-300">{fmtCoins(currentUser.edgeCoins)}</span>}
             sub={`≈ ₹${fmtNum(Math.round(currentUser.edgeCoins / INR_TO_COINS))}`}
-            icon={<Wallet2 className="h-4 w-4" />}
+            icon={<Wallet2 className="h-4 w-4" strokeWidth={1.75} />}
             accent="#eab308"
           />
-          <StatCard label="Earned" value={`+${fmtNum(earned)}`} sub="missions & prizes" icon={<ArrowDownLeft className="h-4 w-4" />} accent="#10b981" />
-          <StatCard label="Spent" value={`-${fmtNum(spent)}`} sub="courses & entries" icon={<ArrowUpRight className="h-4 w-4" />} accent="#f43f5e" />
-          <StatCard label="Pending" value={pending.length} sub="awaiting admin review" icon={<Clock className="h-4 w-4" />} accent="#f59e0b" />
+          <StatCard label="Earned" value={`+${fmtNum(earned)}`} sub="missions & prizes" icon={<ArrowDownLeft className="h-4 w-4" strokeWidth={1.75} />} accent="#10b981" />
+          <StatCard label="Spent" value={`-${fmtNum(spent)}`} sub="courses & entries" icon={<ArrowUpRight className="h-4 w-4" strokeWidth={1.75} />} accent="#f43f5e" />
+          <StatCard label="Pending" value={pending.length} sub="awaiting admin review" icon={<Clock className="h-4 w-4" strokeWidth={1.75} />} accent="#f59e0b" />
         </div>
 
-        <div>
+        <div className="clay-card p-4 sm:p-6">
           <SectionTitle>Transaction Ledger</SectionTitle>
-          <div className="glass divide-y divide-white/[0.05]">
+          <div className="divide-y divide-white/[0.05]">
             {myTxns.length === 0 && (
-              <div className="p-8 text-center text-sm text-zinc-500">No transactions yet. Complete a mission to earn your first ↁ!</div>
+              <div className="p-8 text-center text-xs text-zinc-500">No transactions yet. Complete a mission to earn your first ↁ!</div>
             )}
             {myTxns.map((t) => {
               const st = STATUS_UI[t.status];
               return (
-                <div key={t.id} className="flex items-center gap-3 px-4 py-3">
-                  <span
-                    className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                      t.amountCoins >= 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
-                    )}
-                  >
-                    {t.amountCoins >= 0 ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm text-zinc-200">{t.note}</div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
-                      <span className="font-mono">{t.type}</span>
-                      {t.utrNumber && <span className="font-mono">UTR {t.utrNumber}</span>}
-                      <span>{timeAgo(t.createdAt)}</span>
+                <div key={t.id} className="flex items-center justify-between gap-3 py-3 text-xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold",
+                        t.amountCoins >= 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
+                      )}
+                    >
+                      {t.amountCoins >= 0 ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-semibold text-white">{t.note}</div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] text-zinc-400 font-mono">
+                        <span>{t.type}</span>
+                        {t.utrNumber && <span>UTR {t.utrNumber}</span>}
+                        <span>{timeAgo(t.createdAt)}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <div
                       className={cn(
                         "font-mono text-sm font-bold",
-                        t.amountCoins >= 0 ? "text-emerald-400" : "text-rose-400"
+                        t.amountCoins >= 0 ? "text-amber-300" : "text-rose-400"
                       )}
                     >
                       {t.amountCoins >= 0 ? "+" : ""}
                       {fmtNum(t.amountCoins)}ↁ
                     </div>
-                    <span className={cn("chip mt-1", st.cls)}>
+                    <span className={cn("chip mt-1 text-[10px]", st.cls)}>
                       {st.icon} {st.label}
                     </span>
                   </div>
@@ -151,52 +153,52 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      {/* buy modal */}
+      {/* Buy Modal */}
       <Modal open={buyOpen} onClose={closeBuy} title={submitted ? "Payment Submitted" : "💰 Buy EdgeCoins via UPI"}>
         {!submitted ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {PACKS.map((p) => (
                 <button
                   key={p.inr}
                   onClick={() => setAmountInr(p.inr)}
                   className={cn(
-                    "rounded-xl border p-2.5 text-center transition",
+                    "neo-button p-2.5 text-center transition",
                     amountInr === p.inr
-                      ? "border-yellow-400/60 bg-yellow-500/10"
-                      : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                      ? "border-amber-400/60 bg-amber-500/15"
+                      : "text-zinc-300"
                   )}
                 >
-                  <div className="font-mono text-sm font-bold text-zinc-100">₹{p.inr}</div>
-                  <div className="font-mono text-[11px] text-yellow-300">ↁ{p.inr * INR_TO_COINS}</div>
-                  <div className="mt-0.5 text-[10px] text-zinc-500">{p.tag}</div>
+                  <div className="font-mono text-sm font-bold text-white">₹{p.inr}</div>
+                  <div className="font-mono text-[11px] text-amber-300 font-bold">ↁ{p.inr * INR_TO_COINS}</div>
+                  <div className="mt-0.5 text-[10px] text-zinc-400">{p.tag}</div>
                 </button>
               ))}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <input
                 type="number"
                 min={10}
                 value={amountInr}
                 onChange={(e) => setAmountInr(Math.max(0, Number(e.target.value)))}
-                className="input-dark flex-1"
+                className="input-dark flex-1 font-mono"
                 placeholder="Custom amount (₹)"
               />
-              <div className="chip border-yellow-400/40 font-mono text-base text-yellow-300">
+              <div className="chip border-amber-400/40 font-mono text-sm sm:text-base text-amber-300 shrink-0">
                 <Coins className="h-4 w-4" /> ↁ{fmtNum(coins)}
               </div>
             </div>
 
-            <div className="glass flex flex-col items-center gap-3 p-4">
+            <div className="clay-card flex flex-col items-center gap-3 p-4">
               <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
                 Scan & pay with any UPI app
               </div>
               <UpiQr seed={`skilledge@upi|${amountInr}`} />
-              <div className="font-mono text-sm text-zinc-200">
-                skilledge@upi · <span className="text-yellow-300">₹{fmtNum(amountInr)}</span>
+              <div className="font-mono text-sm text-white font-bold">
+                skilledge@upi · <span className="text-amber-300">₹{fmtNum(amountInr)}</span>
               </div>
-              <div className="text-center text-[11px] text-zinc-500">
+              <div className="text-center text-[11px] text-zinc-400">
                 Pay ₹{fmtNum(amountInr)}, then paste the UTR / Transaction ID from your UPI app below.
               </div>
             </div>
@@ -209,10 +211,10 @@ export default function PaymentPage() {
               inputMode="numeric"
             />
 
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-4 py-3 text-sm text-zinc-400 transition hover:border-cyan-400/40 hover:text-zinc-200">
-              <ImageUp className="h-5 w-5 text-cyan-400" />
+            <label className="neo-button flex cursor-pointer items-center gap-3 p-3.5 text-xs text-zinc-300 transition hover:text-white">
+              <ImageUp className="h-5 w-5 text-amber-400" />
               {proofName ? (
-                <span className="truncate text-zinc-200">📎 {proofName}</span>
+                <span className="truncate text-white font-semibold">📎 {proofName}</span>
               ) : (
                 "Attach payment screenshot (optional)"
               )}
@@ -224,22 +226,22 @@ export default function PaymentPage() {
               />
             </label>
 
-            {error && <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm text-rose-300">{error}</div>}
+            {error && <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 p-3 text-xs text-rose-300">{error}</div>}
 
-            <button onClick={submit} className="btn-gold w-full" disabled={amountInr < 10}>
+            <button onClick={submit} className="btn-gold w-full text-xs sm:text-sm" disabled={amountInr < 10}>
               Submit for verification → ↁ{fmtNum(coins)}
             </button>
           </div>
         ) : (
-          <div className="text-center">
+          <div className="text-center py-4">
             <ShieldQuestion className="mx-auto h-14 w-14 text-amber-400" />
-            <div className="mt-3 font-mono text-lg font-bold text-zinc-100">Pending Verification</div>
-            <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-400">
-              Your payment of <span className="font-mono text-yellow-300">₹{fmtNum(amountInr)}</span> is queued for admin
-              review. <span className="font-mono text-yellow-300">ↁ{fmtNum(coins)}</span> will land in your wallet with an
-              instant notification once approved — usually within minutes.
+            <div className="mt-3 font-mono text-lg font-bold text-white">Pending Verification</div>
+            <p className="mx-auto mt-2 max-w-sm text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              Your payment of <span className="font-mono text-amber-300 font-bold">₹{fmtNum(amountInr)}</span> is queued for admin
+              review. <span className="font-mono text-amber-300 font-bold">ↁ{fmtNum(coins)}</span> will land in your wallet with an
+              instant notification once approved.
             </p>
-            <button onClick={closeBuy} className="btn-primary mt-5 w-full">
+            <button onClick={closeBuy} className="btn-primary mt-5 w-full text-xs sm:text-sm">
               Got it
             </button>
           </div>

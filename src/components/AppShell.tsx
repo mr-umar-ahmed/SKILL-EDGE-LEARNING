@@ -274,7 +274,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
             <div className="hidden lg:block" />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto py-1 sm:gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
                 className="neo-button chip hidden font-mono transition hover:scale-105 sm:inline-flex"
@@ -310,11 +310,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <DailyMissionsModal open={missionsOpen} onClose={() => setMissionsOpen(false)} />
         <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-        <main className="flex-1 px-4 pb-28 pt-5 lg:pb-10">{children}</main>
+        <main className="flex-1 px-3 pb-28 pt-4 sm:px-6 lg:pb-10">{children}</main>
       </div>
 
       {/* Mobile Bottom Nav with Linear Outline Icons */}
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] backdrop-blur-2xl lg:hidden">
+      <nav className="pb-safe glass-strong fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] lg:hidden">
         <div className="mx-auto flex max-w-md items-stretch justify-around">
           {nav.map((item) => {
             const active = pathname.startsWith(item.href);
@@ -324,24 +324,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition",
-                  active ? "text-amber-300" : "text-zinc-400 hover:text-white"
+                  "flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-semibold transition",
+                  active ? "text-amber-300 font-bold" : "text-zinc-400 hover:text-white"
                 )}
               >
-                <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_8px_rgba(253,228,195,0.7)]")} strokeWidth={1.5} />
+                <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_8px_rgba(253,228,195,0.7)]")} strokeWidth={active ? 2 : 1.5} />
                 {item.label}
               </Link>
             );
           })}
-          {!isAdmin && (
-            <Link
-              href="/profile"
-              className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold text-zinc-400 hover:text-white"
-            >
-              <UserRound className="h-5 w-5" strokeWidth={1.5} />
-              Profile
-            </Link>
-          )}
         </div>
       </nav>
     </div>

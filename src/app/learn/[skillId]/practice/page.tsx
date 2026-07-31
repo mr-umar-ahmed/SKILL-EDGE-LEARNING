@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, ChevronRight, Layers, RotateCcw, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Layers, RotateCcw, Zap } from "lucide-react";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
@@ -8,7 +8,6 @@ import { AppShell } from "@/components/AppShell";
 import { fireConfetti } from "@/components/confetti";
 import { playClickSound, playVictorySound, playXpSound } from "@/lib/sound";
 import { useApp } from "@/lib/store";
-import { cn } from "@/lib/utils";
 
 export default function PracticeDeckPage() {
   const params = useParams<{ skillId: string }>();
@@ -74,19 +73,19 @@ export default function PracticeDeckPage() {
       <div className="mx-auto max-w-xl space-y-6">
         <Link
           href={`/learn/${skill.id}`}
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-zinc-400 hover:text-zinc-200"
+          className="inline-flex items-center gap-1.5 font-mono text-xs text-zinc-400 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" /> Back to {skill.title} Map
         </Link>
 
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div>
-            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-cyan-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-amber-400">
               <Layers className="h-4 w-4" /> Flashcard Recall Deck
             </div>
             <h1 className="text-xl font-bold text-white">{skill.title} Rapid Practice</h1>
           </div>
-          <span className="chip border-cyan-400/30 font-mono text-xs text-cyan-300">
+          <span className="chip border-amber-400/40 font-mono text-xs text-amber-300">
             {currentIndex + 1} / {deck.length} Cards
           </span>
         </div>
@@ -96,16 +95,16 @@ export default function PracticeDeckPage() {
             {/* 3D Flip Card Container */}
             <div
               onClick={handleFlip}
-              className="glass-strong min-h-72 cursor-pointer relative rounded-3xl p-8 flex flex-col justify-between transition-all duration-500 transform hover:scale-[1.01] border-cyan-500/20"
+              className="clay-card min-h-72 cursor-pointer relative p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 transform hover:scale-[1.01]"
               style={{
                 boxShadow: isFlipped
                   ? `0 0 30px ${skill.color}40`
-                  : "0 10px 30px rgba(0,0,0,0.5)",
+                  : undefined,
               }}
             >
-              <div className="flex items-center justify-between text-xs font-mono text-zinc-500">
+              <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
                 <span>Tier {currentCard.levelNumber} · {currentCard.tier}</span>
-                <span className="text-cyan-400 font-semibold">
+                <span className="text-amber-400 font-bold">
                   {isFlipped ? "Answer Side" : "Tap card to flip 🔄"}
                 </span>
               </div>
@@ -113,7 +112,7 @@ export default function PracticeDeckPage() {
               <div className="my-6 text-center">
                 {!isFlipped ? (
                   <div>
-                    <h3 className="text-lg font-bold text-white leading-relaxed">
+                    <h3 className="text-base sm:text-lg font-bold text-white leading-relaxed">
                       {currentCard.prompt}
                     </h3>
                     <p className="mt-4 text-xs font-mono text-zinc-400">
@@ -125,31 +124,31 @@ export default function PracticeDeckPage() {
                     <div className="inline-block rounded-xl bg-emerald-500/10 border border-emerald-400/30 px-3 py-1 font-mono text-xs font-bold text-emerald-300 mb-3">
                       ✓ Correct Key Concept
                     </div>
-                    <h4 className="text-base font-bold text-emerald-200">
+                    <h4 className="text-sm sm:text-base font-bold text-emerald-200 leading-relaxed">
                       {currentCard.options[currentCard.answerIndex]}
                     </h4>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center justify-between font-mono text-xs text-zinc-500 border-t border-white/5 pt-4">
+              <div className="flex items-center justify-between font-mono text-[11px] text-zinc-400 border-t border-white/10 pt-4">
                 <span>{skill.category}</span>
                 <span>Card {currentIndex + 1} of {deck.length}</span>
               </div>
             </div>
 
-            {/* Self-Rating Action Controls */}
+            {/* Action Buttons */}
             {isFlipped && (
-              <div className="grid grid-cols-2 gap-4 animate-in fade-in duration-300">
+              <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                 <button
                   onClick={() => handleAnswer(false)}
-                  className="rounded-2xl border border-rose-500/30 bg-rose-500/10 py-4 font-mono text-xs font-bold text-rose-300 transition hover:bg-rose-500/20"
+                  className="neo-button p-3.5 font-mono text-xs font-bold text-rose-300 hover:text-rose-200"
                 >
                   Review Later 🔁
                 </button>
                 <button
                   onClick={() => handleAnswer(true)}
-                  className="btn-primary py-4 font-mono text-xs font-bold shadow-lg shadow-cyan-500/20"
+                  className="btn-primary p-3.5 font-mono text-xs font-bold"
                 >
                   Got It! (+10 XP) ⚡
                 </button>
@@ -159,11 +158,11 @@ export default function PracticeDeckPage() {
         )}
 
         {isCompleted && (
-          <div className="glass-strong rounded-3xl p-8 text-center space-y-6">
+          <div className="clay-card p-8 text-center space-y-6">
             <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400 animate-bounce" />
             <div>
               <h2 className="text-2xl font-black text-white">Deck Completed!</h2>
-              <p className="mt-1 text-sm text-zinc-300">
+              <p className="mt-1 text-xs sm:text-sm text-zinc-300">
                 You mastered {masteredCount} out of {deck.length} flashcards in this session.
               </p>
             </div>
@@ -175,10 +174,10 @@ export default function PracticeDeckPage() {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button onClick={handleRestart} className="btn-ghost flex-1">
+              <button onClick={handleRestart} className="btn-ghost flex-1 text-xs sm:text-sm">
                 <RotateCcw className="h-4 w-4" /> Practice Again
               </button>
-              <Link href={`/learn/${skill.id}`} className="btn-primary flex-1">
+              <Link href={`/learn/${skill.id}`} className="btn-primary flex-1 text-xs sm:text-sm">
                 Skill Map <ChevronRight className="h-4 w-4" />
               </Link>
             </div>

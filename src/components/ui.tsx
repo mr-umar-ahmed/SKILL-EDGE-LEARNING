@@ -110,17 +110,17 @@ export function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="glass relative overflow-hidden p-4">
+    <div className="clay-card relative overflow-hidden p-3.5 sm:p-4">
       <div
         className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-20 blur-2xl"
         style={{ background: accent }}
       />
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">{label}</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">{label}</span>
         {icon && <span style={{ color: accent }}>{icon}</span>}
       </div>
-      <div className="mt-1.5 font-mono text-2xl font-bold text-zinc-50">{value}</div>
-      {sub && <div className="mt-0.5 text-xs text-zinc-400">{sub}</div>}
+      <div className="mt-1 font-mono text-xl font-black text-white sm:text-2xl">{value}</div>
+      {sub && <div className="mt-0.5 text-[11px] text-zinc-400 truncate">{sub}</div>}
     </div>
   );
 }
