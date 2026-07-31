@@ -51,6 +51,9 @@ interface AppApi {
   markNotificationsRead: () => void;
   updateProfile: (avatar: string, title?: string, avatarFrame?: string) => void;
   claimDailyMission: (missionId: string, coinReward: number, xpReward: number) => void;
+  adminBroadcastNotification: (message: string, targetUserId?: string) => void;
+  adminIssueCertificate: (userId: string, skillId: string, levelTier: number) => void;
+  importDatabase: (jsonStr: string) => { ok: boolean; reason?: string };
   resetDemoData: () => void;
 }
 
@@ -539,6 +542,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const adminBroadcastNotification = useCallback((message: string, targetUserId?: string) => {
+    setState((s) => {
+      const targets = targetUserId ? [targetUserId] : s.users.map((u) => u.id);
+      const newNotifs = targets.map((userId) => makeNotification(userId, message, "info"));
+      return {
+        ...s,
+        notifications: [...newNotifs, ...s.notifications],
+      };
+    });
+  }, []);
+
+  const adminIssueCertificate = useCallback((userId: string, skillId: string, levelTier: number) => {
+    setState((s) => {
+      const u = s.users.find((x) => x.id === userId);
+      const sk = SKILLS.find((x) => x.id === skillId);
+      if (!u || !sk) return s;
+
+      const cert: Certificate = {
+        id: uid("cert"),
+        userId,
+        skillId,
+        levelTier,
+        verificationCode: verificationHash(`${userId}:${skillId}:${levelTier}`),
+        issuedAt: new Date().toISOString(),
+      };
+
+      return {
+        ...s,
+        certificates: [cert, ...s.certificates],
+        notifications: [
+          makeNotification(userId, `🏆 Admin issued you a Tier ${levelTier} Certificate in ${sk.title}!`),
+          ...s.notifications,
+        ],
+      };
+    });
+  }, []);
+
+  const importDatabase = useCallback((jsonStr: string) => {
+    try {
+      const parsed = JSON.parse(jsonStr) as AppState;
+      if (!parsed || !Array.isArray(parsed.users) || !Array.isArray(parsed.transactions)) {
+        return { ok: false, reason: "Invalid JSON database structure." };
+      }
+      setState(parsed);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, reason: (e as Error).message || "JSON parsing error" };
+    }
+  }, []);
+
   const resetDemoData = useCallback(() => {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -571,6 +624,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     markNotificationsRead,
     updateProfile,
     claimDailyMission,
+    adminBroadcastNotification,
+    adminIssueCertificate,
+    importDatabase,
     resetDemoData,
   };
 

@@ -128,6 +128,7 @@ export interface LevelOverride {
   youtubeVideoId?: string;
   minPassScore?: number;
   coinReward?: number;
+  questions?: Question[];
 }
 
 export interface AppState {

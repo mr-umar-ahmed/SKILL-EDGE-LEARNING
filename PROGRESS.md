@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 14 — Global Search & Command Palette Engine ✅
-- [x] [PLAN] Instant global search modal filtering across 12 skills, 120 levels, tournaments, and pages with `Ctrl+K` shortcut support
-- [x] [BUILD] `src/components/SearchModal.tsx`, top bar trigger button, and global shortcut listener in `AppShell.tsx`
-- [x] [TEST] `npm run build` green (13/13 routes generated)
-- [x] [DEPLOY] Committed as `feat(search)`
+## PHASE 15 — Supercharged Admin Command Center ✅
+- [x] [PLAN] 7-hub admin command center with Level Question Bank Manager, Manual Cert Minting, System Broadcasts, Audit Trail, and JSON Backup/Restore
+- [x] [BUILD] `src/app/admin/page.tsx` (/admin route), `adminBroadcastNotification`, `adminIssueCertificate`, `importDatabase` in `src/lib/store.tsx`
+- [x] [TEST] `npx tsc --noEmit` green (0 type errors across all 13 routes)
+- [x] [DEPLOY] Committed as `feat(admin)`
 
 ---
 
@@ -67,9 +67,9 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-07-31: Phase 12 Daily Quests & Missions engine created and pushed to GitHub (`feat(missions)`).
 - 2026-07-31: Phase 13 Rapid Recall Flashcards Practice engine created and pushed to GitHub (`feat(practice)`).
 - 2026-07-31: Phase 14 Global Search & Command Palette engine created and pushed to GitHub (`feat(search)`).
+- 2026-07-31: Phase 15 Supercharged Admin Command Center created and pushed to GitHub (`feat(admin)`).
 
 ## Backlog / Next iteration
 
 - Real auth & Supabase integration
-- Custom admin question bank builder
 
