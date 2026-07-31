@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Flame,
   LayoutDashboard,
+  Search,
   ShieldCheck,
   Swords,
   Target,
@@ -22,6 +23,7 @@ import { useApp } from "@/lib/store";
 import { cn, fmtNum, levelForXp, timeAgo } from "@/lib/utils";
 import { getAudioMuted, playClickSound, setAudioMuted } from "@/lib/sound";
 import { DailyMissionsModal } from "./DailyMissionsModal";
+import { SearchModal } from "./SearchModal";
 
 function SoundToggle() {
   const [muted, setMute] = useState(false);
@@ -86,7 +88,7 @@ function NotificationsBell() {
         className="relative rounded-xl border border-white/10 bg-white/[0.04] p-2 text-zinc-300 transition hover:bg-white/[0.1]"
         aria-label="Notifications"
       >
-        <Bell className="h-4.5 w-4.5 h-[18px] w-[18px]" />
+        <Bell className="h-[18px] w-[18px]" />
         {unread > 0 && (
           <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-mono text-[10px] font-bold text-white">
             {unread}
@@ -172,6 +174,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { currentUser, isAdmin } = useApp();
   const [missionsOpen, setMissionsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const badgeLevel = levelForXp(currentUser.xp);
   const nav = isAdmin ? [...NAV, { href: "/admin", label: "Admin", icon: ShieldCheck }] : NAV;
 
@@ -231,6 +234,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="hidden lg:block" />
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setSearchOpen(true)}
+                className="chip hidden border-white/10 bg-white/[0.04] font-mono text-zinc-300 transition hover:bg-white/10 sm:inline-flex"
+                title="Search skills (Ctrl+K)"
+              >
+                <Search className="h-3.5 w-3.5 text-zinc-400" /> Search <span className="text-[10px] text-zinc-500">Ctrl+K</span>
+              </button>
+              <button
                 onClick={() => setMissionsOpen(true)}
                 className="chip border-cyan-400/40 bg-cyan-500/10 font-mono text-cyan-300 transition hover:bg-cyan-500/20"
                 title="Daily Cyber Quests"
@@ -254,6 +264,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <DailyMissionsModal open={missionsOpen} onClose={() => setMissionsOpen(false)} />
+        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
         <main className="flex-1 px-4 pb-28 pt-5 lg:pb-10">{children}</main>
       </div>
@@ -279,7 +290,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
           {!isAdmin && (
             <Link
-              href="/dashboard"
+              href="/profile"
               className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-300"
             >
               <UserRound className="h-5 w-5" />

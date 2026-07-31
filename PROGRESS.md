@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 13 — Rapid Recall Flashcards Practice Engine ✅
-- [x] [PLAN] Interactive 3D flip card deck engine with self-evaluation, bonus XP rewards, and SFX triggers
-- [x] [BUILD] `src/app/learn/[skillId]/practice/page.tsx` (/learn/[skillId]/practice route) and CTA button in `src/app/learn/[skillId]/page.tsx`
+## PHASE 14 — Global Search & Command Palette Engine ✅
+- [x] [PLAN] Instant global search modal filtering across 12 skills, 120 levels, tournaments, and pages with `Ctrl+K` shortcut support
+- [x] [BUILD] `src/components/SearchModal.tsx`, top bar trigger button, and global shortcut listener in `AppShell.tsx`
 - [x] [TEST] `npm run build` green (13/13 routes generated)
-- [x] [DEPLOY] Committed as `feat(practice)`
+- [x] [DEPLOY] Committed as `feat(search)`
 
 ---
 
@@ -66,9 +66,10 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-07-31: Phase 11 Global Leaderboard Hub created and pushed to GitHub (`feat(leaderboard)`).
 - 2026-07-31: Phase 12 Daily Quests & Missions engine created and pushed to GitHub (`feat(missions)`).
 - 2026-07-31: Phase 13 Rapid Recall Flashcards Practice engine created and pushed to GitHub (`feat(practice)`).
+- 2026-07-31: Phase 14 Global Search & Command Palette engine created and pushed to GitHub (`feat(search)`).
 
 ## Backlog / Next iteration
 
-- Real-time Skill Search modal (Ctrl+K)
 - Real auth & Supabase integration
+- Custom admin question bank builder
 
