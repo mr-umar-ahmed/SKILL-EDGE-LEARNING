@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 24 — Production User Auth Flow & Fixed Admin Credentials ✅
-- [x] [PLAN] Reconfigure full authentication flow: Landing page (`/`) → Launch OS redirects to `/login` if unauthenticated; single fixed Admin account (`skilledgelearning@gmail.com` / `seladmin`); new user signups create standard `USER` accounts with 100 ↁ bonus; clean user profile dropdown with Sign Out.
-- [x] [BUILD] Updated `src/lib/data.ts`, `src/lib/store.tsx`, `src/components/AppShell.tsx`, `src/app/page.tsx`, `src/app/login/page.tsx`, and `src/app/register/page.tsx`.
+## PHASE 25 — Mobile Responsive Hamburger Drawer Navigation ✅
+- [x] [PLAN] Replace cramped topbar chip scrolling on mobile with a clean Hamburger Menu button in the top-right header and an off-canvas Mobile Sheet Drawer (`MobileDrawer`) housing user profile, quick search, quests, navigation routes, skill categories, and sign out.
+- [x] [BUILD] Updated `src/components/AppShell.tsx` with `MobileDrawer` component & `Menu` toggle icon.
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(authentic-auth-flow)`
+- [x] [DEPLOY] Committed as `feat(mobile-hamburger-navbar)`
 
 ---
 
@@ -77,6 +77,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-01: Phase 22 Navigation Bar Color Overhaul & Full Authentication System created and pushed to GitHub (`feat(navbar-colors-and-auth)`).
 - 2026-08-01: Phase 23 Production Readiness Audit & Clean Code Release created and pushed to GitHub (`feat(production-ready-release)`).
 - 2026-08-01: Phase 24 Production User Auth Flow & Fixed Admin Credentials created and pushed to GitHub (`feat(authentic-auth-flow)`).
+- 2026-08-01: Phase 25 Mobile Responsive Hamburger Drawer Navigation created and pushed to GitHub (`feat(mobile-hamburger-navbar)`).
 
 ## Backlog / Next iteration
 
