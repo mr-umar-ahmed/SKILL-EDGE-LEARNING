@@ -32,6 +32,7 @@ interface AppApi {
   skills: Skill[];
   currentUser: User;
   isAdmin: boolean;
+  isAuthenticated: boolean;
   progressFor: (userId: string) => UserProgress;
   myProgress: UserProgress;
   isLevelUnlocked: (skill: Skill, levelNumber: number, userId?: string) => boolean;
@@ -102,7 +103,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [state.progress]
   );
 
-  const myProgress = progressFor(currentUser.id);
+  const myProgress = currentUser ? progressFor(currentUser.id) : { completed: {}, premiumUnlocks: {} };
 
   const levelWithOverrides = useCallback(
     (level: Level): Level => {
@@ -122,7 +123,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const isLevelUnlocked = useCallback(
     (skill: Skill, levelNumber: number, userId?: string) => {
-      const prog = progressFor(userId ?? currentUser.id);
+      const targetUid = userId ?? currentUser?.id;
+      if (!targetUid) return levelNumber === 1;
+      const prog = progressFor(targetUid);
       const level = skill.levels.find((l) => l.levelNumber === levelNumber);
       if (!level) return false;
       if (level.isPremium && !prog.premiumUnlocks[skill.id]) return false;
@@ -130,7 +133,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const prev = skill.levels.find((l) => l.levelNumber === levelNumber - 1);
       return !!prev && !!prog.completed[prev.id];
     },
-    [currentUser.id, progressFor]
+    [currentUser?.id, progressFor]
   );
 
   const switchUser = useCallback((userId: string) => {
@@ -604,19 +607,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     (email: string, password?: string) => {
-      const u = state.users.find((x) => x.email.toLowerCase() === email.toLowerCase());
+      const cleanEmail = email.trim().toLowerCase();
+      // Fixed Admin Credentials Check
+      if (cleanEmail === "skilledgelearning@gmail.com") {
+        if (password === "seladmin") {
+          let adminUser = state.users.find((x) => x.id === "u-admin" || x.email.toLowerCase() === "skilledgelearning@gmail.com");
+          if (!adminUser) {
+            adminUser = {
+              id: "u-admin",
+              name: "Skill Edge Admin",
+              email: "skilledgelearning@gmail.com",
+              password: "seladmin",
+              role: "ADMIN",
+              avatar: "🛡️",
+              title: "Super Admin",
+              avatarFrame: "gold",
+              edgeCoins: 1000,
+              xp: 5000,
+              streakCount: 30,
+              lastActiveDay: todayKey(),
+              createdAt: new Date().toISOString(),
+            };
+            setState((s) => ({ ...s, users: [...s.users, adminUser!], currentUserId: adminUser!.id }));
+          } else {
+            setState((s) => ({ ...s, currentUserId: adminUser!.id }));
+          }
+          return { ok: true, user: adminUser };
+        } else {
+          return { ok: false, reason: "Incorrect password for Admin account." };
+        }
+      }
+
+      // Standard User Login
+      const u = state.users.find((x) => x.email.toLowerCase() === cleanEmail);
       if (u) {
+        if (u.password && password && u.password !== password) {
+          return { ok: false, reason: "Incorrect password." };
+        }
         setState((s) => ({ ...s, currentUserId: u.id }));
         return { ok: true, user: u };
       }
-      return { ok: false, reason: "Account not found with this email." };
+      return { ok: false, reason: "No account found with this email. Please sign up!" };
     },
     [state.users]
   );
 
   const register = useCallback(
-    (name: string, email: string, password?: string, role: "USER" | "ADMIN" = "USER", avatar: string = "🚀") => {
-      const existing = state.users.find((x) => x.email.toLowerCase() === email.toLowerCase());
+    (name: string, email: string, password?: string, _role?: "USER" | "ADMIN", avatar: string = "🚀") => {
+      const cleanEmail = email.trim().toLowerCase();
+      const existing = state.users.find((x) => x.email.toLowerCase() === cleanEmail);
       if (existing) {
         setState((s) => ({ ...s, currentUserId: existing.id }));
         return { ok: true, user: existing };
@@ -625,13 +664,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const newUser: User = {
         id: newId,
         name: name || email.split("@")[0],
-        email,
+        email: cleanEmail,
         password,
-        role,
+        role: "USER", // Strictly standard USER role
         avatar,
-        title: role === "ADMIN" ? "System Admin" : "Novice Builder",
+        title: "Novice Builder",
         avatarFrame: "cyan",
-        edgeCoins: 100,
+        edgeCoins: 100, // welcome bonus
         xp: 0,
         streakCount: 1,
         lastActiveDay: todayKey(),
@@ -652,7 +691,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(() => {
-    setState((s) => ({ ...s, currentUserId: "u-student" }));
+    setState((s) => ({ ...s, currentUserId: "" }));
   }, []);
 
   const api: AppApi = {
@@ -660,7 +699,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     hydrated,
     skills,
     currentUser,
-    isAdmin: currentUser.role === "ADMIN",
+    isAdmin: Boolean(currentUser && currentUser.role === "ADMIN"),
+    isAuthenticated: Boolean(currentUser),
     progressFor,
     myProgress,
     isLevelUnlocked,

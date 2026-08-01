@@ -15,13 +15,12 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"USER" | "ADMIN">("USER");
   const [avatar, setAvatar] = useState("🚀");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
-    const res = register(name, email, password, role, avatar);
+    const res = register(name, email, password, "USER", avatar);
     if (res.ok) {
       playClickSound();
       router.push("/dashboard");
@@ -33,13 +32,13 @@ export default function RegisterPage() {
       <div className="clay-card w-full max-w-md p-6 sm:p-8 space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl btn-primary font-mono text-2xl font-black shadow-xl shadow-amber-500/20">
+          <Link href="/" className="inline-flex h-14 w-14 items-center justify-center rounded-3xl btn-primary font-mono text-2xl font-black shadow-xl shadow-amber-500/20">
             S
-          </div>
+          </Link>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
-            Create Account
+            Create Learner Account
           </h1>
-          <p className="text-xs text-zinc-400">Join Skill Edge OS & claim 100 ↁ bonus coins</p>
+          <p className="text-xs text-zinc-400">Join Skill Edge OS & claim 100 ↁ welcome bonus</p>
         </div>
 
         {/* Register Form */}
@@ -104,31 +103,6 @@ export default function RegisterPage() {
                   {emoji}
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Account Role Selection */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-300">Select Role</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setRole("USER")}
-                className={`neo-button p-2.5 text-xs font-bold transition text-center ${
-                  role === "USER" ? "bg-amber-500/20 border border-amber-400 text-amber-300" : "text-zinc-400"
-                }`}
-              >
-                🎓 Learner
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("ADMIN")}
-                className={`neo-button p-2.5 text-xs font-bold transition text-center ${
-                  role === "ADMIN" ? "bg-amber-500/20 border border-amber-400 text-amber-300" : "text-zinc-400"
-                }`}
-              >
-                👑 System Admin
-              </button>
             </div>
           </div>
 

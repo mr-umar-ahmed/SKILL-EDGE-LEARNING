@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 23 — Production Readiness Audit & Clean Code Release ✅
-- [x] [PLAN] Conduct full codebase audit for production deployment readiness across all 15 routes (`/`, `/dashboard`, `/learn/[skillId]`, `/learn/[skillId]/[levelId]`, `/learn/[skillId]/practice`, `/quizzes`, `/quiz/[quizId]`, `/payment`, `/leaderboard`, `/profile`, `/admin`, `/certificate/[certId]`, `/login`, `/register`).
-- [x] [BUILD] Refactored type-safe navigation, clean state handlers, Web Audio fallbacks, and theme token bindings across all components.
+## PHASE 24 — Production User Auth Flow & Fixed Admin Credentials ✅
+- [x] [PLAN] Reconfigure full authentication flow: Landing page (`/`) → Launch OS redirects to `/login` if unauthenticated; single fixed Admin account (`skilledgelearning@gmail.com` / `seladmin`); new user signups create standard `USER` accounts with 100 ↁ bonus; clean user profile dropdown with Sign Out.
+- [x] [BUILD] Updated `src/lib/data.ts`, `src/lib/store.tsx`, `src/components/AppShell.tsx`, `src/app/page.tsx`, `src/app/login/page.tsx`, and `src/app/register/page.tsx`.
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(production-ready-release)`
+- [x] [DEPLOY] Committed as `feat(authentic-auth-flow)`
 
 ---
 
@@ -76,6 +76,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-01: Phase 21 Interactive Role Switcher Modal & Seamless Sidebar Color Harmony created and pushed to GitHub (`fix(role-switcher-and-theme-harmony)`).
 - 2026-08-01: Phase 22 Navigation Bar Color Overhaul & Full Authentication System created and pushed to GitHub (`feat(navbar-colors-and-auth)`).
 - 2026-08-01: Phase 23 Production Readiness Audit & Clean Code Release created and pushed to GitHub (`feat(production-ready-release)`).
+- 2026-08-01: Phase 24 Production User Auth Flow & Fixed Admin Credentials created and pushed to GitHub (`feat(authentic-auth-flow)`).
 
 ## Backlog / Next iteration
 

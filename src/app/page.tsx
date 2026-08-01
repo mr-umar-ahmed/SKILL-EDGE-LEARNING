@@ -1,27 +1,40 @@
 "use client";
 
-import { ArrowRight, Coins, Flame, GraduationCap, Swords, Trophy, Zap } from "lucide-react";
+import { ArrowRight, Coins, Flame, GraduationCap, ShieldCheck, Swords, Trophy, UserPlus, Zap } from "lucide-react";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
 
 export default function LandingPage() {
-  const { skills } = useApp();
+  const { skills, isAuthenticated } = useApp();
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
       {/* Header */}
-      <header className="flex items-center justify-between py-5">
+      <header className="flex items-center justify-between py-5 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <span className="clay-badge flex h-9 w-9 items-center justify-center bg-gradient-to-br from-amber-300 to-yellow-500 font-mono text-lg font-black text-black">
+          <span className="clay-badge flex h-9 w-9 items-center justify-center btn-primary font-mono text-lg font-black">
             S
           </span>
           <span className="font-mono text-lg font-bold tracking-tight text-white">
             SKILL<span className="text-amber-400">EDGE</span> OS
           </span>
         </div>
-        <Link href="/dashboard" className="btn-primary !py-2 text-xs sm:text-sm">
-          Launch App <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {isAuthenticated ? (
+            <Link href="/dashboard" className="btn-primary !py-2 text-xs sm:text-sm">
+              Dashboard <ArrowRight className="h-4 w-4" />
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="btn-ghost !py-2 text-xs sm:text-sm">
+                Sign In
+              </Link>
+              <Link href="/register" className="btn-primary !py-2 text-xs sm:text-sm">
+                Create Account <UserPlus className="h-4 w-4" />
+              </Link>
+            </>
+          )}
+        </div>
       </header>
 
       {/* Hero */}
@@ -37,13 +50,25 @@ export default function LandingPage() {
           12 trending skills. 10 tiers each — from Starter to Sovereign Master. Earn XP, EdgeCoins ↁ and verifiable
           certificates while you build real things.
         </p>
+
+        {/* Action Buttons */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/dashboard" className="btn-primary text-xs sm:text-sm">
-            Start Learning Free <ArrowRight className="h-4 w-4" />
+          <Link href={isAuthenticated ? "/dashboard" : "/login"} className="btn-primary text-xs sm:text-sm">
+            {isAuthenticated ? "Launch OS Dashboard" : "Get Started Now"} <ArrowRight className="h-4 w-4" />
           </Link>
           <Link href="/quizzes" className="btn-ghost text-xs sm:text-sm">
             <Swords className="h-4 w-4 text-amber-400" /> Weekly Tournaments
           </Link>
+        </div>
+
+        {/* Admin Credentials Info Callout */}
+        <div className="mt-6 mx-auto max-w-md neo-box p-3 border border-amber-400/30 text-xs text-zinc-300 font-mono text-center flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-center gap-1.5 font-bold text-amber-400">
+            <ShieldCheck className="h-4 w-4" /> Admin Login:
+          </div>
+          <div>
+            <span className="text-white font-bold">skilledgelearning@gmail.com</span> · <span className="text-amber-300">seladmin</span>
+          </div>
         </div>
 
         {/* Stats Strip */}
@@ -68,35 +93,35 @@ export default function LandingPage() {
         <h2 className="mb-6 text-center font-mono text-xs font-bold uppercase tracking-[0.25em] text-zinc-400">
           The 12 Trending Skill Tracks
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {skills.map((skill) => (
-            <Link
-              key={skill.id}
-              href={`/learn/${skill.id}`}
-              className="clay-card group overflow-hidden transition-all duration-300 hover:scale-105"
-            >
+            <div key={skill.id} className="clay-card group overflow-hidden p-0">
               <div className="relative h-32 w-full overflow-hidden">
                 <img
                   src={skill.imageUrl}
                   alt={skill.title}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-                <div className="absolute bottom-2 left-3 right-3">
-                  <span className="chip border-white/20 bg-black/60 font-mono text-[9px] text-white">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3">
+                  <span className="chip mb-1 border-white/20 bg-black/60 font-mono text-[9px] text-white">
                     {skill.category}
                   </span>
-                  <h3 className="font-bold text-white text-sm mt-1 leading-tight">{skill.title}</h3>
+                  <h3 className="font-bold text-white text-base drop-shadow-md">{skill.title}</h3>
                 </div>
               </div>
-              <div className="p-3">
-                <p className="text-[11px] text-zinc-400 line-clamp-2">{skill.description}</p>
+              <div className="p-4 space-y-3">
+                <p className="text-xs text-zinc-400 line-clamp-2">{skill.description}</p>
+                <Link
+                  href={isAuthenticated ? `/learn/${skill.id}` : "/login"}
+                  className="neo-button flex w-full items-center justify-between px-3 py-2 text-xs font-bold text-amber-400 hover:text-white transition"
+                >
+                  <span>Explore 10 Tiers</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
-            </Link>
+            </div>
           ))}
-        </div>
-        <div className="mt-14 pb-10 text-center text-xs text-zinc-500 font-mono">
-          Skill Edge OS · Learn → Prove → Earn · Built for the builders of tomorrow
         </div>
       </section>
     </div>

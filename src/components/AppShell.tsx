@@ -4,22 +4,14 @@ import {
   Award,
   Bell,
   Check,
-  CheckCircle2,
   ChevronDown,
-  ChevronRight,
-  Clock,
-  Compass,
-  FileText,
   Flame,
   Folder,
-  Globe,
-  Grid,
   Home,
   Layers,
   LayoutDashboard,
   LogOut,
   Moon,
-  Radio,
   Search,
   Settings,
   ShieldCheck,
@@ -38,7 +30,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
-import { cn, fmtNum, levelForXp, timeAgo, xpProgress } from "@/lib/utils";
+import { cn, fmtNum, levelForXp, timeAgo } from "@/lib/utils";
 import { getAudioMuted, playClickSound, setAudioMuted } from "@/lib/sound";
 import { DailyMissionsModal } from "./DailyMissionsModal";
 import { SearchModal } from "./SearchModal";
@@ -122,6 +114,9 @@ function NotificationsBell() {
   const { state, currentUser, markNotificationsRead } = useApp();
   const [open, setOpen] = useState(false);
   const ref = useClickOutside(() => setOpen(false));
+
+  if (!currentUser) return null;
+
   const mine = state.notifications.filter((n) => n.userId === currentUser.id).slice(0, 12);
   const unread = mine.filter((n) => !n.read).length;
 
@@ -162,84 +157,68 @@ function NotificationsBell() {
   );
 }
 
-/* Interactive Role & Session Switcher Modal / Dropdown */
-function RoleSwitcherDropdown({ open, onClose }: { open: boolean; onClose: () => void }) {
+/* User Account Profile Menu */
+function UserMenuDropdown({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter();
-  const { state, currentUser, switchUser, logout } = useApp();
+  const { currentUser, isAdmin, logout } = useApp();
   const ref = useClickOutside(onClose);
 
-  if (!open) return null;
+  if (!open || !currentUser) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
       <div
         ref={ref}
         onClick={(e) => e.stopPropagation()}
-        className="glass-strong w-full max-w-sm p-5 space-y-4 shadow-2xl border border-white/20 animate-in fade-in zoom-in-95 duration-200"
+        className="glass-strong w-full max-w-sm p-6 space-y-4 shadow-2xl border border-white/20 animate-in fade-in zoom-in-95 duration-200"
       >
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <div>
-            <h3 className="font-mono text-sm font-bold tracking-tight text-white flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-amber-400" /> Account & Role Switcher
-            </h3>
-            <p className="text-[11px] text-zinc-400">Switch active account or sign out</p>
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{currentUser.avatar}</span>
+            <div>
+              <div className="font-bold text-base text-white flex items-center gap-1.5">
+                {currentUser.name}
+                {isAdmin && (
+                  <span className="chip border-amber-400/40 bg-amber-500/20 text-amber-300 font-mono text-[9px] py-0 px-1.5">
+                    Admin
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-zinc-400 font-mono">{currentUser.email}</div>
+            </div>
           </div>
           <button onClick={onClose} className="text-xs text-zinc-400 hover:text-white px-2 py-1">✕</button>
         </div>
 
-        <div className="space-y-2">
-          {state.users.map((u) => {
-            const isSelected = u.id === currentUser.id;
-            return (
-              <button
-                key={u.id}
-                onClick={() => {
-                  switchUser(u.id);
-                  playClickSound();
-                  onClose();
-                }}
-                className={cn(
-                  "flex w-full items-center justify-between rounded-2xl p-3 text-left transition-all duration-200",
-                  isSelected
-                    ? "neo-box bg-amber-500/20 border border-amber-400/40 shadow-lg"
-                    : "hover:bg-white/[0.08] border border-transparent"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{u.avatar}</span>
-                  <div>
-                    <div className="font-bold text-sm text-white flex items-center gap-1.5">
-                      {u.name}
-                      {u.role === "ADMIN" && (
-                        <span className="chip border-amber-400/40 bg-amber-500/20 text-amber-300 font-mono text-[9px] py-0 px-1.5">
-                          Admin
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[11px] text-zinc-400 font-mono">{u.email}</div>
-                  </div>
-                </div>
-
-                {isSelected ? (
-                  <Check className="h-5 w-5 text-amber-400 shrink-0" strokeWidth={2.5} />
-                ) : (
-                  <span className="text-xs text-zinc-400 font-mono">Switch →</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Auth Sign Out Button */}
-        <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2">
+        <div className="space-y-1">
           <Link
-            href="/login"
+            href="/profile"
             onClick={onClose}
-            className="text-xs font-bold text-amber-400 hover:underline"
+            className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold text-zinc-200 hover:bg-white/10 transition"
           >
-            + Add / Login Account
+            <div className="flex items-center gap-2.5">
+              <UserRound className="h-4 w-4 text-amber-400" />
+              <span>Identity & Profile Settings</span>
+            </div>
+            <span className="font-mono text-zinc-500">→</span>
           </Link>
 
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={onClose}
+              className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-400/30 hover:bg-amber-500/20 transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="h-4 w-4 text-amber-400" />
+                <span>Admin Command Center</span>
+              </div>
+              <span className="font-mono text-amber-400">→</span>
+            </Link>
+          )}
+        </div>
+
+        <div className="pt-3 border-t border-white/10 flex justify-end">
           <button
             onClick={() => {
               logout();
@@ -247,7 +226,7 @@ function RoleSwitcherDropdown({ open, onClose }: { open: boolean; onClose: () =>
               onClose();
               router.push("/login");
             }}
-            className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 transition"
+            className="btn-ghost text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 border-rose-500/30"
           >
             <LogOut className="h-3.5 w-3.5" /> Sign Out
           </button>
@@ -259,11 +238,47 @@ function RoleSwitcherDropdown({ open, onClose }: { open: boolean; onClose: () =>
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { state, currentUser, isAdmin, skills } = useApp();
+  const router = useRouter();
+  const { currentUser, isAdmin, isAuthenticated, skills } = useApp();
   const [missionsOpen, setMissionsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
-  const badgeLevel = levelForXp(currentUser.xp);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const isPublicPage = pathname === "/" || pathname === "/login" || pathname === "/register";
+
+  // Auth Guard for Protected App Routes
+  if (!isAuthenticated && !isPublicPage) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center p-6 text-center">
+        <div className="clay-card w-full max-w-md p-8 space-y-6">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-3xl btn-primary font-mono text-3xl font-black shadow-xl shadow-amber-500/20">
+            S
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight text-white">Authentication Required</h2>
+            <p className="text-xs text-zinc-400">
+              Please sign in to access your Skill Edge OS dashboard and learning modules.
+            </p>
+          </div>
+          <div className="space-y-3 pt-2">
+            <Link href="/login" className="btn-primary w-full py-3 text-sm font-bold shadow-lg">
+              Sign In to Continue
+            </Link>
+            <Link href="/register" className="btn-ghost w-full py-3 text-sm font-bold">
+              Create New Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If public page (Landing / Login / Register), render page cleanly
+  if (isPublicPage) {
+    return <div className="w-full selection:bg-amber-400 selection:text-black">{children}</div>;
+  }
+
+  const badgeLevel = currentUser ? levelForXp(currentUser.xp) : 1;
 
   const PRIMARY_RAIL = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -314,38 +329,38 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </div>
 
-        {/* Bottom Floating Settings Capsule */}
+        {/* Bottom Floating Profile Capsule */}
         <div className="sidebar-floating-capsule flex flex-col items-center py-2 px-2 rounded-full shadow-2xl">
           <button
-            onClick={() => setRoleSwitcherOpen(true)}
-            title="Switch User Role (Student / Admin)"
+            onClick={() => setUserMenuOpen(true)}
+            title="User Profile & Settings"
             className="flex h-10 w-10 items-center justify-center rounded-full text-amber-500 hover:bg-white/10 transition"
           >
-            <ShieldCheck className="h-5 w-5" strokeWidth={1.75} />
+            <UserRound className="h-5 w-5" strokeWidth={1.75} />
           </button>
         </div>
       </aside>
 
       {/* 2. Secondary Expanded Navigation Panel */}
       <aside className="sidebar-expanded-panel sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex backdrop-blur-3xl overflow-y-auto">
-        {/* User Card Header — Clickable Role Switcher Trigger */}
+        {/* User Card Header */}
         <button
-          onClick={() => setRoleSwitcherOpen(true)}
-          title="Click to Switch Role (Student / Admin)"
+          onClick={() => setUserMenuOpen(true)}
+          title="Click to Open Profile Settings"
           className="flex items-center gap-3 border-b border-white/[0.08] pb-4 text-left group hover:opacity-90 transition"
         >
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl neo-box border border-amber-400/40 text-2xl shadow-md group-hover:scale-105 transition">
-            {currentUser.avatar}
+            {currentUser?.avatar}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-sm font-bold text-white">{currentUser.name}</span>
+              <span className="truncate text-sm font-bold text-white">{currentUser?.name}</span>
               <span className="chip border-amber-400/40 text-[9px] font-mono py-0 px-1 font-bold text-amber-500">
-                {currentUser.role}
+                {currentUser?.role}
               </span>
               <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0 group-hover:translate-y-0.5 transition" />
             </div>
-            <div className="truncate text-[11px] text-zinc-400 font-mono">{currentUser.email}</div>
+            <div className="truncate text-[11px] text-zinc-400 font-mono">{currentUser?.email}</div>
           </div>
         </button>
 
@@ -443,12 +458,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span>EdgeCoin Wallet</span>
             </div>
             <span className="rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-400/40 px-2 py-0.5 font-mono text-[10px] font-bold">
-              ↁ {fmtNum(currentUser.edgeCoins)}
+              ↁ {fmtNum(currentUser?.edgeCoins ?? 0)}
             </span>
           </Link>
         </div>
 
-        {/* Category Section: Documents & Skills Tree */}
+        {/* Category Section: Skill Tracks */}
         <div className="space-y-2 pt-2 border-t border-white/[0.08]">
           <div className="flex items-center justify-between px-2 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500">
             <span>Skill Tracks</span>
@@ -457,7 +472,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
 
-          {/* Search Pill Input */}
           <button
             onClick={() => setSearchOpen(true)}
             className="neo-inset flex w-full items-center gap-2 px-3 py-2 text-xs text-zinc-400 hover:text-white transition"
@@ -466,7 +480,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="font-mono text-[11px]">Search skills...</span>
           </button>
 
-          {/* Tree Skill Folders */}
           <div className="space-y-1 pl-1">
             {SKILL_CATEGORIES.map((cat) => (
               <div key={cat} className="space-y-1">
@@ -495,7 +508,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* 3. Main Full-Width Content Container */}
+      {/* 3. Main Content Container */}
       <div className="flex min-w-0 flex-1 flex-col bg-transparent">
         {/* Top Sticky Header */}
         <header className="top-header-bar sticky top-0 z-40 backdrop-blur-2xl">
@@ -525,10 +538,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Target className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} /> Quests
               </button>
               <div className="header-chip-btn font-mono text-orange-500">
-                <Flame className="h-3.5 w-3.5" strokeWidth={1.75} /> {currentUser.streakCount}
+                <Flame className="h-3.5 w-3.5" strokeWidth={1.75} /> {currentUser?.streakCount ?? 0}
               </div>
               <Link href="/payment" className="header-chip-btn font-mono text-yellow-600 transition hover:scale-105">
-                <span className="font-bold">ↁ</span> {fmtNum(currentUser.edgeCoins)}
+                <span className="font-bold">ↁ</span> {fmtNum(currentUser?.edgeCoins ?? 0)}
               </Link>
               <div className="header-chip-btn hidden font-mono text-violet-500 sm:inline-flex">
                 <Zap className="h-3.5 w-3.5" strokeWidth={1.75} /> LVL {badgeLevel}
@@ -538,15 +551,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SoundToggle />
               <NotificationsBell />
 
-              {/* Role Switcher Trigger Button */}
+              {/* User Profile Button */}
               <button
-                onClick={() => setRoleSwitcherOpen(true)}
+                onClick={() => setUserMenuOpen(true)}
                 className="header-chip-btn flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
-                title="Switch Account & Role"
+                title="User Profile & Settings"
               >
-                <span className="text-lg leading-none">{currentUser.avatar}</span>
-                <span className="hidden max-w-28 truncate text-xs font-semibold md:block">{currentUser.name}</span>
-                {currentUser.role === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} />}
+                <span className="text-lg leading-none">{currentUser?.avatar}</span>
+                <span className="hidden max-w-28 truncate text-xs font-semibold md:block">{currentUser?.name}</span>
+                {isAdmin && <ShieldCheck className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} />}
                 <ChevronDown className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
               </button>
             </div>
@@ -555,7 +568,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <DailyMissionsModal open={missionsOpen} onClose={() => setMissionsOpen(false)} />
         <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
-        <RoleSwitcherDropdown open={roleSwitcherOpen} onClose={() => setRoleSwitcherOpen(false)} />
+        <UserMenuDropdown open={userMenuOpen} onClose={() => setUserMenuOpen(false)} />
 
         <main className="flex-1 w-full px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10">{children}</main>
       </div>

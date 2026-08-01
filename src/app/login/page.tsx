@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Lock, Mail, ShieldCheck, Sparkles, User, Zap } from "lucide-react";
+import { ArrowRight, KeyRound, Lock, Mail, ShieldCheck, Sparkles, User, Zap } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,7 +9,7 @@ import { playClickSound } from "@/lib/sound";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, switchUser, state } = useApp();
+  const { login } = useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,10 +29,16 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickDemo = (userId: string) => {
-    switchUser(userId);
-    playClickSound();
-    router.push("/dashboard");
+  const handleFillAdmin = () => {
+    setEmail("skilledgelearning@gmail.com");
+    setPassword("seladmin");
+    setError(null);
+  };
+
+  const handleFillStudent = () => {
+    setEmail("aarav@skilledge.app");
+    setPassword("");
+    setError(null);
   };
 
   return (
@@ -40,9 +46,9 @@ export default function LoginPage() {
       <div className="clay-card w-full max-w-md p-6 sm:p-8 space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl btn-primary font-mono text-2xl font-black shadow-xl shadow-amber-500/20">
+          <Link href="/" className="inline-flex h-14 w-14 items-center justify-center rounded-3xl btn-primary font-mono text-2xl font-black shadow-xl shadow-amber-500/20">
             S
-          </div>
+          </Link>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
             Skill Edge <span className="text-amber-400">OS</span>
           </h1>
@@ -95,31 +101,31 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Demo Quick Sign-in Section */}
+        {/* Quick Fill Credential Shortcuts */}
         <div className="pt-4 border-t border-white/10 space-y-3">
           <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-400 text-center">
-            ⚡ Quick Demo 1-Click Login
+            ⚡ Quick Fill Credentials
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => handleQuickDemo("u-student")}
-              className="neo-button p-3 text-left transition hover:scale-[1.02] flex flex-col gap-1 border border-amber-400/30"
+              onClick={handleFillStudent}
+              className="neo-button p-2.5 text-left transition hover:scale-[1.02] flex flex-col gap-0.5 border border-amber-400/30"
             >
               <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                <span>🤖</span> Student
+                <span>🤖</span> Student Demo
               </div>
-              <div className="text-[10px] text-zinc-400 truncate">Aarav Mehta</div>
+              <div className="text-[10px] text-zinc-400 truncate">aarav@skilledge.app</div>
             </button>
 
             <button
-              onClick={() => handleQuickDemo("u-admin")}
-              className="neo-button p-3 text-left transition hover:scale-[1.02] flex flex-col gap-1 border border-amber-400/40"
+              onClick={handleFillAdmin}
+              className="neo-button p-2.5 text-left transition hover:scale-[1.02] flex flex-col gap-0.5 border border-amber-400/40"
             >
               <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
-                <ShieldCheck className="h-3.5 w-3.5 text-amber-400" /> Admin
+                <ShieldCheck className="h-3.5 w-3.5 text-amber-400" /> Admin Demo
               </div>
-              <div className="text-[10px] text-zinc-400 truncate">Skill Edge Admin</div>
+              <div className="text-[10px] text-amber-300 font-mono truncate">skilledgelearning@gmail.com</div>
             </button>
           </div>
         </div>
