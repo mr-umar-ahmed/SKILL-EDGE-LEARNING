@@ -61,16 +61,6 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* Admin Credentials Info Callout */}
-        <div className="mt-6 mx-auto max-w-md neo-box p-3 border border-amber-400/30 text-xs text-zinc-300 font-mono text-center flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center justify-center gap-1.5 font-bold text-amber-400">
-            <ShieldCheck className="h-4 w-4" /> Admin Login:
-          </div>
-          <div>
-            <span className="text-white font-bold">skilledgelearning@gmail.com</span> · <span className="text-amber-300">seladmin</span>
-          </div>
-        </div>
-
         {/* Stats Strip */}
         <div className="mx-auto mt-12 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
           {[

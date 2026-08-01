@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 25 — Mobile Responsive Hamburger Drawer Navigation ✅
-- [x] [PLAN] Replace cramped topbar chip scrolling on mobile with a clean Hamburger Menu button in the top-right header and an off-canvas Mobile Sheet Drawer (`MobileDrawer`) housing user profile, quick search, quests, navigation routes, skill categories, and sign out.
-- [x] [BUILD] Updated `src/components/AppShell.tsx` with `MobileDrawer` component & `Menu` toggle icon.
+## PHASE 26 — Hide Admin Credentials from Public UI ✅
+- [x] [PLAN] Remove all visible admin credential callouts and quick fill demo buttons from landing page (`src/app/page.tsx`) and login page (`src/app/login/page.tsx`). Admin login remains active solely for manual credential entry (`skilledgelearning@gmail.com` / `seladmin`).
+- [x] [BUILD] Updated `src/app/page.tsx` and `src/app/login/page.tsx`.
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(mobile-hamburger-navbar)`
+- [x] [DEPLOY] Committed as `sec(admin-credentials-hidden)`
 
 ---
 
@@ -78,6 +78,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-01: Phase 23 Production Readiness Audit & Clean Code Release created and pushed to GitHub (`feat(production-ready-release)`).
 - 2026-08-01: Phase 24 Production User Auth Flow & Fixed Admin Credentials created and pushed to GitHub (`feat(authentic-auth-flow)`).
 - 2026-08-01: Phase 25 Mobile Responsive Hamburger Drawer Navigation created and pushed to GitHub (`feat(mobile-hamburger-navbar)`).
+- 2026-08-01: Phase 26 Hide Admin Credentials from Public UI created and pushed to GitHub (`sec(admin-credentials-hidden)`).
 
 ## Backlog / Next iteration
 

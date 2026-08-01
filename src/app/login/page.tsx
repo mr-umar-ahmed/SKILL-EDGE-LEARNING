@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, KeyRound, Lock, Mail, ShieldCheck, Sparkles, User, Zap } from "lucide-react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -29,18 +29,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleFillAdmin = () => {
-    setEmail("skilledgelearning@gmail.com");
-    setPassword("seladmin");
-    setError(null);
-  };
-
-  const handleFillStudent = () => {
-    setEmail("aarav@skilledge.app");
-    setPassword("");
-    setError(null);
-  };
-
   return (
     <div className="flex min-h-[85vh] w-full flex-col items-center justify-center p-4">
       <div className="clay-card w-full max-w-md p-6 sm:p-8 space-y-6">
@@ -52,7 +40,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
             Skill Edge <span className="text-amber-400">OS</span>
           </h1>
-          <p className="text-xs text-zinc-400">Sign in to your gamified learning account</p>
+          <p className="text-xs text-zinc-400">Sign in to your account</p>
         </div>
 
         {error && (
@@ -69,7 +57,7 @@ export default function LoginPage() {
             </label>
             <input
               type="email"
-              placeholder="aarav@skilledge.app"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -93,6 +81,7 @@ export default function LoginPage() {
                 setError(null);
               }}
               className="input-dark"
+              required
             />
           </div>
 
@@ -101,37 +90,8 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Quick Fill Credential Shortcuts */}
-        <div className="pt-4 border-t border-white/10 space-y-3">
-          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-400 text-center">
-            ⚡ Quick Fill Credentials
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={handleFillStudent}
-              className="neo-button p-2.5 text-left transition hover:scale-[1.02] flex flex-col gap-0.5 border border-amber-400/30"
-            >
-              <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                <span>🤖</span> Student Demo
-              </div>
-              <div className="text-[10px] text-zinc-400 truncate">aarav@skilledge.app</div>
-            </button>
-
-            <button
-              onClick={handleFillAdmin}
-              className="neo-button p-2.5 text-left transition hover:scale-[1.02] flex flex-col gap-0.5 border border-amber-400/40"
-            >
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
-                <ShieldCheck className="h-3.5 w-3.5 text-amber-400" /> Admin Demo
-              </div>
-              <div className="text-[10px] text-amber-300 font-mono truncate">skilledgelearning@gmail.com</div>
-            </button>
-          </div>
-        </div>
-
         {/* Register Link */}
-        <div className="text-center pt-2">
+        <div className="text-center pt-4 border-t border-white/10">
           <p className="text-xs text-zinc-400">
             Don't have an account?{" "}
             <Link href="/register" className="font-bold text-amber-400 hover:underline">
