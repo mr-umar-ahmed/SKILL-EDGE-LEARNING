@@ -3,6 +3,7 @@ import type {
   Assignment,
   BadgeDef,
   Difficulty,
+  GamifiedStep,
   LearningResource,
   Mission,
   Question,
