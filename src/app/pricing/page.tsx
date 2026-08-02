@@ -1,101 +1,76 @@
 "use client";
 
-import {
-  ArrowRight,
-  BadgePercent,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  Clock3,
-  CreditCard,
-  Crown,
-  Hexagon,
-  Loader2,
-  Rocket,
-  ShieldCheck,
-  Smartphone,
-  Sparkles,
-  TrendingUp,
-  X,
-  Zap,
-} from "lucide-react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
-import { UpiQr } from "@/components/UpiQr";
-import { fireBigConfetti } from "@/components/confetti";
-import { Modal } from "@/components/ui";
 import { useApp } from "@/lib/store";
-import type { Coupon } from "@/lib/types";
-import { PLANS, type PlanDef, cn, fmtInr } from "@/lib/utils";
-
-/* ----------------------------- Razorpay globals ----------------------------- */
-
-interface RazorpayResponse {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-}
-
-interface RazorpayOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description?: string;
-  order_id: string;
-  handler: (response: RazorpayResponse) => void;
-  prefill?: { name?: string; email?: string };
-  theme?: { color?: string };
-  modal?: { ondismiss?: () => void };
-}
+import { PLANS, PlanDef, discounted, periodLabel } from "@/lib/utils";
+import type { Coupon, PaymentMethod, Skill } from "@/lib/types";
+import { Modal } from "@/components/ui";
+import { fmtInr, cn } from "@/lib/utils";
+import { SkillIcon } from "@/components/SkillIcon";
+import {
+  Zap,
+  Crown,
+  Check,
+  Sparkles,
+  ShieldCheck,
+  BadgePercent,
+  X,
+  ChevronDown,
+  ArrowRight,
+  Hexagon,
+  Smartphone,
+  CreditCard,
+  CheckCircle2,
+  Clock3,
+  BookOpen,
+  Lock,
+  Layers,
+} from "lucide-react";
 
 declare global {
   interface Window {
-    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
   }
+}
+
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+const PLAN_ICONS: Record<string, typeof Zap> = {
+  FREE: Sparkles,
+  INDIVIDUAL_SKILL: BookOpen,
+  PRO_MONTHLY: Zap,
+  PRO_YEARLY: Crown,
+  FAMILY: Layers,
+};
+
+function fireBigConfetti() {
+  if (typeof window === "undefined") return;
+  import("canvas-confetti")
+    .then((mod) => {
+      const confetti = mod.default;
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    })
+    .catch(() => {});
 }
 
 function loadScript(src: string): Promise<boolean> {
   return new Promise((resolve) => {
-    if (document.querySelector(`script[src="${src}"]`)) {
-      resolve(true);
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = src;
-    s.onload = () => resolve(true);
-    s.onerror = () => resolve(false);
-    document.body.appendChild(s);
+    if (typeof document === "undefined") return resolve(false);
+    if (document.querySelector(`script[src="${src}"]`)) return resolve(true);
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
   });
 }
-
-/* --------------------------------- helpers --------------------------------- */
-
-function discounted(price: number, coupon: Coupon | null) {
-  if (!coupon || price <= 0) return price;
-  return Math.round(price * (1 - coupon.percentOff / 100));
-}
-
-function periodLabel(p: PlanDef) {
-  switch (p.period) {
-    case "month":
-      return "/month";
-    case "year":
-      return "/year";
-    case "lifetime":
-      return "one-time";
-    default:
-      return "forever";
-  }
-}
-
-const PLAN_ICONS: Record<string, typeof Zap> = {
-  FREE: Rocket,
-  PRO_MONTHLY: Zap,
-  PRO_YEARLY: TrendingUp,
-  FAMILY: ShieldCheck,
-};
 
 /* ------------------------------ checkout modal ------------------------------ */
 
@@ -103,15 +78,18 @@ type PayMethod = "UPI" | "RAZORPAY" | "STRIPE";
 
 function CheckoutModal({
   plan,
+  skill,
   coupon,
   onClose,
 }: {
   plan: PlanDef;
+  skill?: Skill | null;
   coupon: Coupon | null;
   onClose: () => void;
 }) {
-  const { currentUser, purchasePlanUpi, activatePlan } = useApp();
-  const finalAmount = discounted(plan.priceInr, coupon);
+  const { currentUser, purchasePlanUpi, activatePlan, unlockSingleSkill } = useApp();
+  const basePrice = skill ? 99 : plan.priceInr;
+  const finalAmount = discounted(basePrice, coupon);
 
   const [method, setMethod] = useState<PayMethod>("UPI");
   const [utr, setUtr] = useState("");
@@ -120,9 +98,15 @@ function CheckoutModal({
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [paid, setPaid] = useState(false);
 
+  const checkoutTitle = skill ? `Unlock Skill — ${skill.title}` : `Checkout — ${plan.name}`;
+
   const submitUpi = () => {
     if (utr.trim().length < 8) return;
-    purchasePlanUpi(plan.id, finalAmount, utr.trim(), coupon?.code);
+    if (skill) {
+      unlockSingleSkill(skill.id, "UPI", finalAmount);
+    } else {
+      purchasePlanUpi(plan.id, finalAmount, utr.trim(), coupon?.code);
+    }
     setUpiSubmitted(true);
   };
 
@@ -133,20 +117,27 @@ function CheckoutModal({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: finalAmount, currency: "INR", receipt: `plan_${plan.id}_${Date.now()}` }),
+        body: JSON.stringify({
+          amount: finalAmount,
+          currency: "INR",
+          receipt: skill ? `skill_${skill.id}_${Date.now()}` : `plan_${plan.id}_${Date.now()}`,
+        }),
       });
       if (res.status === 401 || res.status === 503) {
         setGatewayError("Gateway credentials missing — use UPI (manual verify) instead.");
+        setBusy(false);
         return;
       }
       if (!res.ok) {
         setGatewayError("Could not create the payment order. Try again, or use UPI.");
+        setBusy(false);
         return;
       }
       const order = (await res.json()) as { order_id: string; amount: number; currency: string; key_id: string };
       const ok = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
       if (!ok || !window.Razorpay) {
         setGatewayError("Could not load Razorpay checkout script. Check your internet connection.");
+        setBusy(false);
         return;
       }
       const rzp = new window.Razorpay({
@@ -154,7 +145,7 @@ function CheckoutModal({
         amount: order.amount,
         currency: order.currency,
         name: "Skill Edge Learning",
-        description: `${plan.name} plan`,
+        description: skill ? `Unlock ${skill.title}` : `${plan.name} plan`,
         order_id: order.order_id,
         prefill: { name: currentUser?.name, email: currentUser?.email },
         theme: { color: "#E85002" },
@@ -174,11 +165,18 @@ function CheckoutModal({
             });
             const data = (await vr.json().catch(() => null)) as { success?: boolean; error?: string } | null;
             if (vr.ok && data?.success) {
-              activatePlan(plan.id, "RAZORPAY", finalAmount, {
-                orderId: resp.razorpay_order_id,
-                paymentId: resp.razorpay_payment_id,
-                couponCode: coupon?.code,
-              });
+              if (skill) {
+                unlockSingleSkill(skill.id, "RAZORPAY", finalAmount, {
+                  orderId: resp.razorpay_order_id,
+                  paymentId: resp.razorpay_payment_id,
+                });
+              } else {
+                activatePlan(plan.id, "RAZORPAY", finalAmount, {
+                  orderId: resp.razorpay_order_id,
+                  paymentId: resp.razorpay_payment_id,
+                  couponCode: coupon?.code,
+                });
+              }
               fireBigConfetti();
               setPaid(true);
             } else {
@@ -207,8 +205,8 @@ function CheckoutModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          planId: plan.id,
-          planName: plan.name,
+          planId: skill ? "INDIVIDUAL_SKILL" : plan.id,
+          planName: skill ? `Skill: ${skill.title}` : plan.name,
           amountInr: finalAmount,
           successUrl: origin + "/billing",
           cancelUrl: origin + "/pricing",
@@ -220,12 +218,17 @@ function CheckoutModal({
         return;
       }
       if (!res.ok) {
-        setGatewayError("Could not start Stripe checkout. Try again, or use UPI.");
+        setGatewayError("Could not start Stripe session. Try again or use UPI.");
         setBusy(false);
         return;
       }
-      const data = (await res.json()) as { url: string };
-      window.location.href = data.url;
+      const data = (await res.json()) as { url?: string };
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setGatewayError("No checkout URL returned from Stripe.");
+        setBusy(false);
+      }
     } catch {
       setGatewayError("Something went wrong starting Stripe. Try again, or use UPI.");
       setBusy(false);
@@ -233,7 +236,7 @@ function CheckoutModal({
   };
 
   const methods: { id: PayMethod; label: string; sub: string; Icon: typeof Smartphone }[] = [
-    { id: "UPI", label: "UPI (manual verify)", sub: "Always available", Icon: Smartphone },
+    { id: "UPI", label: "UPI (manual verify)", sub: "Instant QR / UTR", Icon: Smartphone },
     { id: "RAZORPAY", label: "Razorpay", sub: "UPI · Cards · Netbanking", Icon: Zap },
     { id: "STRIPE", label: "Card (Stripe)", sub: "International cards", Icon: CreditCard },
   ];
@@ -247,13 +250,17 @@ function CheckoutModal({
             <CheckCircle2 className="h-9 w-9" />
           </div>
           <div>
-            <div className="font-display text-xl font-bold text-white">{plan.name} is active</div>
+            <div className="font-display text-xl font-bold text-white">
+              {skill ? `Unlocked ${skill.title}` : `${plan.name} is active`}
+            </div>
             <p className="mt-1 text-sm text-zinc-400">
-              All missions are unlocked. Time to build something real.
+              {skill
+                ? `You now have lifetime access to all 10 missions of ${skill.title}.`
+                : "All 12 skills & 120 missions are unlocked. Time to build something real."}
             </p>
           </div>
-          <Link href="/dashboard" className="btn-primary w-full">
-            Go to dashboard <ArrowRight className="h-4 w-4" />
+          <Link href={skill ? `/learn/${skill.id}` : "/dashboard"} className="btn-primary w-full">
+            {skill ? "Start Skill Missions" : "Go to dashboard"} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </Modal>
@@ -270,8 +277,7 @@ function CheckoutModal({
           <div>
             <div className="font-display text-xl font-bold text-white">We&apos;re verifying your payment</div>
             <p className="mt-1 text-sm text-zinc-400">
-              Your {plan.name} plan activates after verification — usually within a few hours. Track the status on your
-              billing page.
+              Your {skill ? skill.title : plan.name} access activates after verification — usually within a few hours. Track status on your billing page.
             </p>
           </div>
           <Link href="/billing" className="btn-primary w-full">
@@ -283,14 +289,14 @@ function CheckoutModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={`Checkout — ${plan.name}`}>
+    <Modal open onClose={onClose} title={checkoutTitle}>
       <div className="space-y-4">
         {/* order summary */}
         <div className="flex items-center justify-between rounded-xl border border-line bg-base p-3.5">
           <div>
-            <div className="text-sm font-semibold text-white">{plan.name}</div>
+            <div className="text-sm font-semibold text-white">{skill ? skill.title : plan.name}</div>
             <div className="text-xs text-zinc-500">
-              Billed {plan.period === "month" ? "monthly" : plan.period === "year" ? "yearly" : "once"}
+              {skill ? "One-time lifetime access" : `Billed ${plan.period === "month" ? "monthly" : plan.period === "year" ? "yearly" : "once"}`}
               {coupon && (
                 <span className="ml-2 inline-flex items-center gap-1 text-success">
                   <BadgePercent className="h-3 w-3" />
@@ -300,7 +306,7 @@ function CheckoutModal({
             </div>
           </div>
           <div className="text-right">
-            {coupon && <div className="text-xs text-zinc-500 line-through">{fmtInr(plan.priceInr)}</div>}
+            {coupon && <div className="text-xs text-zinc-500 line-through">{fmtInr(basePrice)}</div>}
             <div className="font-display text-lg font-bold text-white">{fmtInr(finalAmount)}</div>
           </div>
         </div>
@@ -318,132 +324,105 @@ function CheckoutModal({
               className={cn(
                 "flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition",
                 method === id
-                  ? "border-brand bg-brand/10 shadow-brand"
-                  : "border-line bg-card hover:border-brand/40 hover:bg-hover"
+                  ? "border-brand bg-brand/10 text-white shadow-brand"
+                  : "border-line bg-card text-zinc-400 hover:border-zinc-700 hover:text-white"
               )}
             >
-              <Icon className={cn("h-4 w-4", method === id ? "text-brand" : "text-zinc-400")} />
-              <span className="text-xs font-semibold text-white">{label}</span>
-              <span className="text-[10px] text-zinc-500">{sub}</span>
+              <Icon className={cn("h-5 w-5", method === id ? "text-brand" : "text-zinc-500")} />
+              <div className="text-xs font-semibold text-white">{label}</div>
+              <div className="text-[10px] text-zinc-500">{sub}</div>
             </button>
           ))}
         </div>
 
         {gatewayError && (
-          <div className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs text-warning">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-xs text-danger">
             {gatewayError}
           </div>
         )}
 
-        {/* method body */}
+        {/* method views */}
         {method === "UPI" && (
-          <div className="space-y-3">
-            <UpiQr amountInr={finalAmount} />
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                UTR / Transaction reference number
-              </label>
+          <div className="space-y-3 rounded-xl border border-line bg-base p-4">
+            <div className="text-xs text-zinc-400">
+              Pay <strong className="text-white">{fmtInr(finalAmount)}</strong> to UPI ID below or scan with GPay / PhonePe / Paytm:
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-surface p-2.5 text-xs">
+              <span className="font-mono text-zinc-300">learningskilledge@upi</span>
+              <span className="rounded bg-brand/15 px-2 py-0.5 font-bold text-brand">GPay / PhonePe / Paytm</span>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-300">Transaction UTR Number (12 digits)</label>
               <input
                 value={utr}
                 onChange={(e) => setUtr(e.target.value)}
-                placeholder="e.g. 415023456789"
-                className="input-dark font-mono"
+                placeholder="e.g. 402918274619"
+                className="input-dark"
               />
-              <p className="mt-1.5 text-[11px] text-zinc-500">
-                Pay {fmtInr(finalAmount)} via any UPI app, then paste the 12-digit UTR from your payment receipt. Your
-                plan activates once we verify it.
-              </p>
             </div>
-            <button onClick={submitUpi} disabled={utr.trim().length < 8} className="btn-primary w-full">
-              Submit for verification
+            <button
+              type="button"
+              disabled={utr.trim().length < 8}
+              onClick={submitUpi}
+              className="btn-primary w-full disabled:opacity-50"
+            >
+              Submit UTR for verification
             </button>
           </div>
         )}
 
         {method === "RAZORPAY" && (
-          <div className="space-y-3">
+          <div className="space-y-3 rounded-xl border border-line bg-base p-4 text-center">
             <p className="text-xs text-zinc-400">
-              Pay securely with UPI, cards, netbanking or wallets via Razorpay. Your plan activates instantly after
-              payment.
+              Instant payment via Razorpay Web Checkout (UPI Apps, Debit/Credit Cards, Netbanking).
             </p>
-            <button onClick={startRazorpay} disabled={busy} className="btn-primary w-full">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-              Pay {fmtInr(finalAmount)} with Razorpay
+            <button type="button" disabled={busy} onClick={startRazorpay} className="btn-primary w-full">
+              {busy ? "Opening Razorpay..." : `Pay ${fmtInr(finalAmount)} with Razorpay`}
             </button>
           </div>
         )}
 
         {method === "STRIPE" && (
-          <div className="space-y-3">
-            <p className="text-xs text-zinc-400">
-              You&apos;ll be redirected to Stripe&apos;s secure checkout. Your plan activates when you return.
-            </p>
-            <button onClick={startStripe} disabled={busy} className="btn-primary w-full">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-              Pay {fmtInr(finalAmount)} with card
+          <div className="space-y-3 rounded-xl border border-line bg-base p-4 text-center">
+            <p className="text-xs text-zinc-400">Secure international card payments processed via Stripe.</p>
+            <button type="button" disabled={busy} onClick={startStripe} className="btn-primary w-full">
+              {busy ? "Redirecting..." : `Pay ${fmtInr(finalAmount)} with Credit/Debit Card`}
             </button>
           </div>
         )}
-
-        <p className="flex items-center justify-center gap-1.5 text-center text-[11px] text-zinc-600">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          Payments are processed securely. We never store card details.
-        </p>
       </div>
     </Modal>
   );
 }
 
-/* ------------------------------ comparison data ------------------------------ */
+/* ---------------------------------- page Content ---------------------------------- */
 
-const COMPARISON: { label: string; free: boolean; pro: boolean }[] = [
-  { label: "Missions 1–4 of every skill", free: true, pro: true },
-  { label: "Advanced missions 5–10", free: false, pro: true },
-  { label: "Project submissions & feedback", free: true, pro: true },
-  { label: "Priority review queue", free: false, pro: true },
-  { label: "Portfolio with public share link", free: true, pro: true },
-  { label: "All certificates + QR verification", free: false, pro: true },
-  { label: "Weekly challenges & tournaments", free: true, pro: true },
-  { label: "Yearly progress report", free: false, pro: true },
-  { label: "Ad-free experience", free: false, pro: true },
-];
+function PricingContent() {
+  const searchParams = useSearchParams();
+  const initialSkillId = searchParams.get("skillId");
 
-const FAQS: { q: string; a: string }[] = [
-  {
-    q: "How does UPI manual verification work?",
-    a: "Scan the QR, pay the exact amount, and submit the UTR number from your payment receipt. Our team verifies it (usually within a few hours) and your plan activates automatically. You can track the status on the billing page.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes. Cancel from your billing page whenever you like — you keep full Pro access until the end of your current billing period. No hidden lock-ins.",
-  },
-  {
-    q: "What exactly do free users get?",
-    a: "The first 4 missions of every skill, real project submissions with feedback, basic certificates and community access. Missions 5–10, advanced certificates and the ad-free experience need Pro.",
-  },
-  {
-    q: "How does the Family Plan work?",
-    a: "The Family Plan allows parents to purchase one subscription for multiple children/siblings. Each child gets a separate profile with independent progress tracking, individual portfolios, certificates, XP, and Neurons.",
-  },
-  {
-    q: "Do you offer refunds?",
-    a: "If something went wrong with a payment (double charge, plan not activating), contact support and we'll sort it out. For change-of-mind on monthly plans, simply cancel and the plan won't renew.",
-  },
-];
-
-/* ---------------------------------- page ---------------------------------- */
-
-export default function PricingPage() {
-  const { hydrated, currentUser, isAuthenticated, validateCoupon } = useApp();
+  const { hydrated, catalog, currentUser, isAuthenticated, isPro, myProgress, validateCoupon } = useApp();
 
   const [couponInput, setCouponInput] = useState("");
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [checkoutPlan, setCheckoutPlan] = useState<PlanDef | null>(null);
+  const [checkoutSkill, setCheckoutSkill] = useState<Skill | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const currentPlanId = currentUser?.subscription.plan;
+
+  // Auto-open checkout if skillId param is provided
+  React.useEffect(() => {
+    if (initialSkillId && catalog.length > 0 && !checkoutSkill) {
+      const target = catalog.find((s) => s.id === initialSkillId);
+      if (target) {
+        const indPlan = PLANS.find((p) => p.id === "INDIVIDUAL_SKILL") ?? PLANS[1];
+        setCheckoutSkill(target);
+        setCheckoutPlan(indPlan);
+      }
+    }
+  }, [initialSkillId, catalog, checkoutSkill]);
 
   const applyCoupon = () => {
     const code = couponInput.trim();
@@ -457,6 +436,40 @@ export default function PricingPage() {
       setCouponError("That code isn't valid or has expired.");
     }
   };
+
+  const COMPARISON: { label: string; free: boolean; pro: boolean }[] = [
+    { label: "Missions 1–3 of every skill", free: true, pro: true },
+    { label: "All 10 missions per skill", free: false, pro: true },
+    { label: "Project submissions & feedback", free: true, pro: true },
+    { label: "Priority AI & Admin review queue", free: false, pro: true },
+    { label: "Portfolio with public share link", free: true, pro: true },
+    { label: "QR-verified completion certificates", free: false, pro: true },
+    { label: "Weekly tournaments & leaderboard", free: true, pro: true },
+    { label: "Completely ad-free experience", free: false, pro: true },
+  ];
+
+  const FAQS: { q: string; a: string }[] = [
+    {
+      q: "How does purchasing an Individual Skill for ₹99 work?",
+      a: "When you purchase a single skill for ₹99, you get lifetime access to all 10 missions, project submissions, portfolio hosting, and QR-verified completion certificate for that specific skill. You don't need to subscribe to Pro unless you want access to all 12 skills.",
+    },
+    {
+      q: "What is included in the Free Plan (₹0)?",
+      a: "The Free Plan gives you access to the first 2-3 missions of every skill, community access, basic project feedback, and basic certificates. It lets you test the gamified learning loop before buying.",
+    },
+    {
+      q: "How does the Family Plan (₹699/mo) work?",
+      a: "The Family Plan is designed for parents with multiple children/siblings. It supports up to 4 child accounts, each with separate profiles, independent progress, separate portfolios, certificates, XP, Neurons, and a dedicated Parent oversight dashboard.",
+    },
+    {
+      q: "Can I upgrade from an Individual Skill to Pro later?",
+      a: "Yes! You can upgrade to Pro Monthly (₹399/mo) or Pro Yearly (₹3,999/yr) at any time to instantly unlock all 12 skills and future skill drops.",
+    },
+    {
+      q: "How does UPI manual verification work?",
+      a: "Scan the QR / enter the UPI ID, pay ₹99 or plan fee, and submit your 12-digit UTR number. Our team verifies it (usually within a few hours) and your access activates automatically. You can track status on your billing page.",
+    },
+  ];
 
   return (
     <AppShell>
@@ -490,19 +503,18 @@ export default function PricingPage() {
           <section className="py-10 text-center animate-fade-up sm:py-14">
             <div className="chip mx-auto mb-4 border-brand/40 bg-brand/10 text-brand">
               <Sparkles className="h-3.5 w-3.5" />
-              Simple, honest pricing
+              Honest Skill OS Pricing
             </div>
             <h1 className="mx-auto max-w-2xl font-display text-3xl font-bold tracking-tight text-white sm:text-5xl">
-              Invest in skills that <span className="bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent">compound</span>
+              Buy one skill for <span className="text-brand">₹99</span> or unlock all 12 with <span className="bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent">Pro</span>
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm text-zinc-400 sm:text-base">
-              Every plan is built around real projects, real feedback and a portfolio you can show. Start free, upgrade
-              when you&apos;re ready to go all in.
+              Every skill is a game campaign that produces a real-world portfolio project. Start free, buy skills individually, or get unlimited access.
             </p>
           </section>
 
           {/* coupon */}
-          <section className="mx-auto mb-8 max-w-md animate-fade-up">
+          <section className="mx-auto mb-10 max-w-md animate-fade-up">
             {coupon ? (
               <div className="flex items-center justify-between rounded-xl border border-success/40 bg-success/10 px-4 py-2.5">
                 <span className="flex items-center gap-2 text-sm font-semibold text-success">
@@ -543,105 +555,198 @@ export default function PricingPage() {
             )}
           </section>
 
-          {/* plan cards */}
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {PLANS.map((plan, i) => {
-              const Icon = PLAN_ICONS[plan.id] ?? Zap;
-              const isCurrent = hydrated && currentPlanId === plan.id;
-              const price = discounted(plan.priceInr, coupon);
-              const hasDiscount = coupon !== null && plan.priceInr > 0 && price < plan.priceInr;
-              const isFounder = plan.id === "FOUNDER_LIFETIME";
-              return (
-                <div
-                  key={plan.id}
-                  className={cn(
-                    "card-glow relative flex flex-col p-6 animate-fade-up",
-                    plan.highlight && "ring-2 ring-brand",
-                    isFounder && "ring-1 ring-premium/50"
-                  )}
-                  style={{ animationDelay: `${i * 70}ms` }}
-                >
-                  {plan.highlight && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand to-brand-deep px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-brand">
-                      Most popular
-                    </span>
-                  )}
-                  {isFounder && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-premium to-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                      Launch offer
-                    </span>
-                  )}
+          {/* Subscription Plans Section */}
+          <section className="mb-16">
+            <h2 className="mb-6 font-display text-xl font-bold text-white text-center">Subscription & Membership Plans</h2>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {PLANS.filter((p) => p.id !== "INDIVIDUAL_SKILL").map((plan, i) => {
+                const Icon = PLAN_ICONS[plan.id] ?? Zap;
+                const isCurrent = hydrated && currentPlanId === plan.id;
+                const price = discounted(plan.priceInr, coupon);
+                const hasDiscount = coupon !== null && plan.priceInr > 0 && price < plan.priceInr;
+                const isFamily = plan.id === "FAMILY";
 
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={cn(
-                        "flex h-9 w-9 items-center justify-center rounded-xl",
-                        isFounder ? "bg-premium/15 text-premium" : "bg-brand/15 text-brand"
-                      )}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <div className="font-display text-base font-bold text-white">{plan.name}</div>
-                      <div className="text-[11px] text-zinc-500">{plan.tagline}</div>
+                return (
+                  <div
+                    key={plan.id}
+                    className={cn(
+                      "card-glow relative flex flex-col p-6 animate-fade-up",
+                      plan.highlight && "ring-2 ring-brand",
+                      isFamily && "ring-1 ring-premium/50"
+                    )}
+                    style={{ animationDelay: `${i * 70}ms` }}
+                  >
+                    {plan.highlight && (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand to-brand-deep px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-brand">
+                        Most popular
+                      </span>
+                    )}
+                    {isFamily && (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-premium to-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                        Family Bundle
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={cn(
+                          "flex h-9 w-9 items-center justify-center rounded-xl",
+                          isFamily ? "bg-premium/15 text-premium" : "bg-brand/15 text-brand"
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <div className="font-display text-base font-bold text-white">{plan.name}</div>
+                        <div className="text-[11px] text-zinc-500">{plan.tagline}</div>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mt-5 flex items-baseline gap-1.5">
-                    {hasDiscount && <span className="text-sm text-zinc-500 line-through">{fmtInr(plan.priceInr)}</span>}
-                    <span className="font-display text-3xl font-bold text-white">{fmtInr(price)}</span>
-                    <span className="text-xs text-zinc-500">{periodLabel(plan)}</span>
-                  </div>
+                    <div className="mt-5 flex items-baseline gap-1.5">
+                      {hasDiscount && <span className="text-sm text-zinc-500 line-through">{fmtInr(plan.priceInr)}</span>}
+                      <span className="font-display text-3xl font-bold text-white">{fmtInr(price)}</span>
+                      <span className="text-xs text-zinc-500">{periodLabel(plan)}</span>
+                    </div>
 
-                  <ul className="mt-5 flex-1 space-y-2.5">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-zinc-300">
-                        <Check
-                          className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", isFounder ? "text-premium" : "text-success")}
-                          strokeWidth={3}
-                        />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
+                    <ul className="mt-5 flex-1 space-y-2.5">
+                      {plan.features.map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-xs text-zinc-300">
+                          <Check
+                            className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", isFamily ? "text-premium" : "text-success")}
+                            strokeWidth={3}
+                          />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
 
-                  <div className="mt-6">
-                    {isCurrent ? (
-                      <button disabled className="btn-ghost w-full opacity-60">
-                        <CheckCircle2 className="h-4 w-4 text-success" /> Current plan
-                      </button>
-                    ) : plan.priceInr === 0 ? (
-                      isAuthenticated ? (
+                    <div className="mt-6">
+                      {isCurrent ? (
                         <button disabled className="btn-ghost w-full opacity-60">
-                          Included
+                          <CheckCircle2 className="h-4 w-4 text-success" /> Current plan
+                        </button>
+                      ) : plan.priceInr === 0 ? (
+                        isAuthenticated ? (
+                          <button disabled className="btn-ghost w-full opacity-60">
+                            Free Plan Active
+                          </button>
+                        ) : (
+                          <Link href="/register" className="btn-ghost w-full">
+                            Start Free
+                          </Link>
+                        )
+                      ) : isAuthenticated ? (
+                        <button
+                          onClick={() => {
+                            setCheckoutSkill(null);
+                            setCheckoutPlan(plan);
+                          }}
+                          className={cn("w-full", isFamily ? "btn-premium" : "btn-primary")}
+                        >
+                          {isFamily ? <Crown className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+                          Choose {plan.name}
                         </button>
                       ) : (
-                        <Link href="/register" className="btn-ghost w-full">
-                          Start free
+                        <Link href="/register" className={cn("w-full", isFamily ? "btn-premium" : "btn-primary")}>
+                          Get started <ArrowRight className="h-4 w-4" />
                         </Link>
-                      )
-                    ) : isAuthenticated ? (
-                      <button
-                        onClick={() => setCheckoutPlan(plan)}
-                        className={cn("w-full", isFounder ? "btn-premium" : "btn-primary")}
-                      >
-                        {isFounder ? <Crown className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
-                        Choose {plan.name}
-                      </button>
-                    ) : (
-                      <Link href="/register" className={cn("w-full", isFounder ? "btn-premium" : "btn-primary")}>
-                        Get started <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Individual Skill Purchase Grid Section (₹99) */}
+          <section className="mb-16">
+            <div className="mb-6 text-center">
+              <div className="chip mx-auto mb-2 border-brand/40 bg-brand/10 text-brand">
+                <BookOpen className="h-3.5 w-3.5" /> Single Skill Unlocks
+              </div>
+              <h2 className="font-display text-2xl font-bold text-white">Purchase Any Skill Separately — ₹99</h2>
+              <p className="mt-1 text-xs text-zinc-400">
+                Want just 1 skill? Get lifetime access to all 10 missions, deliverables, portfolio hosting & certificate for ₹99 one-time.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {catalog.map((s) => {
+                const isSingleUnlocked = Boolean(myProgress.unlockedSingleSkills?.includes(s.id));
+                const isFullProAccess = isPro;
+                const isUnlocked = isSingleUnlocked || isFullProAccess;
+
+                return (
+                  <div
+                    key={s.id}
+                    className="card-glow flex flex-col justify-between rounded-2xl border border-line bg-card p-5 transition hover:border-brand/40"
+                  >
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10"
+                          style={{ background: `${s.color}22` }}
+                        >
+                          <SkillIcon name={s.iconName} className="h-5 w-5" style={{ color: s.color }} />
+                        </div>
+                        <div>
+                          <h3 className="font-display text-base font-bold text-white">{s.title}</h3>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{s.category}</span>
+                        </div>
+                      </div>
+
+                      <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-zinc-400">{s.description}</p>
+
+                      <ul className="mt-3 space-y-1.5 text-[11px] text-zinc-300">
+                        <li className="flex items-center gap-1.5">
+                          <Check className="h-3.5 w-3.5 text-success" /> All 10 Campaign Missions
+                        </li>
+                        <li className="flex items-center gap-1.5">
+                          <Check className="h-3.5 w-3.5 text-success" /> Real Portfolio Project Deliverable
+                        </li>
+                        <li className="flex items-center gap-1.5">
+                          <Check className="h-3.5 w-3.5 text-success" /> QR-Verified Completion Certificate
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="mt-5 flex items-center justify-between border-t border-line/60 pt-4">
+                      <div>
+                        <div className="text-[10px] text-zinc-500">One-time payment</div>
+                        <div className="font-display text-lg font-bold text-white">₹99</div>
+                      </div>
+
+                      {isUnlocked ? (
+                        <Link href={`/learn/${s.id}`} className="btn-ghost text-xs">
+                          <CheckCircle2 className="h-4 w-4 text-success" /> {isFullProAccess ? "Pro Unlocked" : "Unlocked ✓"}
+                        </Link>
+                      ) : isAuthenticated ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const indPlan = PLANS.find((p) => p.id === "INDIVIDUAL_SKILL") ?? PLANS[1];
+                            setCheckoutSkill(s);
+                            setCheckoutPlan(indPlan);
+                          }}
+                          className="btn-primary text-xs px-4"
+                        >
+                          Unlock for ₹99
+                        </button>
+                      ) : (
+                        <Link href="/register" className="btn-primary text-xs px-4">
+                          Unlock for ₹99
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </section>
 
           {/* comparison table */}
           <section className="mt-16">
-            <h2 className="text-center font-display text-2xl font-bold text-white">Free vs Pro</h2>
+            <h2 className="text-center font-display text-2xl font-bold text-white">Free vs Pro Comparison</h2>
             <p className="mt-2 text-center text-sm text-zinc-400">Everything at a glance.</p>
             <div className="clay-card mt-6 overflow-x-auto">
               <table className="w-full min-w-[480px] text-left text-sm">
@@ -649,9 +754,14 @@ export default function PricingPage() {
                   <tr className="border-b border-line">
                     <th className="px-5 py-4 text-xs font-bold uppercase tracking-wider text-zinc-400">Feature</th>
                     <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-wider text-zinc-400">
-                      Free
+                      Free (₹0)
                     </th>
-                    <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-wider text-brand">Pro</th>
+                    <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-wider text-brand">
+                      Single Skill (₹99)
+                    </th>
+                    <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-wider text-accent">
+                      Pro / Family
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -664,6 +774,9 @@ export default function PricingPage() {
                         ) : (
                           <X className="mx-auto h-4 w-4 text-zinc-600" strokeWidth={3} />
                         )}
+                      </td>
+                      <td className="px-5 py-3.5 text-center">
+                        <Check className="mx-auto h-4 w-4 text-success" strokeWidth={3} />
                       </td>
                       <td className="px-5 py-3.5 text-center">
                         {row.pro ? (
@@ -709,8 +822,7 @@ export default function PricingPage() {
                 Built for outcomes, not certificates alone
               </h3>
               <p className="mx-auto mt-2 max-w-md text-sm text-zinc-400">
-                Every rupee goes toward reviews, better missions and a platform that makes you employable. Questions?
-                Reach us any time.
+                Every rupee goes toward AI project reviews, better missions, and building a platform that makes you employable.
               </p>
               {!isAuthenticated && (
                 <Link href="/register" className="btn-primary mx-auto mt-5">
@@ -722,7 +834,25 @@ export default function PricingPage() {
         </main>
       </div>
 
-      {checkoutPlan && <CheckoutModal plan={checkoutPlan} coupon={coupon} onClose={() => setCheckoutPlan(null)} />}
+      {checkoutPlan && (
+        <CheckoutModal
+          plan={checkoutPlan}
+          skill={checkoutSkill}
+          coupon={coupon}
+          onClose={() => {
+            setCheckoutPlan(null);
+            setCheckoutSkill(null);
+          }}
+        />
+      )}
     </AppShell>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-dvh bg-base" />}>
+      <PricingContent />
+    </Suspense>
   );
 }

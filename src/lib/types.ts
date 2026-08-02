@@ -8,7 +8,7 @@ export type Role = "USER" | "ADMIN";
 
 /* ------------------------------ plans ------------------------------ */
 
-export type PlanId = "FREE" | "PRO_MONTHLY" | "PRO_YEARLY" | "FAMILY" | "FOUNDER_LIFETIME";
+export type PlanId = "FREE" | "INDIVIDUAL_SKILL" | "PRO_MONTHLY" | "PRO_YEARLY" | "FAMILY" | "FOUNDER_LIFETIME";
 
 export interface Subscription {
   plan: PlanId;
@@ -402,6 +402,7 @@ export interface UserProgress {
   completed: Record<string, ProgressEntry>; // missionId -> entry
   premiumUnlocks: Record<string, boolean>; // legacy skill unlocks (v1)
   claimedMissions?: Record<string, boolean>; // daily quest claims
+  unlockedSingleSkills?: string[]; // skill IDs unlocked individually for ₹99
 }
 
 /* -------------------------------- app state -------------------------------- */

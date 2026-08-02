@@ -244,6 +244,7 @@ interface AppApi {
   /* plans & payments */
   purchasePlanUpi: (planId: PlanId, amountInr: number, utrNumber: string, couponCode?: string) => PaymentRecord;
   activatePlan: (planId: PlanId, method: PaymentMethod, amountInr: number, meta?: { orderId?: string; paymentId?: string; couponCode?: string }) => void;
+  unlockSingleSkill: (skillId: string, method: PaymentMethod, amountInr: number, meta?: { orderId?: string; paymentId?: string }) => void;
   adminResolvePayment: (paymentId: string, status: "APPROVED" | "REJECTED") => void;
   adminGrantPlan: (userId: string, planId: PlanId) => void;
   cancelSubscription: () => void;
@@ -455,10 +456,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!mission) return { unlocked: false, reason: "LOCKED_PREV" };
       if (mission.isLocked) return { unlocked: false, reason: "ADMIN_LOCKED" };
       const user = state.users.find((u) => u.id === targetUid);
-      if (mission.isPremium && !isPaidPlan(user?.subscription)) return { unlocked: false, reason: "NEEDS_PRO" };
+      const prog = progressFor(targetUid ?? "");
+      const singleUnlocked = Boolean(prog.unlockedSingleSkills?.includes(skill.id));
+      if (mission.isPremium && !isPaidPlan(user?.subscription) && !singleUnlocked) {
+        return { unlocked: false, reason: "NEEDS_PRO" };
+      }
       if (order === 1) return { unlocked: true };
       if (!targetUid) return { unlocked: false, reason: "LOCKED_PREV" };
-      const prog = progressFor(targetUid);
       const prev = skill.missions.find((m) => m.order === order - 1);
       return prev && prog.completed[prev.id] ? { unlocked: true } : { unlocked: false, reason: "LOCKED_PREV" };
     },
@@ -1003,6 +1007,47 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [currentUser]
   );
 
+  const unlockSingleSkill = useCallback(
+    (skillId: string, method: PaymentMethod, amountInr: number, meta?: { orderId?: string; paymentId?: string }) => {
+      if (!currentUser) return;
+      const rec: PaymentRecord = {
+        id: uid("pay"),
+        userId: currentUser.id,
+        purpose: "PLAN",
+        planId: "INDIVIDUAL_SKILL",
+        amountInr,
+        method,
+        status: "APPROVED",
+        gatewayOrderId: meta?.orderId,
+        gatewayPaymentId: meta?.paymentId,
+        createdAt: new Date().toISOString(),
+        resolvedAt: new Date().toISOString(),
+      };
+      setState((s) => {
+        const userProg = s.progress[currentUser.id] ?? { completed: {}, premiumUnlocks: {} };
+        const currentUnlocked = userProg.unlockedSingleSkills ?? [];
+        const nextUnlocked = Array.from(new Set([...currentUnlocked, skillId]));
+        const nextProg: UserProgress = { ...userProg, unlockedSingleSkills: nextUnlocked };
+        const targetSkill = s.catalog.find((sk) => sk.id === skillId);
+        const skillName = targetSkill?.title ?? "Skill";
+
+        return {
+          ...s,
+          payments: [rec, ...s.payments],
+          progress: {
+            ...s.progress,
+            [currentUser.id]: nextProg,
+          },
+          notifications: [
+            makeNotification(currentUser.id, `Congratulations! You unlocked full lifetime access to "${skillName}" for ₹${amountInr}.`),
+            ...s.notifications,
+          ],
+        };
+      });
+    },
+    [currentUser]
+  );
+
   const adminResolvePayment = useCallback((paymentId: string, status: "APPROVED" | "REJECTED") => {
     setState((s) => {
       const rec = s.payments.find((p) => p.id === paymentId);
@@ -1453,6 +1498,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     switchFamilyChildProfile,
     purchasePlanUpi,
     activatePlan,
+    unlockSingleSkill,
     adminResolvePayment,
     adminGrantPlan,
     cancelSubscription,

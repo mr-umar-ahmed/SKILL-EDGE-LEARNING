@@ -41,55 +41,74 @@ export interface PlanDef {
 export const PLANS: PlanDef[] = [
   {
     id: "FREE",
-    name: "Free",
+    name: "Free Plan",
     priceInr: 0,
     period: "forever",
     tagline: "Start building today",
     features: [
-      "First 4 missions of every skill",
-      "Project submissions & feedback",
-      "Basic certificates",
+      "Limited access",
+      "First 2-3 missions of every skill unlocked",
       "Community access",
-      "Ad-supported",
+      "Basic certificate",
+    ],
+  },
+  {
+    id: "INDIVIDUAL_SKILL",
+    name: "Individual Skill",
+    priceInr: 99,
+    period: "lifetime",
+    tagline: "Purchase any 1 skill separately",
+    features: [
+      "Lifetime access to 1 chosen skill",
+      "All tiers & 10 missions for that skill",
+      "Real portfolio proof-of-work project",
+      "QR-verified certificate for that skill",
+      "Future updates for that skill",
     ],
   },
   {
     id: "PRO_MONTHLY",
     name: "Pro Monthly",
-    priceInr: 499,
+    priceInr: 399,
     period: "month",
-    tagline: "The full Skill OS",
+    tagline: "The full Skill Operating System",
     features: [
-      "All skills, all missions",
-      "Priority project reviews",
-      "Full portfolio & share link",
+      "Access to all 12 skills & 120 missions",
+      "All projects & portfolio hosting",
       "All certificates + QR verification",
-      "Weekly challenges & tournaments",
-      "Completely ad-free",
+      "Priority AI & admin project reviews",
+      "All future skills included",
+      "Completely ad-free experience",
     ],
     highlight: true,
   },
   {
     id: "PRO_YEARLY",
     name: "Pro Yearly",
-    priceInr: 4999,
+    priceInr: 3999,
     period: "year",
-    tagline: "2 months free",
-    features: ["Everything in Pro Monthly", "₹417/month effective", "Yearly progress report", "Completely ad-free"],
+    tagline: "Best value with yearly savings",
+    features: [
+      "Everything in Pro Monthly",
+      "₹333/month effective price",
+      "2 months completely free",
+      "Yearly progress audit & badge",
+      "Completely ad-free experience",
+    ],
   },
   {
     id: "FAMILY",
     name: "Family Plan",
-    priceInr: 9999,
-    period: "year",
-    tagline: "One subscription for siblings",
+    priceInr: 699,
+    period: "month",
+    tagline: "Designed for parents with siblings",
     features: [
-      "Up to 5 child profiles with separate progress",
-      "Separate portfolios, certificates & badges",
-      "Independent XP & Neurons for each child",
-      "All 12 skills & missions fully unlocked",
-      "Parent oversight & progress reports",
-      "Completely ad-free for all profiles",
+      "Up to 4 child accounts with separate profiles",
+      "Separate progress, portfolios & certificates",
+      "Separate XP & Neurons for each child",
+      "Dedicated Parent Oversight Dashboard",
+      "All 12 skills & 120 missions fully unlocked",
+      "Completely ad-free for all family profiles",
     ],
   },
 ];
@@ -104,6 +123,20 @@ export function isPaidPlan(sub: Subscription | undefined | null): boolean {
   if (sub.status !== "ACTIVE") return false;
   if (sub.expiresAt && new Date(sub.expiresAt).getTime() < Date.now()) return false;
   return true;
+}
+
+export function discounted(priceInr: number, coupon: { percentOff: number } | null): number {
+  if (!coupon || priceInr <= 0) return priceInr;
+  const off = Math.round((priceInr * coupon.percentOff) / 100);
+  return Math.max(0, priceInr - off);
+}
+
+export function periodLabel(plan: PlanDef): string {
+  if (plan.period === "forever") return "";
+  if (plan.period === "month") return "/ month";
+  if (plan.period === "year") return "/ year";
+  if (plan.period === "lifetime") return "one-time";
+  return "";
 }
 
 /* ---------------------------- xp & tiers ---------------------------- */

@@ -10,6 +10,7 @@ import {
   Hexagon,
   Layers,
   Lock,
+  Sparkles,
   Zap,
 } from "lucide-react";
 import { useState } from "react";
@@ -158,7 +159,7 @@ function MissionRow({ skill, mission }: { skill: Skill; mission: Mission }) {
 
 export default function SkillMapPage() {
   const params = useParams<{ skillId: string }>();
-  const { hydrated, catalog, myProgress } = useApp();
+  const { hydrated, catalog, myProgress, isPro } = useApp();
   const [viewMode, setViewMode] = useState<"duolingo" | "list">("duolingo");
 
   const skill = catalog.find((s) => s.id === params.skillId);
@@ -272,6 +273,33 @@ export default function SkillMapPage() {
 
         {/* Skill Transformation Outcome Section */}
         <SkillTransformationHero transformation={skill.transformation} skillTitle={skill.title} skillColor={skill.color} />
+
+        {/* Upgrade / Single Skill Unlock CTA Banner */}
+        {!isPro && !myProgress.unlockedSingleSkills?.includes(skill.id) && (
+          <div className="card-glow relative mb-8 overflow-hidden rounded-2xl border border-brand/40 bg-gradient-to-r from-brand/10 via-surface to-brand/5 p-5 animate-fade-up">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/15 px-3 py-1 text-xs font-bold text-brand">
+                  <Sparkles className="h-3.5 w-3.5" /> Unlock All 10 Missions of {skill.title}
+                </div>
+                <h3 className="mt-2 font-display text-lg font-bold text-white">
+                  Missions 1–3 are Free. Unlock this skill for ₹99!
+                </h3>
+                <p className="mt-1 text-xs text-zinc-400">
+                  Get lifetime access to all 10 missions, deliverables, portfolio hosting, QR certificate, and future updates.
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                <Link href={`/pricing?skillId=${skill.id}`} className="btn-primary shrink-0 text-xs px-4">
+                  <Zap className="h-4 w-4" /> Unlock for ₹99
+                </Link>
+                <Link href="/pricing" className="btn-premium shrink-0 text-xs px-4">
+                  <Crown className="h-4 w-4" /> Upgrade to Pro
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mode Toggle & Header */}
         <div className="mb-6 flex items-center justify-between">
