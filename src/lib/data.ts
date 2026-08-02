@@ -16,7 +16,6 @@ import type {
 } from "./types";
 import { todayKey } from "./utils";
 
-
 export const STUDENT_TIERS: StudentTier[] = [
   {
     tierNumber: 1,
@@ -48,98 +47,360 @@ export const STUDENT_TIERS: StudentTier[] = [
     color: "Purple",
     hexColor: "#a855f7",
     iconName: "Hammer",
-    requirements: ["Earn 3,000 XP", "Complete 3 Skills", "Submit 10 Projects"],
-    rewards: ["Builder Badge", "Advanced Projects", "Exclusive Resources", "Priority Community Access"],
-    minXp: 3000,
+    requirements: ["Earn 5,000 XP", "Complete 3 Skills", "Maintain a 14-Day Streak"],
+    rewards: ["Builder Badge", "Advanced Missions", "Project Review Priority", "Special Discounts"],
+    minXp: 5000,
     minSkillsCompleted: 3,
-    minStreak: 10,
-  },
-  {
-    tierNumber: 4,
-    name: "Operator",
-    color: "Orange",
-    hexColor: "#f97316",
-    iconName: "Rocket",
-    requirements: ["Earn 6,000 XP", "Complete 5 Skills", "Complete 2 Capstone Projects"],
-    rewards: ["Operator Badge", "AI Mentor Access", "Premium Challenges", "Featured Portfolio"],
-    minXp: 6000,
-    minSkillsCompleted: 5,
     minStreak: 14,
   },
   {
-    tierNumber: 5,
-    name: "Pro",
-    color: "Gold",
-    hexColor: "#eab308",
-    iconName: "Crown",
-    requirements: ["Earn 10,000 XP", "Complete 8 Skills", "Build Professional Portfolio", "Earn at least one Excellence Certificate"],
-    rewards: ["Pro Badge", "Verified Portfolio", "Priority Certificate Verification", "Career Opportunities", "Internship Recommendations"],
-    minXp: 10000,
-    minSkillsCompleted: 8,
-    minStreak: 21,
-  },
-  {
-    tierNumber: 6,
-    name: "Elite",
-    color: "Black + Gold",
-    hexColor: "#d97706",
-    iconName: "Gem",
-    requirements: ["Earn 15,000 XP", "Complete All 12 Skills", "Complete Every Capstone Project", "Build Complete Portfolio"],
-    rewards: ["Elite Badge", "Elite Certificate", "Featured Student Profile", "Exclusive Community", "Founder Recognition"],
+    tierNumber: 4,
+    name: "Master",
+    color: "Orange",
+    hexColor: "#f97316",
+    iconName: "Flame",
+    requirements: ["Earn 15,000 XP", "Complete 6 Skills", "Maintain a 30-Day Streak"],
+    rewards: ["Master Badge", "Pro Features Free", "Mentorship Invites", "Custom Profile Frame"],
     minXp: 15000,
-    minSkillsCompleted: 12,
+    minSkillsCompleted: 6,
     minStreak: 30,
   },
   {
-    tierNumber: 7,
-    name: "Master Practitioner",
-    color: "Platinum + Gold",
-    hexColor: "#e2e8f0",
-    iconName: "Trophy",
-    requirements: ["Complete Every Skill", "Maintain 90%+ Overall Score", "Earn Excellence in Multiple Skills", "Build an Industry-Ready Portfolio"],
-    rewards: ["Master Practitioner Certificate", "Platinum Badge", "Hall of Fame Profile", "Mentor Access", "Premium Career Opportunities"],
-    minXp: 25000,
+    tierNumber: 5,
+    name: "Legend",
+    color: "Gold",
+    hexColor: "#eab308",
+    iconName: "Crown",
+    requirements: ["Earn 30,000 XP", "Complete 12 Skills", "Maintain a 60-Day Streak"],
+    rewards: ["Legend Badge", "Lifetime Access", "Exclusive Leaderboard", "Direct Founder Support"],
+    minXp: 30000,
     minSkillsCompleted: 12,
     minStreak: 60,
   },
 ];
 
-export const XP_REWARDS = {
-  completeMission: 50,
-  completeQuiz: 25,
-  submitAssignment: 50,
-  completePhaseProject: 300,
-  completeCapstoneProject: 750,
-  dailyStreak: 20,
-  weeklyChallenge: 150,
-  monthlyChallenge: 500,
-  helpStudent: 50,
-};
+export function studentTierForXp(xp: number): StudentTier {
+  let tier = STUDENT_TIERS[0];
+  for (const t of STUDENT_TIERS) {
+    if (xp >= t.minXp) tier = t;
+  }
+  return tier;
+}
 
-export const TIERS = STUDENT_TIERS.map((t) => t.name);
-
-export const CERT_TIERS = [5, 10];
-
-/* ---------------------------------- quotes --------------------------------- */
-
-export const QUOTES: { text: string; author: string }[] = [
-  { text: "Ship something small today. Momentum compounds faster than talent.", author: "Skill Edge OS" },
-  { text: "Learn to build, learn to sell. You'll be unstoppable.", author: "Naval Ravikant" },
-  { text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
-  { text: "The best way to predict the future is to invent it.", author: "Alan Kay" },
-  { text: "Done is better than perfect.", author: "Sheryl Sandberg" },
-  { text: "Make something people want.", author: "Paul Graham" },
-  { text: "Your streak is a vote for the person you're becoming.", author: "Skill Edge OS" },
-  { text: "Amateurs wait for inspiration. Builders open the editor.", author: "Skill Edge OS" },
-  { text: "Move fast and build things worth keeping.", author: "Skill Edge OS" },
-  { text: "Every expert was once a beginner who refused to quit.", author: "Skill Edge OS" },
-  { text: "If you're not embarrassed by v1, you launched too late.", author: "Reid Hoffman" },
-  { text: "Consistency beats intensity. Show up daily.", author: "Skill Edge OS" },
-  { text: "The market rewards skills, not certificates. Earn both here.", author: "Skill Edge OS" },
-  { text: "Prompt like an architect, iterate like a scientist.", author: "Skill Edge OS" },
+export const CERT_TIERS = [
+  { level: 5, name: "Phase Completion Certificate", badge: "Milestone" },
+  { level: 10, name: "Master Skill Certificate", badge: "Mastery" },
 ];
 
-/* -------------------------------- skill seeds ------------------------------- */
+export const QUOTES = [
+  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+  { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+  { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+  { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
+];
+
+export const SKILL_TRANSFORMATIONS: Record<string, SkillTransformation> = {
+  "vibe-coding": {
+    become: "AI Software Engineer & Product Architect",
+    headline: "By completing this skill, you'll become an AI Software Engineer capable of building real-world software using AI tools like Cursor, Claude Code, Windsurf, Bolt, Supabase, and Vercel.",
+    canBuild: [
+      "AI SaaS Web Applications",
+      "Full-stack Web Platforms",
+      "Custom AI Tools & Dashboards",
+      "Automated Developer Bots & Micro-SaaS",
+    ],
+    realWorldOutcomes: [
+      "Ship software 10x faster using Cursor, Claude Code, and Windsurf",
+      "Connect databases, auth, and APIs without writing boilerplate from scratch",
+      "Deploy production apps with custom domain and backend persistence",
+    ],
+    projectsCompleted: [
+      "AI Prompt-to-App Generator",
+      "SaaS Landing Page with Authentication & Stripe",
+      "Autonomous Bug-Fixing Pipeline & Live Vercel App",
+    ],
+    careerOpportunities: [
+      "AI Software Engineer ($90k - $160k/yr)",
+      "Founding Engineer / Micro-SaaS Creator",
+      "Freelance AI App Developer ($75 - $150/hr)",
+    ],
+  },
+  "ai-automation": {
+    become: "AI Workflow & Automation Specialist",
+    headline: "By completing this skill, you'll become an AI Workflow Specialist capable of building autonomous multi-step business automations using Make.com, n8n, and OpenAI APIs.",
+    canBuild: [
+      "Autonomous Customer Support Agents",
+      "Multi-App Data Sync Pipelines",
+      "Automated Content & Lead Generators",
+      "Custom Webhook & API Integrations",
+    ],
+    realWorldOutcomes: [
+      "Automate manual business tasks across Make.com, n8n, and Zapier",
+      "Connect LLM API endpoints to internal tools and databases",
+      "Monetize business process automations for agency clients",
+    ],
+    projectsCompleted: [
+      "Multi-Agent Support Auto-Responder",
+      "Automated Lead Scoring & CRM Pipeline",
+      "Self-Hosted n8n Executive Briefing Workflow",
+    ],
+    careerOpportunities: [
+      "AI Operations Specialist ($80k - $135k/yr)",
+      "Automation Consultant ($100/hr)",
+      "Growth Automation Lead",
+    ],
+  },
+  "ai-product-management": {
+    become: "Technical AI Product Manager",
+    headline: "By completing this skill, you'll become a Technical AI Product Manager capable of defining, scoping, wireframing, and shipping AI-first products.",
+    canBuild: [
+      "AI Product Requirement Documents (PRDs)",
+      "Interactive Wireframes & Feature Specs",
+      "Product Analytics Dashboards",
+      "GTM & Product Launch Playbooks",
+    ],
+    realWorldOutcomes: [
+      "Scope AI product features with technical feasibility and ROI",
+      "Define user stories, metrics (DAU, retention), and feature roadmaps",
+      "Lead cross-functional engineering and design teams effortlessly",
+    ],
+    projectsCompleted: [
+      "Complete AI Product PRD & Spec",
+      "Figma Product Wireframe & User Flow",
+      "Product Hunt Launch Execution Deck",
+    ],
+    careerOpportunities: [
+      "AI Product Manager ($110k - $190k/yr)",
+      "Technical PM / Growth Product Owner",
+      "Product Strategy Consultant",
+    ],
+  },
+  "fullstack-web": {
+    become: "Fullstack Next.js & TypeScript Engineer",
+    headline: "By completing this skill, you'll become a Fullstack Engineer capable of architecting production web apps using Next.js 14, Tailwind CSS, TypeScript, and Supabase.",
+    canBuild: [
+      "Production Next.js 14 Applications",
+      "Database Schemas & REST/GraphQL APIs",
+      "Real-time Dashboards with Tailwind CSS",
+      "Authenticated E-Commerce & SaaS Apps",
+    ],
+    realWorldOutcomes: [
+      "Master Next.js App Router, Server Actions, and Supabase",
+      "Architect clean, performant, and type-safe web codebases",
+      "Pass technical interviews and build production-grade web systems",
+    ],
+    projectsCompleted: [
+      "TypeScript & Tailwind Component Library",
+      "Supabase Database & Auth Engine",
+      "Fullstack E-Commerce & SaaS Web App",
+    ],
+    careerOpportunities: [
+      "Fullstack Engineer ($95k - $165k/yr)",
+      "Frontend Developer (React/Next.js)",
+      "Contract Web Architect ($80 - $140/hr)",
+    ],
+  },
+  "ui-ux-design": {
+    become: "Senior UI/UX & Design Systems Specialist",
+    headline: "By completing this skill, you'll become a Product Designer capable of crafting UI design systems, Auto Layout components, and interactive prototypes in Figma.",
+    canBuild: [
+      "Figma Component Libraries & Design Systems",
+      "Interactive High-Fidelity App Prototypes",
+      "Mobile & Web Visual Interfaces",
+      "UX Research & Usability Audit Reports",
+    ],
+    realWorldOutcomes: [
+      "Build scalable Figma Auto Layout components with design tokens",
+      "Conduct user testing and eliminate usability friction points",
+      "Deliver developer-ready design handoffs following WCAG accessibility",
+    ],
+    projectsCompleted: [
+      "Dark-Theme Mobile UI Kit in Figma",
+      "Interactive SaaS Web Application Prototype",
+      "Design System Documentation & Token Sheet",
+    ],
+    careerOpportunities: [
+      "UI/UX Designer ($85k - $150k/yr)",
+      "Product Designer / Design Systems Lead",
+      "Freelance UX Specialist ($70 - $130/hr)",
+    ],
+  },
+  "ai-content-creation": {
+    become: "AI Content Architect & Media Creator",
+    headline: "By completing this skill, you'll become an AI Content Creator capable of producing viral short-form and long-form media using AI scripting, Midjourney visuals, and CapCut editing.",
+    canBuild: [
+      "Viral Short-Form Shorts & Reels",
+      "AI Voiceover & Scripting Pipelines",
+      "Midjourney & Canvas Visual Banners",
+      "YouTube Channel Brand Engines",
+    ],
+    realWorldOutcomes: [
+      "Script and edit high-engagement videos with CapCut/Premiere and AI",
+      "Generate custom hyper-realistic visual assets and thumbnails",
+      "Build a scalable digital audience and media brand asset",
+    ],
+    projectsCompleted: [
+      "10-Part Viral Short-Form Video Series",
+      "AI Generated Visual Asset & Brand Pack",
+      "YouTube Growth Engine & Channel Launch",
+    ],
+    careerOpportunities: [
+      "Digital Media Manager ($65k - $115k/yr)",
+      "AI Content Lead / Media Creator",
+      "Short-Form Video Strategist",
+    ],
+  },
+  "digital-growth": {
+    become: "Growth Marketing & Funnel Specialist",
+    headline: "By completing this skill, you'll become a Growth Marketer capable of executing data-driven acquisition funnels, Meta/Google performance ads, and SEO strategies.",
+    canBuild: [
+      "High-Converting Sales & Lead Funnels",
+      "Meta & Google Performance Ad Campaigns",
+      "SEO Content Clusters & Keyword Maps",
+      "Email Automation & Retention Workflows",
+    ],
+    realWorldOutcomes: [
+      "Lower Customer Acquisition Cost (CAC) and scale ROAS",
+      "Optimize landing page conversions (CRO) with data analytics",
+      "Draft persuasive ad copy and automated email sequences",
+    ],
+    projectsCompleted: [
+      "Landing Page Conversion Audit & CRO Wireframe",
+      "Meta/Google Ad Campaign Structure & Copy",
+      "SEO Content Map & GA4 Tracking Setup",
+    ],
+    careerOpportunities: [
+      "Growth Marketing Manager ($85k - $155k/yr)",
+      "Performance Marketer / Paid Ads Specialist",
+      "Conversion Optimization Consultant",
+    ],
+  },
+  freelancing: {
+    become: "Independent High-Ticket Service Provider",
+    headline: "By completing this skill, you'll become a High-Paid Freelancer capable of closing $1,000+ deals on Upwork, Fiverr, and cold outreach.",
+    canBuild: [
+      "High-Converting Upwork & Fiverr Profiles",
+      "Winning Cold Pitch & Proposal Templates",
+      "Value-Based Pricing Calculators & Contracts",
+      "Client Onboarding & Invoice Systems",
+    ],
+    realWorldOutcomes: [
+      "Land $1,000+ client projects through structured proposal frameworks",
+      "Implement value-based pricing and recurring retainer contracts",
+      "Manage client communication, scope changes, and timely payments",
+    ],
+    projectsCompleted: [
+      "Top-Rated Upwork Profile & Portfolio Sheet",
+      "5 Custom Client Proposals & Cold Pitch Script",
+      "Standard Client Services Agreement & Invoice Template",
+    ],
+    careerOpportunities: [
+      "Independent Service Provider ($5k - $15k/mo)",
+      "Agency Founder / Solopreneur",
+      "High-Ticket Sales Consultant",
+    ],
+  },
+  "data-analytics": {
+    become: "Data Analyst & Business Intelligence Specialist",
+    headline: "By completing this skill, you'll become a Data Analyst capable of querying SQL databases, wrangling data in Python, and building Tableau/Looker dashboards.",
+    canBuild: [
+      "SQL Complex Query Pipelines",
+      "Interactive Tableau & Looker Dashboards",
+      "Cohort & Retention Analytics Reports",
+      "Python Data Wrangling Notebooks",
+    ],
+    realWorldOutcomes: [
+      "Extract insights from multi-table relational databases using SQL",
+      "Clean, transform, and visualize large datasets using Python",
+      "Present executive metrics to guide executive business decisions",
+    ],
+    projectsCompleted: [
+      "SQL E-Commerce Cohort Retention Analysis",
+      "Python Pandas Sales Data Wrangling Script",
+      "Executive KPI Dashboard in Tableau/Looker",
+    ],
+    careerOpportunities: [
+      "Data Analyst ($75k - $135k/yr)",
+      "Business Intelligence Engineer",
+      "Growth Analytics Consultant",
+    ],
+  },
+  cybersecurity: {
+    become: "Junior Security Analyst & Defense Specialist",
+    headline: "By completing this skill, you'll become a Security Analyst capable of defending web applications against OWASP Top 10 vulnerabilities and network threats.",
+    canBuild: [
+      "Vulnerability Audit Reports",
+      "OWASP Security Fix Test Suites",
+      "Network Traffic Wireshark Logs",
+      "Hardened Server & Auth Specs",
+    ],
+    realWorldOutcomes: [
+      "Identify and patch OWASP Top 10 vulnerabilities (SQLi, XSS, CSRF)",
+      "Audit network traffic and enforce secure authentication protocols",
+      "Hardening cloud web infrastructure against automated attacks",
+    ],
+    projectsCompleted: [
+      "OWASP Top 10 Web Security Audit Report",
+      "Wireshark Network Traffic Packet Analysis",
+      "Secure Auth & Data Encryption Implementation",
+    ],
+    careerOpportunities: [
+      "Cybersecurity Analyst ($85k - $145k/yr)",
+      "Junior Ethical Hacker / SOC Analyst",
+      "AppSec Consultant",
+    ],
+  },
+  "research-critical-thinking": {
+    become: "Lead Research Analyst & Information Strategist",
+    headline: "By completing this skill, you'll become a Research Analyst capable of evaluating evidence, detecting cognitive biases, and authoring rigorous reports with AI.",
+    canBuild: [
+      "Evidence-Based Industry Intelligence Reports",
+      "Bias & Logic Audit Frameworks",
+      "AI-Assisted Academic Literature Reviews",
+      "Strategic Decision Matrix & Risk Briefs",
+    ],
+    realWorldOutcomes: [
+      "Verify source credibility and eliminate misinformation or hallucinated facts",
+      "Leverage AI tools (Perplexity, Elicit, Consensus) for deep research synthesis",
+      "Formulate sound, logic-backed recommendations for complex decisions",
+    ],
+    projectsCompleted: [
+      "Comprehensive AI Industry Market Research Brief",
+      "Fact-Checking & Bias Audit Matrix",
+      "Strategic Decision & Risk Assessment Report",
+    ],
+    careerOpportunities: [
+      "Research Analyst ($70k - $125k/yr)",
+      "Intelligence Strategist / Policy Analyst",
+      "Executive Research Consultant",
+    ],
+  },
+  "prompt-engineering": {
+    become: "AI Context Architect & Prompt Engineer",
+    headline: "By completing this skill, you'll become a Prompt Engineer capable of architecting system prompt libraries, Few-Shot examples, CoT reasoning, and RAG pipelines.",
+    canBuild: [
+      "Production System Prompt Libraries",
+      "Chain-of-Thought (CoT) & Few-Shot Templates",
+      "RAG Context Retrieval Architectures",
+      "LLM Evaluation & Benchmark Suites",
+    ],
+    realWorldOutcomes: [
+      "Design zero-hallucination system prompts for enterprise LLM apps",
+      "Optimize prompt context windows and reduce token costs",
+      "Benchmark model outputs against gold-standard evaluation datasets",
+    ],
+    projectsCompleted: [
+      "Enterprise System Prompt & Few-Shot Library",
+      "RAG Context Retrieval & Grounding Spec",
+      "LLM Output Evaluation & Accuracy Suite",
+    ],
+    careerOpportunities: [
+      "Prompt Engineer ($100k - $175k/yr)",
+      "AI Context Architect",
+      "LLM Specialist Consultant",
+    ],
+  },
+};
 
 interface SkillSeed {
   id: string;
@@ -149,506 +410,507 @@ interface SkillSeed {
   description: string;
   color: string;
   videoIds: string[];
-  levels: [title: string, mission: string][]; // exactly 10
-  bank: [prompt: string, correct: string, ...wrong: string[]][]; // 6 questions, correct listed first
+  levels: [title: string, brief: string][];
+  bank: [prompt: string, correct: string, wrong1: string, wrong2: string, wrong3: string][];
 }
 
-const SEEDS: SkillSeed[] = [
-  {
-    id: "ai-prompt-engineering",
-    title: "AI Tools & Prompt Engineering",
-    category: "AI & Automation",
-    iconName: "Bot",
-    description: "Master ChatGPT, Midjourney, n8n and agentic workflows — from prompt anatomy to shipping AI products.",
-    color: "#06b6d4",
-    videoIds: ["zjkBMFhNj_g", "aircAruvnKk"],
-    levels: [
-      ["Prompt Anatomy 101", "Write 5 prompts using the Role + Task + Context + Format pattern and compare the outputs side by side."],
-      ["System Prompts & Personas", "Design a system prompt that turns ChatGPT into a strict interview coach, then stress-test it across 3 conversations."],
-      ["Few-Shot & Chain-of-Thought", "Build a few-shot prompt that classifies 10 support emails, then add chain-of-thought and measure the accuracy jump."],
-      ["Structured Output & JSON", "Force a model to return valid JSON for a recipe app and validate every response with a parser."],
-      ["Midjourney & Visual Prompting", "Generate a 4-image brand moodboard using style, lens and lighting modifiers, and document your prompt recipe."],
-      ["ChatGPT API Basics", "Call the API with temperature 0.2 vs 1.0 on the same task and write up the behavioural differences."],
-      ["n8n Automation Pipelines", "Build an n8n flow: RSS trigger → AI summarizer → auto-post to a Discord channel."],
-      ["Agentic Workflows", "Design a two-agent loop (researcher + writer) with an explicit handoff protocol and stop condition."],
-      ["RAG & Knowledge Bots", "Prototype a Q&A bot over your own notes with chunking, retrieval and inline citations."],
-      ["Full AI Product Sprint", "Ship a working AI micro-tool end-to-end and publish a public demo thread about it."],
-    ],
-    bank: [
-      ["What is 'few-shot prompting'?", "Giving the model several worked examples before the real task", "Restarting the chat after every question", "Keeping every prompt under ten words", "Lowering the temperature to zero"],
-      ["In an n8n workflow, what does a trigger node do?", "Starts the workflow when a specific event occurs", "Formats the final output", "Stores API credentials", "Limits the workflow's runtime"],
-      ["The temperature parameter mainly controls…", "How random or creative the model's output is", "How fast the model responds", "The maximum length of the answer", "Which language the model replies in"],
-      ["The most reliable way to get structured output is to…", "Ask for JSON and specify the exact schema", "Ask the model to 'be structured'", "Send the prompt twice", "Use all-caps instructions"],
-      ["A system prompt is best described as…", "Instructions that set the model's role and behaviour for the session", "The first question a user asks", "A prompt written by the operating system", "An error message from the API"],
-      ["Chain-of-thought prompting improves results by…", "Making the model reason step-by-step before answering", "Shortening the final answer", "Caching previous responses", "Disabling hallucinations entirely"],
-    ],
-  },
+const SKILL_SEEDS: SkillSeed[] = [
   {
     id: "vibe-coding",
-    title: "Vibe Coding & AI Software Building",
-    category: "AI & Automation",
-    iconName: "Code2",
-    description: "Build real software with Cursor, Replit, Bolt and Next.js — describe intent, iterate with AI, ship to production.",
-    color: "#8b5cf6",
-    videoIds: ["Sklc_fQBmcs", "Tn6-PIqc4UM", "zQnBQ4tB3ZA"],
-    levels: [
-      ["Dev Setup Speedrun", "Install Cursor (or VS Code), Node and git, then ship a 'hello web' page in under 30 minutes."],
-      ["Prompt-to-Page", "Generate a landing page in Bolt or v0 from a single prompt, then refine it through 3 focused iterations."],
-      ["Components & Props", "Build a reusable profile-card component in React with an AI pair, passing data via props."],
-      ["State & Interactivity", "Build a counter and a todo list using useState, with add, toggle and delete."],
-      ["Next.js App Router", "Create a multi-page app with a dynamic route and shared layout."],
-      ["Tailwind Design Systems", "Recreate a glassmorphism dashboard shell using only Tailwind utilities."],
-      ["APIs & Data Fetching", "Fetch a public API and render loading, error and success states."],
-      ["Auth & Persistence", "Add a localStorage-backed session with a protected page and logout."],
-      ["Debugging with AI", "Take a broken starter repo and fix 5 seeded bugs using AI-assisted debugging."],
-      ["Ship & Deploy", "Deploy your project to Vercel with a custom domain and basic analytics."],
-    ],
-    bank: [
-      ["In the Next.js App Router, a page is defined by…", "A page.tsx file inside a route folder", "A route entry in package.json", "Any file ending in .page.js", "A <Page> component in index.html"],
-      ["Cursor and GitHub Copilot are examples of…", "AI pair-programming tools", "Version control systems", "CSS frameworks", "Databases"],
-      ["What does `npm run build` do in a Next.js project?", "Creates an optimized production build", "Starts the local dev server", "Publishes the app to npm", "Deletes node_modules"],
-      ["Tailwind CSS is best described as…", "A utility-first CSS framework", "A JavaScript testing library", "A React state manager", "A deployment platform"],
-      ["A good git commit habit is…", "Small focused commits with clear messages", "One giant commit per week", "Committing node_modules for safety", "Only committing when the app is perfect"],
-      ["'Vibe coding' as a workflow means…", "Describing intent to AI and iterating on the generated code", "Coding without ever running the app", "Copying code from forums unchanged", "Writing code only in comments"],
-    ],
-  },
-  {
-    id: "entrepreneurship",
-    title: "Entrepreneurship & Startup Launch",
-    category: "Business & Money",
-    iconName: "Rocket",
-    description: "Validate ideas, find product-market fit, pitch investors — go from problem to launched startup.",
-    color: "#f97316",
+    title: "AI Vibe Coding & Software Engineering",
+    category: "AI & Tech",
+    iconName: "Code",
+    description: "Build SaaS, mobile apps, tools and micro-agents using Cursor, Claude Code, Windsurf, Bolt, Supabase and Vercel.",
+    color: "#3b82f6",
     videoIds: ["UF8uR6Z6KLc", "u4ZoJKF_VuA"],
     levels: [
-      ["Idea Storm", "List 20 problems you have personally faced this month and shortlist the 3 most painful ones."],
-      ["Customer Discovery", "Interview 5 potential users about your top problem and log their exact words about the pain."],
-      ["Value Proposition Canvas", "Map customer jobs, pains and gains against your proposed solution on one canvas."],
-      ["MVP in a Weekend", "Launch a landing page with a waitlist form and drive 20 visitors to test demand."],
-      ["Pricing & Unit Economics", "Model CAC, LTV and contribution margin for your idea in a simple spreadsheet."],
-      ["Pitch Deck Sprint", "Build a 10-slide pitch deck: problem, solution, market, traction, team, ask."],
-      ["PMF Experiments", "Design 3 falsifiable experiments that could prove or kill your growth assumptions."],
-      ["Fundraising 101", "Work through a SAFE note example and compute founder dilution across two rounds."],
-      ["Go-To-Market Machine", "Pick 2 acquisition channels and build a 30-day launch calendar with daily actions."],
-      ["Founder Operating System", "Set up a weekly metrics review and write your first monthly investor-style update."],
+      ["Prompt Anatomy 101", "Write a precise system prompt instructing AI to scaffold a clean Next.js 14 app with Tailwind CSS."],
+      ["Context & Rules Engineering", "Create a .cursorrules or CLAUDE.md file specifying tech stack, design tokens, and coding conventions."],
+      ["UI Component Scaffolding", "Use Cursor/Windsurf to build a responsive dark-mode hero section and navbar in under 5 minutes."],
+      ["Database Schema & Supabase", "Prompt AI to generate a PostgreSQL schema and Supabase client with row-level security (RLS)."],
+      ["Authentication & Protected Routes", "Connect Clerk/Supabase auth with protected routes and a user profile dashboard."],
+      ["API Integration & Webhooks", "Prompt AI to connect a public API endpoint, handling loading, success, and error states."],
+      ["AI Debugging & Refactoring", "Feed a complex stack trace to AI, diagnose the root cause, and apply a clean fix."],
+      ["Automated Testing with AI", "Prompt AI to write Jest/Playwright tests verifying core user flows and components."],
+      ["Vercel Deployment & CI/CD", "Deploy your AI-built web app to Vercel with environment variables and custom domain setup."],
+      ["SaaS Capstone: Launch Product", "Ship a complete AI SaaS MVP with auth, database, payment links, and public GitHub repository."],
     ],
     bank: [
-      ["Product-market fit means…", "Your product satisfies a strong market demand", "Your product has the most features", "Your product is patented", "Your product is cheaper than rivals"],
-      ["An MVP is…", "The smallest version that tests the core value", "The final polished product", "A marketing video pitch", "A minimum viable pitch-deck"],
-      ["The best first step to validate an idea is…", "Talking to real potential customers", "Building the full product", "Registering the company", "Designing a logo"],
-      ["CAC stands for…", "Customer Acquisition Cost", "Company Asset Capital", "Customer Annual Contract", "Cost After Conversion"],
-      ["A great elevator pitch covers…", "Problem, solution and ask in under a minute", "Your full life story", "Every product feature", "Your competitors' weaknesses only"],
-      ["A 'pivot' means…", "Changing strategy based on validated learning", "Giving up on the startup", "Hiring a new CEO", "Doubling the ad budget"],
+      ["In AI Vibe Coding, what is the primary purpose of a `.cursorrules` file?", "Providing explicit stack rules and context guidelines to the AI", "Compiling TypeScript into JavaScript", "Storing secret database password keys", "Creating CSS animations"],
+      ["What is the fastest way to debug a runtime error using Cursor or Windsurf?", "Copy the exact error stack trace into AI chat and ask for diagnosis", "Delete node_modules and restart computer", "Rewrite the app from scratch", "Disable TypeScript checks"],
+      ["Which technology handles serverless database persistence & auth effortlessly with Next.js?", "Supabase", "jQuery", "Apache HTTP Server", "Bootstrap 3"],
+      ["What does Vercel do in modern AI software development?", "Hosts and deploys Next.js web applications instantly", "Generates logo graphics", "Edits video files", "Sends SMS messages"],
+      ["Why is breaking features into small modular prompts better than asking AI to 'build everything'?", "Prevents hallucination and keeps code clean and testable", "AI cannot write code longer than 10 lines", "It increases cloud costs", "It deletes old files"],
+      ["What is Claude Code / Windsurf primarily designed for?", "AI-assisted multi-file codebase manipulation", "Playing 3D games", "Crypto mining", "Editing PDF documents"],
     ],
   },
   {
-    id: "financial-literacy",
-    title: "Financial Literacy & Digital Assets",
-    category: "Business & Money",
-    iconName: "Wallet",
-    description: "Budgeting, compounding, unit economics and crypto basics — build a personal wealth operating system.",
-    color: "#eab308",
-    videoIds: ["PHe0bXAIuk0"],
+    id: "ai-automation",
+    title: "AI Automation & Workflow Engineering",
+    category: "AI & Tech",
+    iconName: "Zap",
+    description: "Build autonomous multi-step agents, webhooks, and enterprise workflow automations with Make, n8n, and OpenAI.",
+    color: "#06b6d4",
+    videoIds: ["u4ZoJKF_VuA", "UF8uR6Z6KLc"],
     levels: [
-      ["Money Map", "Track every rupee you spend for 7 days and categorize it into needs, wants and investments."],
-      ["Budget Blueprint", "Build a personal 50/30/20 budget from your real monthly numbers."],
-      ["Emergency Engine", "Compute your 3-6 month emergency fund target and design an auto-save plan to reach it."],
-      ["Compounding Lab", "Model a monthly SIP over 10, 20 and 30 years and chart how compounding bends the curve."],
-      ["Index & Asset Classes", "Compare 10-year returns of fixed deposits, index funds and gold, and write your conclusions."],
-      ["Crypto Foundations", "Set up a test wallet, learn seed-phrase custody rules, and list 5 common scam patterns to avoid."],
-      ["Unit Economics Deep Dive", "Compute per-order profitability for a small creator business including all hidden costs."],
-      ["Tax & Salary Decode", "Break a sample CTC into in-hand salary, deductions and taxes, and find 2 legal optimizations."],
-      ["Portfolio Design", "Draft a risk-based asset allocation for your age and goals with rebalancing rules."],
-      ["Wealth OS", "Automate your investing flows and build a net-worth dashboard you update monthly."],
+      ["Automation Trigger/Action Logic", "Map a complete 4-step automation flow from web form trigger to CRM action."],
+      ["Make.com Scenario Scaffolding", "Build a Make.com scenario that catches webhooks and parses JSON payloads."],
+      ["n8n Self-Hosted Workflows", "Set up an n8n workflow node connecting HTTP requests to a Discord or Slack bot."],
+      ["OpenAI API Node Integration", "Connect OpenAI GPT-4o API into a workflow to automatically summarize incoming customer emails."],
+      ["JSON Parsing & Data Mapping", "Extract structured JSON fields from raw API output and map them into spreadsheet columns."],
+      ["Multi-Agent Router Workflows", "Build a conditional branch routing support tickets based on sentiment analysis."],
+      ["Webhook Security & Auth", "Implement bearer token authentication and payload verification for custom webhooks."],
+      ["Error Handling & Auto-Retries", "Design error fallback routes that log failures and send email alerts on API downtime."],
+      ["Scheduled Cron Automations", "Create a daily automated briefing workflow fetching news RSS feeds and sending a summary."],
+      ["Client Automation Capstone", "Deploy a complete client automation system that qualifies leads and schedules calendar events."],
     ],
     bank: [
-      ["Compound interest is…", "Interest earned on both principal and accumulated interest", "Interest paid only on the principal", "A fixed bank fee", "Interest that resets every year"],
-      ["In the 50/30/20 rule, the 20% goes to…", "Savings and investments", "Entertainment", "Rent", "Groceries"],
-      ["Unit economics examines…", "Profit or loss per single customer or unit sold", "The company's total valuation", "Employee salaries", "Office rental costs"],
-      ["Bitcoin is best described as…", "A decentralized digital currency recorded on a blockchain", "A company's stock", "A government savings bond", "A physical commodity"],
-      ["An emergency fund should typically cover…", "3–6 months of essential expenses", "One week of expenses", "Your annual salary times ten", "Only medical bills"],
-      ["Diversification primarily reduces…", "Risk, by spreading money across assets", "Taxes owed", "Brokerage fees", "The need to save"],
+      ["What is a Webhook in workflow automation?", "An automated HTTP callback triggered by an event", "A fishing tool", "A CSS style rule", "A browser bookmark"],
+      ["What makes n8n distinct from Zapier?", "n8n is open-source and can be self-hosted", "n8n only works on mobile phones", "n8n cannot connect to APIs", "n8n is a database"],
+      ["In Make.com, what does a Router module do?", "Splits a workflow execution path based on filter conditions", "Increases internet speed", "Deletes data", "Generates images"],
+      ["Why do we parse JSON in automation flows?", "To extract specific structured data fields for downstream nodes", "To format text in bold", "To compile C++ code", "To encrypt hard drives"],
+      ["What is the purpose of an API Key in OpenAI node integrations?", "Authenticating requests securely with the API provider", "Unlocking Windows OS", "Formatting HTML text", "Measuring monitor resolution"],
+      ["What is an ideal fallback strategy when an external API node fails?", "Triggering an error handler node that logs details and alerts an admin", "Crashing the entire server", "Ignoring all future data", "Deleting the workflow"],
+    ],
+  },
+  {
+    id: "ai-product-management",
+    title: "AI Product Management & Strategy",
+    category: "AI & Tech",
+    iconName: "Layers",
+    description: "Define, scope, wireframe, and ship AI-first products with PRDs, user stories, metrics, and launch roadmaps.",
+    color: "#8b5cf6",
+    videoIds: ["UF8uR6Z6KLc", "u4ZoJKF_VuA"],
+    levels: [
+      ["Problem Framing & User Pain", "Write a 1-page Problem Statement identifying a real user friction point for an AI tool."],
+      ["AI Feasibility & ROI Matrix", "Evaluate 5 proposed AI features based on technical feasibility, latency, and user value."],
+      ["Writing Production PRDs", "Draft a complete PRD detailing problem, success metrics, user stories, and edge cases."],
+      ["User Story Mapping", "Break a feature into 10 user stories with explicit Acceptance Criteria."],
+      ["Figma Wireframing for PMs", "Create a low-fidelity wireframe user flow for an AI search interface in Figma."],
+      ["Product Analytics & Metrics", "Define North Star metric, DAU/MAU ratios, and retention funnels for an AI app."],
+      ["A/B Testing & Feature Flags", "Design a split-test hypothesis evaluating prompt UX variations on conversion."],
+      ["Developer Handoff & Specs", "Conduct a mock developer handoff presenting technical specs and API requirements."],
+      ["Product Hunt Launch Strategy", "Draft a Product Hunt launch checklist including gallery assets, maker comment, and hunter outreach."],
+      ["AI Product Capstone", "Present a complete AI Product Spec, Figma wireframe, and GTM strategy to stakeholders."],
+    ],
+    bank: [
+      ["What does a PRD stand for in Product Management?", "Product Requirements Document", "Public Relations Data", "Program Release Description", "Project Return Date"],
+      ["What is a North Star Metric?", "The single key metric that best captures the core value delivered to customers", "Total office space area", "Number of lines of code written", "Company age in years"],
+      ["Why should PMs define Acceptance Criteria in User Stories?", "To establish clear conditions that must be met for a feature to be considered complete", "To calculate taxes", "To pick brand colors", "To hire designers"],
+      ["In AI Product Management, what is 'latency'?", "The time delay between a user prompt request and the model response", "The monthly rent cost", "The screen brightness", "The font size"],
+      ["What is the main goal of low-fidelity wireframing?", "Quickly mapping visual layout and user flow without getting distracted by polished visuals", "Writing final production code", "Generating logos", "Designing legal contracts"],
+      ["What is A/B testing used for in growth PM?", "Comparing two product variants to determine which performs better statistically", "Testing blood types", "Auditing tax filings", "Formatting code files"],
+    ],
+  },
+  {
+    id: "fullstack-web",
+    title: "Modern Fullstack Web Architecture",
+    category: "AI & Tech",
+    iconName: "Globe",
+    description: "Master Next.js 14 App Router, TypeScript, Tailwind CSS, Server Actions, and Supabase database architecture.",
+    color: "#2563eb",
+    videoIds: ["UF8uR6Z6KLc", "u4ZoJKF_VuA"],
+    levels: [
+      ["Next.js App Router Foundations", "Scaffold a Next.js 14 app structuring layout.tsx, page.tsx, and nested routes."],
+      ["TypeScript Interfaces & Schemas", "Define strict TypeScript types for Users, Products, and Database Models."],
+      ["Tailwind CSS Design System", "Build reusable UI buttons, cards, and modals using utility-first Tailwind CSS."],
+      ["Server vs Client Components", "Refactor a component tree placing state in client components and data fetching on server."],
+      ["Server Actions & Form Handling", "Create Next.js Server Actions to process form submissions with Zod validation."],
+      ["Supabase Database Architecture", "Design PostgreSQL tables with foreign key constraints and Row-Level Security (RLS)."],
+      ["API Routes & Webhooks", "Build a custom Next.js API route handling GET/POST requests and JSON responses."],
+      ["State Management & Context", "Implement a React Context state store managing global cart/user application state."],
+      ["Performance & SEO Optimization", "Optimize images, font loading, and OpenGraph meta tags for 95+ Lighthouse score."],
+      ["Fullstack Capstone Project", "Deploy a complete authenticated fullstack web application with Supabase on Vercel."],
+    ],
+    bank: [
+      ["In Next.js App Router, how do you mark a component to run on the client side?", "Add `'use client'` directive at the top of the file", "Add `runOnClient()` function", "Name the file `.client.js`", "Use `import React`"],
+      ["What is the primary advantage of Next.js Server Components?", "Zero bundle size for dependencies used exclusively on the server", "They execute inside the browser console", "They make CSS load faster", "They disable TypeScript"],
+      ["In Tailwind CSS, what utility class creates rounded corners?", "rounded-xl", "corner-round", "border-radius-10", "circle-box"],
+      ["What does Zod do in TypeScript web development?", "Validates data schemas at runtime with static type inference", "Compiles React into C++", "Manages database servers", "Styles HTML headers"],
+      ["What is Row-Level Security (RLS) in Supabase/PostgreSQL?", "Security policies restricting database row access based on authenticated user ID", "Encrypting monitor screens", "Password protecting Wi-Fi", "Formatting JSON text"],
+      ["What command creates a production-optimized build of a Next.js app?", "npm run build", "npm dev start", "git push main", "tsc --clean"],
+    ],
+  },
+  {
+    id: "ui-ux-design",
+    title: "UI/UX Design Systems & Visual Craft",
+    category: "Design & Media",
+    iconName: "Palette",
+    description: "Craft modern UI/UX design systems, Figma Auto Layout components, interactive prototypes, and handoff specs.",
+    color: "#ec4899",
+    videoIds: ["u4ZoJKF_VuA", "UF8uR6Z6KLc"],
+    levels: [
+      ["Figma Canvas & Frame Basics", "Set up a Figma canvas with mobile and desktop grid systems and typography scales."],
+      ["Color Tokens & Typography", "Create a dark-theme color palette with HSL tokens and typography hierarchy."],
+      ["Auto Layout Mastery", "Build dynamic card layouts using Figma Auto Layout padding and alignment properties."],
+      ["Component Variants & States", "Create a master button component with Hover, Active, Disabled, and Loading variants."],
+      ["Interactive Prototyping", "Connect 5 app screens with smart animate transitions and interactive hover effects."],
+      ["UX Research & Wireframing", "Sketch low-fidelity user flow wireframes addressing a specific usability bottleneck."],
+      ["WCAG Accessibility Standards", "Audit contrast ratios and font sizing to satisfy WCAG AA accessibility standards."],
+      ["Design System Documentation", "Document UI guidelines, component rules, and spacing tokens in a Figma file."],
+      ["Developer Handoff & Export", "Export SVG icons, CSS inspection specs, and asset packs for engineering handoff."],
+      ["UI/UX Design Capstone", "Deliver a complete production-ready app UI kit and interactive prototype in Figma."],
+    ],
+    bank: [
+      ["In Figma, what is the key benefit of Auto Layout?", "Containers resize dynamically based on text content and nested elements", "It automatically writes Python code", "It removes background colors", "It generates domain names"],
+      ["What does WCAG stand for in design accessibility?", "Web Content Accessibility Guidelines", "Web Color Alignment Group", "Wide Canvas Application Grid", "Wireframe Code Architecture Guide"],
+      ["What is a Component Variant in Figma?", "Grouped variations of a component (e.g. primary, secondary, disabled) under one master element", "A broken vector path", "A exported PNG file", "A plugin error"],
+      ["Why is visual hierarchy essential in UI design?", "It guides the user's eye to the most critical information first", "It makes all fonts the exact same size", "It removes all whitespace", "It forces users to scroll down"],
+      ["What is the ideal contrast ratio for normal text under WCAG AA standards?", "At least 4.5:1", "1:1", "100:1", "0.5:1"],
+      ["What is Smart Animate in Figma prototyping?", "An feature that automatically interpolates matching layer changes between frames", "An AI code generator", "A sound effect recorder", "A font installer"],
+    ],
+  },
+  {
+    id: "ai-content-creation",
+    title: "AI Content Engine & Digital Storytelling",
+    category: "Design & Media",
+    iconName: "Video",
+    description: "Produce viral short-form and long-form video engines using AI scripting, Midjourney visuals, and CapCut editing.",
+    color: "#f43f5e",
+    videoIds: ["UF8uR6Z6KLc", "u4ZoJKF_VuA"],
+    levels: [
+      ["Hook Psychology & Scripting", "Write 3 viral short-form video hooks using curiosity and pattern interruption."],
+      ["AI Scriptwriting Pipelines", "Prompt ChatGPT/Claude to structure a 60-second video script with visual cues."],
+      ["Midjourney & Visual Generation", "Generate hyper-realistic video background assets using Midjourney/Ideogram."],
+      ["AI Voice Cloning & Voiceover", "Synthesize a natural voiceover using ElevenLabs with realistic cadence and emotion."],
+      ["CapCut Short-Form Editing", "Edit a 30-second short with dynamic captions, sound FX, and speed ramps in CapCut."],
+      ["Click-Worthy Thumbnail Craft", "Design a high-CTR YouTube thumbnail using Photoshop/Canva and visual contrast."],
+      ["Multi-Platform Formatting", "Adapt 1 core video into 9:16 Shorts/Reels and 16:9 YouTube formats."],
+      ["Channel Branding & SEO", "Optimize YouTube titles, tags, and description for maximum search discovery."],
+      ["Analytics & Retention Audit", "Analyze viewer drop-off graphs and optimize pacing for future videos."],
+      ["AI Content Engine Capstone", "Publish a 5-video short-form series generated using a streamlined AI content pipeline."],
+    ],
+    bank: [
+      ["In short-form video, what is a 'Hook'?", "The first 3 seconds that grab attention and prevent scrolling", "The title screen music", "The ending subscribe button", "The video file format"],
+      ["Which tool is industry-standard for realistic AI voiceover synthesis?", "ElevenLabs", "MS Paint", "Excel", "Notepad"],
+      ["Why are dynamic auto-captions critical for Shorts and Reels?", "Many users watch social videos on mute in public environments", "Captions increase video file size", "Captions hide background errors", "Captions replace video titles"],
+      ["What metric primarily determines if YouTube recommends a Short?", "Average Percentage Viewed & Swipe Away Ratio", "File name length", "Upload time of day only", "Camera brand used"],
+      ["What is 'Pattern Interruption' in video editing?", "A sudden change in visual or audio elements to re-engage user focus", "A broken video export", "A camera focus error", "A copyright claim"],
+      ["What aspect ratio is used for Instagram Reels and YouTube Shorts?", "9:16 vertical", "16:9 widescreen", "1:1 square", "4:3 TV"],
+    ],
+  },
+  {
+    id: "digital-growth",
+    title: "Digital Growth & Performance Marketing",
+    category: "Marketing & Sales",
+    iconName: "TrendingUp",
+    description: "Run data-driven customer acquisition funnels, Meta/Google performance ads, CRO, and SEO growth engines.",
+    color: "#10b981",
+    videoIds: ["UF8uR6Z6KLc", "u4ZoJKF_VuA"],
+    levels: [
+      ["Growth Funnel Architecture", "Map TOFU, MOFU, and BOFU stages for a SaaS or E-commerce customer journey."],
+      ["Landing Page CRO Audit", "Audit a landing page identifying 5 conversion friction points and proposing fixes."],
+      ["Meta Ad Campaign Setup", "Structure a Meta (Facebook/Instagram) ad campaign targeting custom interest cohorts."],
+      ["Persuasive Ad Copywriting", "Write 3 direct-response ad copy variations testing PAS (Pain-Agitate-Solve) framework."],
+      ["Google Search Ads Strategy", "Research high-intent keywords and structure a Google Search Ads campaign."],
+      ["SEO Keyword & Cluster Mapping", "Build an SEO topic cluster mapping pillar pages and supporting blog articles."],
+      ["Email Lead Nurture Flow", "Draft a 4-part automated email welcome sequence nurturing lead magnet downloads."],
+      ["GA4 Tracking & Attribution", "Set up Google Analytics 4 event tracking for form submissions and purchases."],
+      ["A/B Landing Page Testing", "Design a split-test hypothesis evaluating headline variations on conversion rate."],
+      ["Growth Engine Capstone", "Launch a complete performance marketing campaign with tracking, ads, and landing page."],
+    ],
+    bank: [
+      ["In digital growth, what does CAC stand for?", "Customer Acquisition Cost", "Company Asset Capital", "Customer Annual Contract", "Conversion Analytics Code"],
+      ["What is the main objective of Top-Of-Funnel (TOFU) marketing?", "Driving broad awareness and attracting potential prospects", "Closing high-ticket contracts", "Sending invoices", "Collecting customer reviews"],
+      ["What does CRO stand for in web marketing?", "Conversion Rate Optimization", "Customer Relations Officer", "Central Resource Organization", "Content Rendering Option"],
+      ["In Meta Ads, what is 'Lookalike Audience'?", "An audience created to target new people who resemble existing valuable customers", "A list of competitors", "People who blocked your page", "Random international users"],
+      ["What is GA4 primarily used for?", "Tracking user behavior analytics and event conversions across web apps", "Editing photos", "Sending bulk emails", "Creating domain names"],
+      ["What is the PAS framework in copywriting?", "Problem, Agitate, Solve", "Plan, Action, Success", "Product, Audience, Sales", "Post, Advertise, Share"],
     ],
   },
   {
     id: "freelancing",
-    title: "Freelancing & Client Acquisition",
-    category: "Business & Money",
+    title: "Freelancing & High-Ticket Client Acquisition",
+    category: "Marketing & Sales",
     iconName: "Briefcase",
-    description: "Upwork tactics, cold outreach and closing deals — turn skills into paying clients and retainers.",
-    color: "#10b981",
+    description: "Close $1,000+ client deals on Upwork, Fiverr, and cold outreach with high-converting proposal frameworks.",
+    color: "#84cc16",
     videoIds: ["u4ZoJKF_VuA", "H14bBuluwB8"],
     levels: [
-      ["Skill Offer Matrix", "Define your niche, target client and a concrete offer with a starting price."],
-      ["Portfolio Proof", "Create 3 spec projects that demonstrate exactly the outcome clients pay for."],
-      ["Upwork Profile Engine", "Write a keyword-optimized profile headline and overview aimed at one niche."],
-      ["Proposal Sniper", "Send 5 tailored proposals that lead with the client's problem and your relevant result."],
-      ["Cold Outreach Lab", "Send 20 personalized DMs or emails with a one-line specific compliment and clear CTA; track reply rate."],
-      ["Discovery Calls", "Run a mock discovery call: qualify budget, scope the problem and set next steps."],
-      ["Closing & Contracts", "Draft a one-page SOW and rehearse answers to the 3 most common objections."],
-      ["Retainer Ladder", "Design an upgrade path that converts a one-off project into a monthly retainer."],
-      ["Client Systems", "Build an onboarding checklist, weekly update template and feedback loop."],
-      ["Agency Leap", "Productize your service into a fixed-scope package and plan your first subcontractor hire."],
+      ["Niche Selection & Offer Definition", "Define your high-value freelance offer, target client avatar, and core promise."],
+      ["Portfolio Case Study Packaging", "Format 2 past projects into client-facing case studies focusing on business metrics."],
+      ["Top-Rated Upwork Profile", "Write an optimized Upwork profile title, bio, and specialized profiles with social proof."],
+      ["High-Converting Proposal Writing", "Draft a customized Upwork proposal addressing client pain points in the first 2 lines."],
+      ["Cold Email & LinkedIn Outreach", "Create a personalized cold outreach sequence targeting founders and marketing leads."],
+      ["Discovery Call Mastery", "Roleplay a 15-minute discovery call asking qualifying questions and establishing authority."],
+      ["Value-Based Pricing Strategy", "Calculate fixed project pricing based on value delivered rather than hourly rates."],
+      ["Contracts & Legal Agreements", "Customize a legal service agreement specifying scope, revisions, and payment terms."],
+      ["Client Onboarding & Management", "Build a Notion client portal for smooth asset collection and weekly status updates."],
+      ["Freelance Agency Capstone", "Send 10 proposals/pitches and document the pipeline from initial contact to closed deal."],
     ],
     bank: [
-      ["The best cold outreach opener is…", "A personalized line about the client's business", "A paragraph about your qualifications", "A discount coupon", "A generic 'Dear Sir/Madam'"],
-      ["A strong Upwork proposal leads with…", "The client's problem and your relevant result", "Your hourly rate", "Your full résumé", "A request for a call"],
-      ["A retainer is…", "A recurring monthly engagement fee", "A one-time signing bonus", "A late payment penalty", "A portfolio website"],
-      ["Scope creep means…", "Uncontrolled growth of work beyond the agreement", "Finishing before the deadline", "Charging extra for revisions", "Losing a client to a competitor"],
-      ["Value-based pricing means charging based on…", "The outcome delivered, not hours worked", "Your years of experience", "What competitors charge", "The client's company size"],
-      ["Choosing a niche helps because…", "Specialists command more trust and higher rates", "It reduces the work you must do", "Generalists are banned on platforms", "Niches have no competition"],
+      ["What is 'Value-Based Pricing' in freelancing?", "Pricing based on the financial impact/value created for the client, not hours spent", "Charging $5 per hour", "Copying competitor prices blindly", "Giving work away for free"],
+      ["What is the most critical part of an Upwork proposal?", "The first 2 lines visible in the client preview", "Your high school degree", "Attaching 50 files", "Asking for money immediately"],
+      ["Why should freelancers use formal client contracts?", "To clearly define project scope, deliverables, payment milestones, and legal protection", "Contracts are required by law for all emails", "To look like a big corporation", "To delay payment"],
+      ["What is the primary goal of a Discovery Call?", "Understanding client needs, qualifying fit, and diagnosing their problem", "Pitching price in the first 30 seconds", "Bragging about your skills", "Asking for an upfront rating"],
+      ["In client management, what is 'Scope Creep'?", "Unapproved expansion of project requirements beyond original contract terms", "A software bug", "A slow internet connection", "A late payment fee"],
+      ["What is a specialized profile on Upwork?", "A tailored profile section highlighting expertise for a specific sub-niche", "A hidden private profile", "A profile for hiring employees", "A secondary account"],
     ],
   },
   {
-    id: "content-creation",
-    title: "Content Creation & Personal Branding",
-    category: "Media & Influence",
-    iconName: "Megaphone",
-    description: "X growth, LinkedIn hooks, YouTube strategy — build an audience that compounds into opportunity.",
-    color: "#f43f5e",
-    videoIds: ["eIho2S0ZahI", "H14bBuluwB8"],
-    levels: [
-      ["Niche & Angle", "Define your 3 content pillars and the unique angle only you can bring."],
-      ["Hook Lab", "Write 20 scroll-stopping hooks for one idea and rank your top 5."],
-      ["X/Twitter Threads", "Publish 3 threads with a hook, story arc and payoff; note which performed best."],
-      ["LinkedIn Authority", "Publish 5 posts using the hook → story → lesson → CTA structure."],
-      ["YouTube Strategy", "Design 3 title + thumbnail pairs for one video and predict CTR for each."],
-      ["Content Calendar", "Build a 30-day calendar that repurposes each core idea across 3 platforms."],
-      ["Analytics Decode", "Read your retention/engagement data and write 3 concrete changes for next week."],
-      ["Community Loops", "Spend 30 minutes daily for a week on strategic replies and DMs; log new connections."],
-      ["Monetize Attention", "Create a lead magnet and connect it to a simple email capture."],
-      ["Brand Flywheel", "Document your full content-to-offer funnel and the metrics for each stage."],
-    ],
-    bank: [
-      ["A 'hook' in content is…", "The first seconds or line that stops the scroll", "The final call-to-action", "A hashtag strategy", "A paid promotion"],
-      ["The best posting strategy is…", "A consistent schedule with platform-native formats", "Posting only when inspired", "Cross-posting identical content everywhere", "Posting 20 times a day"],
-      ["A personal brand is…", "The reputation and value people associate with you", "Your logo and color palette", "Your follower count", "A verified badge"],
-      ["CTR measures…", "The click-through rate on your title or link", "Total watch time", "Comments per post", "Content trend ranking"],
-      ["Repurposing content means…", "Adapting one core idea across formats and platforms", "Reposting the same file daily", "Deleting old posts", "Buying content from others"],
-      ["Threads work on X because…", "Story structure drives retention and shares", "They bypass the algorithm", "They are the only free format", "Longer always means better"],
-    ],
-  },
-  {
-    id: "video-editing",
-    title: "Short-Form Video Editing",
-    category: "Media & Influence",
-    iconName: "Clapperboard",
-    description: "CapCut, Premiere, storytelling and viral hooks — edit shorts that hold attention to the last frame.",
-    color: "#d946ef",
-    videoIds: ["eIho2S0ZahI"],
-    levels: [
-      ["CapCut Basics", "Cut a 30-second clip from raw footage: trim, split and export at 9:16."],
-      ["Rhythm & Jump Cuts", "Edit a talking-head clip to a beat, removing every dead air gap."],
-      ["Captions & Emphasis", "Add styled auto-captions with keyword highlights and emoji accents."],
-      ["Hook Engineering", "Create two versions of the same video with different first-3-second hooks."],
-      ["Sound Design", "Add music with ducking under speech plus 3 well-placed sound effects."],
-      ["B-Roll & Overlays", "Layer b-roll, zooms and text overlays over a 45-second narration."],
-      ["Premiere Power", "Rebuild your best short in Premiere using multi-track editing and keyframes."],
-      ["Storytelling Arcs", "Edit a 60-second mini-doc with setup, tension and payoff."],
-      ["Viral Format Remix", "Deconstruct 3 trending formats and recreate one with your own content."],
-      ["Edit Studio Pipeline", "Build your preset pack, export settings and a client-ready delivery workflow."],
-    ],
-    bank: [
-      ["A J-cut is when…", "The next clip's audio starts before its video appears", "Video freezes while audio continues", "Two clips play side by side", "The clip is reversed"],
-      ["The hook of a short must land within…", "The first 1–3 seconds", "The first 30 seconds", "The final seconds", "The description text"],
-      ["B-roll is…", "Supplementary footage shown over narration", "Bloopers and outtakes", "The backup project file", "Background music"],
-      ["Jump cuts are used in shorts to…", "Remove dead air and keep the pace fast", "Add cinematic slow motion", "Fix color grading", "Loop the video"],
-      ["Auto-captions in CapCut…", "Generate subtitles from the speech automatically", "Translate the video into 50 languages", "Remove background noise", "Add trending hashtags"],
-      ["The aspect ratio for TikTok/Reels is…", "9:16 vertical", "16:9 horizontal", "1:1 square", "4:3 classic"],
-    ],
-  },
-  {
-    id: "sales-negotiation",
-    title: "Sales & High-Ticket Negotiation",
-    category: "Influence & Leadership",
-    iconName: "Handshake",
-    description: "Objection handling, closing scripts and negotiation frames — sell with integrity at premium prices.",
-    color: "#0ea5e9",
-    videoIds: ["eIho2S0ZahI", "Ks-_Mh1QhMc"],
-    levels: [
-      ["Sales Mindset Reset", "Write your 'selling is serving' manifesto and identify limiting beliefs to drop."],
-      ["Discovery Questions", "Build a SPIN question bank (Situation, Problem, Implication, Need-payoff) for your offer."],
-      ["Listening & Labeling", "Practice mirroring and labeling in 3 conversations and log what changed."],
-      ["Objection Aikido", "Script responses to the top 5 objections: price, timing, trust, need, authority."],
-      ["Anchors & Frames", "Role-play a negotiation where you set the anchor first, then defend it."],
-      ["Closing Scripts", "Rehearse the assumptive close and the alternative close on a mock deal."],
-      ["High-Ticket Offers", "Structure a premium offer with guarantees, scarcity and clear ROI math."],
-      ["Follow-Up Machine", "Design a 7-touch follow-up sequence that adds value at every touch."],
-      ["Negotiation War Room", "Prepare BATNA, target and walk-away numbers for a real upcoming negotiation."],
-      ["Deal Architect", "Run a full pipeline simulation from cold lead to signed high-ticket agreement."],
-    ],
-    bank: [
-      ["When a prospect says 'it's too expensive', first…", "Isolate the objection and explore what they compare it to", "Immediately offer a discount", "End the call politely", "Repeat the price louder"],
-      ["SPIN stands for…", "Situation, Problem, Implication, Need-payoff", "Sell, Pitch, Insist, Negotiate", "Start, Present, Invoice, Network", "Smile, Praise, Inform, Nudge"],
-      ["A trial close is…", "Testing readiness to buy before the final ask", "Closing on the first call", "A discount that expires", "A contract with a trial period"],
-      ["Anchoring in negotiation means…", "The first number sets the reference point", "Refusing to move from your price", "Waiting for the other side to speak first", "Splitting the difference"],
-      ["Top closers typically…", "Listen more than they talk", "Talk 90% of the call", "Avoid questions", "Never discuss price"],
-      ["BATNA stands for…", "Best Alternative To a Negotiated Agreement", "Buy All Terms, Negotiate After", "Basic Agreement Terms and Notes", "Best Available Trade Negotiation Asset"],
-    ],
-  },
-  {
-    id: "communication",
-    title: "Communication & Storytelling",
-    category: "Influence & Leadership",
-    iconName: "MessageSquare",
-    description: "Executive presence and persuasive writing — say less, land more, move people to action.",
+    id: "data-analytics",
+    title: "Data Analytics & Business Intelligence",
+    category: "Data & Security",
+    iconName: "BarChart3",
+    description: "Extract insights from relational databases using SQL, clean data with Python, and build Tableau/Looker dashboards.",
     color: "#6366f1",
-    videoIds: ["eIho2S0ZahI", "Ks-_Mh1QhMc"],
+    videoIds: ["UF8uR6Z6KLc", "u4ZoJKF_VuA"],
     levels: [
-      ["Clarity Reps", "Rewrite 5 bloated paragraphs into half the words without losing meaning."],
-      ["Story Spine", "Write a personal story using setup → conflict → resolution and tell it aloud."],
-      ["Rule of Three", "Restructure one message you sent this week into exactly three points."],
-      ["Active Listening", "In your next 3 conversations, paraphrase back before responding; log the effect."],
-      ["Persuasive Writing", "Rewrite a real email to lead with the reader's benefit in the first line."],
-      ["Executive Summaries", "Compress a long document into a one-page brief with a clear recommendation."],
-      ["Difficult Conversations", "Script a feedback conversation using the Situation-Behavior-Impact format."],
-      ["Data Storytelling", "Turn one chart into a 3-sentence narrative with a so-what conclusion."],
-      ["Influence Patterns", "Apply 3 of Cialdini's principles ethically to a real ask and record outcomes."],
-      ["Signature Story", "Craft and record your 2-minute origin story with a message worth repeating."],
+      ["SQL Relational Database Basics", "Write SELECT, WHERE, ORDER BY, and LIMIT queries on a sample database."],
+      ["SQL Aggregations & Grouping", "Calculate monthly revenue and active user metrics using GROUP BY and HAVING."],
+      ["SQL Joins & Multi-Table Analytics", "Connect users, orders, and products tables using INNER, LEFT, and RIGHT JOINs."],
+      ["Complex Subqueries & CTEs", "Write Common Table Expressions (WITH clauses) to simplify multi-step analytical queries."],
+      ["Python Pandas Data Cleaning", "Load a messy CSV dataset into Pandas, handle missing values, and reformat types."],
+      ["Data Wrangling & Transformation", "Group, filter, and pivot data using Python Pandas to calculate retention cohorts."],
+      ["Visual Data Storytelling", "Design clear bar charts, line graphs, and scatter plots using Matplotlib/Seaborn."],
+      ["Tableau / Looker Studio Dashboards", "Connect data sources and build an interactive executive KPI dashboard."],
+      ["Executive Metric Presentation", "Draft a 5-slide business intelligence brief highlighting actionable revenue drivers."],
+      ["Data Analytics Capstone", "Analyze a raw e-commerce dataset with SQL and Python, delivering an interactive dashboard."],
     ],
     bank: [
-      ["The rule of three works because…", "Ideas grouped in threes are more memorable", "Three is the maximum people can read", "It's required in formal writing", "Odd numbers sound smarter"],
-      ["Active listening includes…", "Paraphrasing back what you heard", "Planning your reply while they talk", "Nodding constantly", "Finishing their sentences"],
-      ["Executive presence is mostly…", "Calm clarity under pressure", "An expensive wardrobe", "Speaking the loudest", "Using complex vocabulary"],
-      ["The classic story structure is…", "Setup → conflict → resolution", "Statistics → charts → summary", "Introduction → agenda → Q&A", "Claim → proof → disclaimer"],
-      ["The 'so what?' test checks…", "Whether the message matters to the audience", "Whether grammar is correct", "Whether the story is true", "Whether slides look good"],
-      ["Persuasive writing should lead with…", "The reader's benefit", "Your credentials", "Background history", "A formal greeting"],
+      ["In SQL, which clause is used to filter aggregated data after GROUP BY?", "HAVING", "WHERE", "ORDER BY", "LIMIT"],
+      ["What type of JOIN returns all records from the left table and matched records from the right table?", "LEFT JOIN", "INNER JOIN", "RIGHT JOIN", "FULL JOIN"],
+      ["In Python Pandas, what data structure represents a 2D labeled tabular table?", "DataFrame", "Series", "Tuple", "List"],
+      ["What does CTE stand for in advanced SQL queries?", "Common Table Expression", "Central Text Element", "Calculated Type Entity", "Core Table Entry"],
+      ["Why is data cleaning a critical step before building dashboards?", "Garbage data leads to incorrect business decisions and false insights", "Data cleaning changes column colors", "It makes files larger", "It deletes database tables"],
+      ["In business intelligence, what is 'Cohort Analysis'?", "Tracking the behavior of a specific user group over time (e.g. signup month)", "Counting total employees", "Checking server CPU temperature", "Formatting PDF reports"],
     ],
   },
   {
-    id: "public-speaking",
-    title: "Public Speaking & Pitching",
-    category: "Influence & Leadership",
-    iconName: "Mic",
-    description: "Confidence, stage presence and pitch delivery — own any room, from classrooms to demo days.",
-    color: "#84cc16",
-    videoIds: ["Unzc731iCUY", "Ks-_Mh1QhMc", "eIho2S0ZahI"],
+    id: "cybersecurity",
+    title: "Cybersecurity & Ethical Hacking Essentials",
+    category: "Data & Security",
+    iconName: "Shield",
+    description: "Defend web apps against OWASP Top 10 vulnerabilities, analyze network packets, and harden cloud infrastructure.",
+    color: "#ef4444",
+    videoIds: ["u4ZoJKF_VuA", "UF8uR6Z6KLc"],
     levels: [
-      ["Voice Warmups", "Record a 60-second self-intro; assess pace, filler words and energy."],
-      ["Stage Posture", "Practice grounded stance and open gestures for 10 minutes in front of a mirror or camera."],
-      ["Openers That Grip", "Record the same talk opening 3 ways: question, story and bold claim."],
-      ["The Power of the Pause", "Deliver a 1-minute talk with 3 deliberate pauses; feel the discomfort, keep the silence."],
-      ["Slide Craft", "Build a 5-slide talk with one idea per slide and almost no text."],
-      ["Impromptu Reps", "Speak for 1 minute on 5 random topics with only 10 seconds of prep each."],
-      ["Persuasive Talk", "Deliver a 3-minute persuasive pitch using the rule of three."],
-      ["Q&A Mastery", "Have a friend or AI fire 5 hostile questions; practice bridge-and-answer."],
-      ["Stage Presence", "Run a full dress rehearsal on camera and review your movement and eye contact."],
-      ["Keynote Ready", "Deliver a 7-minute keynote to a live or recorded audience and collect feedback."],
+      ["Cybersecurity Fundamentals", "Map the CIA Triad (Confidentiality, Integrity, Availability) against real breach cases."],
+      ["Network Protocols & IP Subnetting", "Analyze IPv4/IPv6, TCP/UDP handshake, and DNS resolution paths."],
+      ["Wireshark Packet Analysis", "Capture network traffic in Wireshark and identify unencrypted HTTP password transmissions."],
+      ["OWASP Top 10: SQL Injection", "Identify SQLi vulnerabilities in sample code and apply parameterized queries."],
+      ["OWASP Top 10: Cross-Site Scripting", "Demonstrate XSS attack vectors and implement output sanitization and CSP."],
+      ["Authentication & Password Security", "Implement bcrypt password hashing, salting, and multi-factor authentication (MFA)."],
+      ["Vulnerability Scanning", "Run Nmap network scans identifying open ports and vulnerable service versions."],
+      ["Cloud IAM & Permission Security", "Configure Least Privilege IAM roles and bucket permissions in AWS/Supabase."],
+      ["Incident Response & Logging", "Build a log monitoring alert rule detecting brute-force login attempts."],
+      ["Security Audit Capstone", "Conduct a comprehensive web application security audit report with remediation steps."],
     ],
     bank: [
-      ["The best remedy for stage fright is…", "Rehearsal plus reframing nerves as energy", "Avoiding eye contact", "Speaking faster to finish sooner", "Memorizing every single word"],
-      ["Good eye contact means…", "Holding contact with individuals for a few seconds each", "Staring at one friendly face", "Scanning constantly without stopping", "Looking above everyone's heads"],
-      ["A strong talk opens with…", "A hook: question, story, or bold claim", "An apology for nerves", "A detailed agenda", "Your full biography"],
-      ["Pausing while speaking…", "Adds emphasis and lets ideas land", "Signals you forgot your lines", "Should be avoided completely", "Only works in large rooms"],
-      ["A slide best practice is…", "One idea per slide with minimal text", "Full paragraphs so people can read along", "At least five bullet points per slide", "Reading every slide word-for-word"],
-      ["Vocal variety means…", "Deliberately changing pace, pitch and volume", "Speaking as loudly as possible", "Using a formal accent", "Keeping a perfectly steady tone"],
+      ["In cybersecurity, what does the CIA Triad stand for?", "Confidentiality, Integrity, Availability", "Central Intelligence Agency", "Code, Data, Assets", "Control, Inspection, Audit"],
+      ["Which OWASP vulnerability occurs when malicious scripts are injected into trusted websites?", "Cross-Site Scripting (XSS)", "SQL Injection", "Buffer Overflow", "DNS Spoofing"],
+      ["How do you prevent SQL Injection vulnerabilities in backend code?", "Use parameterized queries / prepared statements", "Disable database backups", "Use HTTP instead of HTTPS", "Encrypt user passwords twice"],
+      ["What is Wireshark used for?", "Capturing and analyzing network packet traffic in real-time", "Editing video files", "Compiling TypeScript", "Hosting websites"],
+      ["Why should passwords never be stored in plain text?", "If the database is breached, attackers gain instant access to user credentials", "Plain text takes up too much disk space", "Plain text passwords corrupt files", "Plain text breaks CSS styles"],
+      ["What does Least Privilege principle dictate in IAM security?", "Users/services should only be granted minimum permissions necessary for their task", "All users get admin rights", "Permissions reset every hour", "No passwords allowed"],
     ],
   },
   {
-    id: "productivity",
-    title: "Productivity Systems & OS Build",
-    category: "Systems & Execution",
-    iconName: "Timer",
-    description: "Notion, Obsidian and time-blocking — design a personal operating system that runs your goals.",
+    id: "research-critical-thinking",
+    title: "Research & Critical Thinking",
+    category: "Core Skills",
+    iconName: "BrainCircuit",
+    description: "Evaluate evidence, detect cognitive biases, eliminate AI hallucinations, and author rigorous research reports.",
     color: "#14b8a6",
-    videoIds: ["arj7oStGLkU"],
+    videoIds: ["UF8uR6Z6KLc", "u4ZoJKF_VuA"],
     levels: [
-      ["Time Audit", "Log 3 days of your life in 30-minute blocks and highlight the leaks."],
-      ["Task Triage", "Sort your entire backlog with the Eisenhower urgent/important matrix."],
-      ["Time-Blocking", "Design your ideal week as calendar blocks and follow it for 2 days."],
-      ["Pomodoro Protocol", "Complete 8 tracked pomodoros (25 min focus + 5 min break) in one day."],
-      ["Notion HQ", "Build a personal dashboard: goals, projects, tasks and a weekly review page."],
-      ["Obsidian Second Brain", "Set up PARA folders and link 10 notes into a knowledge graph."],
-      ["Habit Engine", "Design streak tracking for 3 keystone habits with triggers and rewards."],
-      ["Deep Work Ritual", "Engineer a 90-minute distraction-free block: environment, phone, signals."],
-      ["Automation Stack", "Automate 3 recurring chores (templates, rules, or scripts)."],
-      ["Personal OS v1", "Integrate calendar, tasks and notes into one documented operating system."],
+      ["Source Verification & CARS Test", "Apply Credibility, Accuracy, Reasonableness, Support test to 3 online claims."],
+      ["Cognitive Bias Identification", "Identify Confirmation Bias, Availability Heuristic, and Sunk Cost in business cases."],
+      ["Logical Fallacy Detection", "Spot Ad Hominem, Strawman, and False Dilemma fallacies in public debates."],
+      ["AI Research Tools (Perplexity/Elicit)", "Use Perplexity, Elicit, and Consensus to gather peer-reviewed paper citations."],
+      ["Fact-Checking & Hallucination Audit", "Audit an AI-generated essay cross-referencing every claim against primary sources."],
+      ["Structuring Literature Reviews", "Synthesize findings from 5 research papers into a structured matrix."],
+      ["Data Evidence Scoring", "Rate research evidence quality from Meta-analyses (high) to Anecdotes (low)."],
+      ["Hypothesis Formulation", "Draft falsifiable research hypotheses with explicit variable definitions."],
+      ["Executive Decision Matrix", "Construct a weighted decision matrix evaluating strategic choices under uncertainty."],
+      ["Research Brief Capstone", "Author a comprehensive, fully-cited research paper on a complex technological topic."],
     ],
     bank: [
-      ["Time-blocking means…", "Assigning tasks to specific calendar blocks", "Blocking distracting websites", "Working without any schedule", "Tracking time after the fact"],
-      ["The Eisenhower matrix sorts tasks by…", "Urgency and importance", "Effort and cost", "Deadline and owner", "Difficulty and fun"],
-      ["A 'second brain' is…", "An external system to capture and organize knowledge", "A memory improvement supplement", "A second monitor", "An AI clone of yourself"],
-      ["A classic Pomodoro cycle is…", "About 25 minutes of focus plus a 5-minute break", "2 hours of work plus 1 hour break", "10 minutes work, 10 minutes rest", "Working until exhaustion"],
-      ["Deep work requires…", "Long distraction-free focus blocks", "Constant multitasking", "Background notifications", "Open office chatter"],
-      ["The purpose of a weekly review is…", "Closing open loops and planning the next week", "Punishing missed tasks", "Reporting to your manager", "Archiving old emails"],
+      ["What is Confirmation Bias?", "The tendency to search for and favor information that confirms pre-existing beliefs", "Believing everything read online", "Forgetting research sources", "Disagreeing with scientific consensus"],
+      ["What is an AI Hallucination?", "When an LLM confidently generates false or fabricated information presented as fact", "A computer virus", "A monitor glitch", "A slow network connection"],
+      ["In research evidence hierarchy, which source holds the highest evidence strength?", "Systematic reviews and Meta-analyses of randomized trials", "Social media posts", "Personal anecdotes", "Single opinion blogs"],
+      ["What is the Strawman Fallacy?", "Misrepresenting or exaggerating an opponent's argument to make it easier to attack", "Attacking a person's character", "Assuming correlation implies causation", "Repeating an argument continuously"],
+      ["Why is primary source verification essential when using AI for research?", "AI models can misattribute quotes or fabricate non-existent scientific paper DOIs", "Primary sources are written in HTML", "Primary sources are always secret", "Primary sources prevent compilation errors"],
+      ["What makes a research hypothesis 'falsifiable'?", "It can be proven false through empirical observation or experiment", "It is written in Latin", "It is guaranteed to be true", "It cannot be tested"],
     ],
   },
   {
-    id: "project-management",
-    title: "Project & AI Team Management",
-    category: "Systems & Execution",
-    iconName: "Users",
-    description: "Agile, agent delegation and task tracking — run projects where humans and AI agents ship together.",
-    color: "#a78bfa",
-    videoIds: ["arj7oStGLkU", "H14bBuluwB8"],
+    id: "prompt-engineering",
+    title: "AI Prompt Engineering & Context Architecture",
+    category: "Core Skills",
+    iconName: "Sparkles",
+    description: "Architect production system prompts, Few-Shot examples, Chain-of-Thought reasoning, and RAG context pipelines.",
+    color: "#a855f7",
+    videoIds: ["u4ZoJKF_VuA", "UF8uR6Z6KLc"],
     levels: [
-      ["Project Charter", "Write a one-page charter: goal, scope, non-goals and success metrics."],
-      ["Kanban Setup", "Create a board with To Do / Doing / Done and a WIP limit of 3."],
-      ["Sprint Planning", "Plan a 1-week sprint with estimates and a clear sprint goal."],
-      ["Standup Rhythm", "Run 3 days of async standups: done, doing, blockers."],
-      ["Risk Radar", "List your project's top 5 risks with likelihood, impact and mitigations."],
-      ["Agent Delegation", "Brief an AI agent on a scoped task with explicit acceptance criteria; review its output."],
-      ["Multi-Agent Orchestration", "Design a 3-role agent pipeline (researcher → builder → reviewer) with handoffs."],
-      ["Stakeholder Comms", "Write a crisp weekly status report: progress, risks, asks."],
-      ["Retrospectives", "Run a retro on a finished project and commit to 2 process improvements."],
-      ["AI PM Operating Manual", "Document how your human + agent team plans, executes and reviews work."],
+      ["Prompt Anatomy & System Role", "Structure a system prompt specifying Persona, Context, Constraints, and Output Format."],
+      ["Zero-Shot vs Few-Shot Prompting", "Provide 3 high-quality input/output examples to drastically improve model accuracy."],
+      ["Chain-of-Thought (CoT) Prompting", "Instruct LLMs to 'think step-by-step' before outputting final answers to solve logic tasks."],
+      ["Structured Output (JSON/Markdown)", "Enforce strict JSON schema output formatting using prompt constraints and function schemas."],
+      ["Context Window & Token Optimization", "Compress a long text document into an optimized prompt staying under token limits."],
+      ["Negative Constraints & Fallbacks", "Implement strict safety boundaries instructing model what NOT to do or say."],
+      ["RAG Context Injection", "Design a Retrieval-Augmented Generation prompt injecting retrieved documents into LLM context."],
+      ["Function Calling & Agent Tooling", "Write tool definitions allowing LLMs to trigger weather, search, or database functions."],
+      ["LLM Evaluation & Benchmarking", "Evaluate 10 prompt variations against an accuracy benchmark grading response quality."],
+      ["System Prompt Library Capstone", "Build a production-ready library of enterprise system prompts for real-world AI applications."],
     ],
     bank: [
-      ["An agile sprint is…", "A fixed timebox that delivers a working increment", "An all-night coding session", "The final phase of a project", "A daily meeting"],
-      ["A kanban board limits…", "Work in progress", "Team size", "Project budget", "Meeting length"],
-      ["A standup answers…", "What was done, what's next, and blockers", "Salary and performance reviews", "Long-term company strategy", "Customer support tickets"],
-      ["Delegating to AI agents works best with…", "Clearly scoped tasks with success criteria", "Vague open-ended requests", "No review of outputs", "One giant task for one agent"],
-      ["A retrospective is for…", "Improving the process after each cycle", "Assigning blame for failures", "Demoing to customers", "Planning the next year"],
-      ["The critical path is…", "The longest chain of dependent tasks", "The most expensive task", "The tasks assigned to leadership", "The shortest route to demo day"],
+      ["What is Few-Shot Prompting?", "Providing a few high-quality input-output examples in the prompt to demonstrate desired task performance", "Sending only one word", "Prompting without internet", "Using 3 different computers"],
+      ["Why does Chain-of-Thought (CoT) prompting improve complex reasoning?", "It forces the model to break reasoning into explicit intermediate steps before answering", "It increases GPU clock speed", "It translates text into Spanish", "It deletes unnecessary words"],
+      ["What is RAG in AI architecture?", "Retrieval-Augmented Generation (injecting relevant external knowledge into prompt context)", "Random Access Graphics", "Realtime Automated Generation", "Read After Grouping"],
+      ["What is a System Prompt?", "Top-level instructions defining model behavior, persona, constraints, and formatting rules", "A computer BIOS password", "A Windows terminal command", "A CSS style sheet"],
+      ["How do you enforce JSON output from modern LLM APIs?", "Specify JSON schema constraints in system instructions or response_format parameters", "Write text in all capital letters", "Add exclamation marks", "Restart the server"],
+      ["What is tokenization in LLMs?", "Breaking text strings into sub-word tokens processed mathematically by the neural net", "Buying crypto coins", "Encrypting database passwords", "Formatting HTML paragraphs"],
     ],
   },
 ];
 
-
-/* --------------------------- per-skill submission config --------------------------- */
-
-interface SkillSubmitCfg {
-  kinds: SubmissionKind[];
-  proof: string[]; // what proof of work looks like for this skill
-}
-
-const SUBMIT_CFG: Record<string, SkillSubmitCfg> = {
-  "ai-prompt-engineering": {
-    kinds: ["TEXT", "URL", "GOOGLE_DRIVE", "GITHUB", "NOTION", "FILE"],
-    proof: ["Shared chat/conversation links", "Prompt document with outputs", "Screenshots of results", "Workflow export file"],
-  },
-  "vibe-coding": {
-    kinds: ["GITHUB", "URL", "TEXT", "FILE"],
-    proof: ["GitHub repository link", "Live deployed URL", "Screen recording of the app working"],
-  },
-  entrepreneurship: {
-    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "NOTION", "CANVA", "FILE"],
-    proof: ["Interview notes document", "Lean canvas / pitch deck link", "Landing page URL", "Waitlist screenshot"],
-  },
-  "financial-literacy": {
-    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "FILE"],
-    proof: ["Spreadsheet link (Google Sheets)", "Budget/model screenshots", "Written analysis"],
-  },
-  freelancing: {
-    kinds: ["TEXT", "URL", "GOOGLE_DRIVE", "NOTION", "FILE"],
-    proof: ["Profile/proposal links", "Outreach tracking sheet", "Portfolio pieces", "Client conversation screenshots (redacted)"],
-  },
-  "content-creation": {
-    kinds: ["URL", "YOUTUBE", "TEXT", "GOOGLE_DRIVE", "NOTION"],
-    proof: ["Published post/thread links", "Analytics screenshots", "Content calendar link"],
-  },
-  "video-editing": {
-    kinds: ["YOUTUBE", "GOOGLE_DRIVE", "URL", "FILE"],
-    proof: ["Exported video link (Drive/YouTube)", "Before/after clips", "Project file screenshot"],
-  },
-  "sales-negotiation": {
-    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "FILE"],
-    proof: ["Written scripts and frameworks", "Role-play recording link", "Deal/negotiation prep document"],
-  },
-  communication: {
-    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "YOUTUBE", "FILE"],
-    proof: ["Before/after rewrites", "Recorded talk link", "One-page brief document"],
-  },
-  "public-speaking": {
-    kinds: ["YOUTUBE", "GOOGLE_DRIVE", "URL", "TEXT"],
-    proof: ["Recording of your talk (video link)", "Slide deck link", "Self-review notes"],
-  },
-  productivity: {
-    kinds: ["TEXT", "NOTION", "URL", "GOOGLE_DRIVE", "FILE"],
-    proof: ["Notion/Obsidian dashboard link", "Time audit screenshots", "System documentation"],
-  },
-  "project-management": {
-    kinds: ["TEXT", "NOTION", "URL", "GOOGLE_DRIVE", "FILE"],
-    proof: ["Board/charter link", "Sprint plan document", "Status report", "Retro notes"],
-  },
-};
-
-const DEFAULT_CFG: SkillSubmitCfg = {
-  kinds: ["TEXT", "URL", "GOOGLE_DRIVE", "FILE"],
-  proof: ["Links to your work", "Screenshots", "A short write-up"],
-};
-
-/** Extra curated starter resources attached to mission 1 of each skill */
 const STARTER_RESOURCES: Record<string, LearningResource[]> = {
-  "ai-prompt-engineering": [
-    { id: "res-ai-guide", type: "ARTICLE", title: "Prompt Engineering Guide", url: "https://www.promptingguide.ai/", minutes: 25 },
-  ],
   "vibe-coding": [
-    { id: "res-vc-nextjs", type: "ARTICLE", title: "Next.js Learn Course", url: "https://nextjs.org/learn", minutes: 40 },
+    {
+      id: "vibe-res-1",
+      type: "LINK",
+      title: "Cursor Official Documentation",
+      url: "https://docs.cursor.com",
+      creator: "Cursor Team",
+      isOfficialDocs: true,
+      minutes: 10,
+    },
+    {
+      id: "vibe-res-2",
+      type: "LINK",
+      title: "Anthropic Claude Code Guide",
+      url: "https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview",
+      creator: "Anthropic",
+      isOfficialDocs: true,
+      minutes: 12,
+    },
+    {
+      id: "vibe-res-3",
+      type: "VIDEO",
+      title: "How to Vibe Code Full Apps with Cursor AI",
+      url: "UF8uR6Z6KLc",
+      creator: "Fireship",
+      isOfficialDocs: false,
+      minutes: 12,
+    },
   ],
-  entrepreneurship: [
-    { id: "res-ent-ycstartup", type: "ARTICLE", title: "YC Startup School", url: "https://www.startupschool.org/", minutes: 30 },
-    { id: "res-ent-leancanvas", type: "TEMPLATE", title: "Lean Canvas Template", url: "https://www.canva.com/templates/?query=lean-canvas", minutes: 10 },
+  "ai-automation": [
+    {
+      id: "auto-res-1",
+      type: "LINK",
+      title: "Make.com Help Center & Scenario Guides",
+      url: "https://www.make.com/en/help",
+      creator: "Make",
+      isOfficialDocs: true,
+      minutes: 15,
+    },
+    {
+      id: "auto-res-2",
+      type: "LINK",
+      title: "n8n Workflows Documentation",
+      url: "https://docs.n8n.io",
+      creator: "n8n",
+      isOfficialDocs: true,
+      minutes: 15,
+    },
   ],
-  "financial-literacy": [
-    { id: "res-fin-zerodha", type: "ARTICLE", title: "Zerodha Varsity — Personal Finance", url: "https://zerodha.com/varsity/module/personalfinance/", minutes: 45 },
+  "fullstack-web": [
+    {
+      id: "web-res-1",
+      type: "LINK",
+      title: "Next.js 14 App Router Official Docs",
+      url: "https://nextjs.org/docs",
+      creator: "Vercel",
+      isOfficialDocs: true,
+      minutes: 15,
+    },
+    {
+      id: "web-res-2",
+      type: "LINK",
+      title: "Tailwind CSS Official Documentation",
+      url: "https://tailwindcss.com/docs",
+      creator: "Tailwind Labs",
+      isOfficialDocs: true,
+      minutes: 10,
+    },
   ],
-  freelancing: [
-    { id: "res-fr-upwork", type: "ARTICLE", title: "Upwork Freelancer Guide", url: "https://www.upwork.com/resources/how-to-get-started-freelancing", minutes: 20 },
+  "ui-ux-design": [
+    {
+      id: "design-res-1",
+      type: "LINK",
+      title: "Figma Official Help & Auto Layout Guide",
+      url: "https://help.figma.com",
+      creator: "Figma",
+      isOfficialDocs: true,
+      minutes: 15,
+    },
   ],
-  "content-creation": [
-    { id: "res-cc-hooks", type: "TEMPLATE", title: "Viral Hook Templates", url: "https://www.notion.so/templates/category/social-media", minutes: 15 },
-  ],
-  "video-editing": [
-    { id: "res-ve-capcut", type: "ARTICLE", title: "CapCut Official Tutorials", url: "https://www.capcut.com/resource", minutes: 20 },
-  ],
-  "sales-negotiation": [
-    { id: "res-sn-spin", type: "ARTICLE", title: "SPIN Selling Summary", url: "https://blog.hubspot.com/sales/spin-selling", minutes: 15 },
-  ],
-  communication: [
-    { id: "res-com-pyramid", type: "ARTICLE", title: "The Minto Pyramid Principle", url: "https://untools.co/minto-pyramid/", minutes: 10 },
-  ],
-  "public-speaking": [
-    { id: "res-ps-ted", type: "ARTICLE", title: "TED's Secret to Great Public Speaking", url: "https://www.ted.com/talks/chris_anderson_ted_s_secret_to_great_public_speaking", minutes: 8 },
-  ],
-  productivity: [
-    { id: "res-pr-para", type: "ARTICLE", title: "The PARA Method", url: "https://fortelabs.com/blog/para/", minutes: 15 },
-  ],
-  "project-management": [
-    { id: "res-pm-agile", type: "ARTICLE", title: "Agile Manifesto & Principles", url: "https://agilemanifesto.org/", minutes: 10 },
+  "prompt-engineering": [
+    {
+      id: "prompt-res-1",
+      type: "LINK",
+      title: "OpenAI Official Prompt Engineering Guide",
+      url: "https://platform.openai.com/docs/guides/prompt-engineering",
+      creator: "OpenAI",
+      isOfficialDocs: true,
+      minutes: 20,
+    },
   ],
 };
-
-/* ------------------------------ mission builder ------------------------------ */
-
-const MISSION_PHASES = [
-  "Foundation",
-  "Foundation",
-  "Foundation",
-  "Practice",
-  "Practice",
-  "Practice",
-  "Advanced",
-  "Advanced",
-  "Pro",
-  "Capstone",
-];
-
-function difficultyFor(n: number): Difficulty {
-  if (n <= 3) return "Beginner";
-  if (n <= 6) return "Intermediate";
-  if (n <= 9) return "Advanced";
-  return "Expert";
-}
 
 function buildAssignment(seed: SkillSeed, n: number, brief: string): Assignment {
-  const cfg = SUBMIT_CFG[seed.id] ?? DEFAULT_CFG;
   const isCapstone = n === 10;
+  const kindMaps: Record<string, SubmissionKind[]> = {
+    "vibe-coding": ["GITHUB", "URL", "FILE"],
+    "ai-automation": ["URL", "GOOGLE_DRIVE", "FILE"],
+    "ai-product-management": ["NOTION", "FIGMA", "URL"],
+    "fullstack-web": ["GITHUB", "URL"],
+    "ui-ux-design": ["FIGMA", "URL"],
+    "ai-content-creation": ["YOUTUBE", "URL", "FILE"],
+    "digital-growth": ["GOOGLE_DRIVE", "URL"],
+    freelancing: ["NOTION", "GOOGLE_DRIVE", "URL"],
+    "data-analytics": ["GITHUB", "GOOGLE_DRIVE"],
+    cybersecurity: ["GITHUB", "FILE"],
+    "research-critical-thinking": ["NOTION", "URL"],
+    "prompt-engineering": ["GITHUB", "NOTION", "TEXT"],
+  };
+
+  const proofMap: Record<string, string[]> = {
+    "vibe-coding": ["GitHub repository link with commit history", "Live deployed Vercel/Netlify web application URL"],
+    "ai-automation": ["Make/n8n workflow export JSON or link", "Screen recording / screenshot of successful execution"],
+    "ai-product-management": ["Notion PRD document or PDF export", "Figma wireframe / user flow link"],
+    "fullstack-web": ["GitHub repository with clean code", "Live deployed URL"],
+    "ui-ux-design": ["Viewable Figma prototype link", "High-res PNG export of UI components"],
+    "ai-content-creation": ["YouTube / Shorts video link", "Raw script and visual asset pack"],
+    "digital-growth": ["Google Analytics screenshot / CRO audit report", "Ad copy variations and funnel deck"],
+    freelancing: ["Upwork profile screenshot or proposal draft", "Signed contract template or Notion client portal link"],
+    "data-analytics": ["GitHub SQL/Python notebook repo", "Interactive Tableau/Looker dashboard link"],
+    cybersecurity: ["Security Audit Report PDF", "Wireshark packet capture analysis screenshot"],
+    "research-critical-thinking": ["Comprehensive Research Brief PDF / Notion doc", "Fact-checking evidence matrix"],
+    "prompt-engineering": ["Prompt library Notion/GitHub link", "LLM evaluation benchmark results"],
+  };
+
+  const kinds = kindMaps[seed.id] ?? ["URL", "FILE", "TEXT"];
+  const proofs = proofMap[seed.id] ?? ["Link to completed project", "Screenshot of output"];
+
   return {
-    brief,
+    brief: isCapstone
+      ? `🚀 CAPSTONE MISSION: Build and ship a complete, professional-grade portfolio artifact for ${seed.title}. Incorporate everything learned across all 9 previous missions.`
+      : brief,
     deliverables: [
       isCapstone ? "The finished capstone project, publicly shareable" : "The completed practical task described above",
-      ...cfg.proof.slice(0, isCapstone ? cfg.proof.length : 2),
+      ...proofs.slice(0, isCapstone ? proofs.length : 2),
       "A 3-5 line write-up: what you built, what broke, what you learned",
     ],
     checklist: [
-      "Go through every learning resource in this mission",
-      `Do the work: ${brief.length > 90 ? brief.slice(0, 90).trimEnd() + "…" : brief}`,
-      `Collect proof of work (${cfg.proof[0].toLowerCase()})`,
+      "Go through the interactive Duolingo mission cards",
+      `Do the practical task: ${brief.length > 90 ? brief.slice(0, 90).trimEnd() + "…" : brief}`,
+      `Collect proof of work (${proofs[0].toLowerCase()})`,
       "Answer the reflection questions honestly",
       "Submit for review — resubmissions are encouraged, not penalized",
     ],
-    allowedSubmissionTypes: cfg.kinds,
+    allowedSubmissionTypes: kinds,
   };
 }
 
@@ -658,10 +920,30 @@ const REFLECTIONS_BASE = [
   "How will you apply what you built here to a real project, client, or audience this week?",
 ];
 
+function difficultyFor(order: number): Difficulty {
+  if (order <= 3) return "Beginner";
+  if (order <= 7) return "Intermediate";
+  if (order <= 9) return "Advanced";
+  return "Expert";
+}
+
+const MISSION_PHASES = [
+  "Phase 1 · Foundations",
+  "Phase 1 · Foundations",
+  "Phase 1 · Foundations",
+  "Phase 2 · Core Workflows",
+  "Phase 2 · Core Workflows",
+  "Phase 2 · Core Workflows",
+  "Phase 3 · Advanced Practice",
+  "Phase 3 · Advanced Practice",
+  "Phase 3 · Advanced Practice",
+  "Phase 4 · Capstone & Portfolio",
+];
+
 function buildMissions(seed: SkillSeed): Mission[] {
   return seed.levels.map(([title, brief], i) => {
     const n = i + 1;
-    // rotate the 6-question bank so each mission's 5-question knowledge check differs
+    // Rotate 5-question knowledge check
     const qs: Question[] = [];
     for (let k = 0; k < 5; k++) {
       const [prompt, correct, ...wrong] = seed.bank[(i + k) % seed.bank.length];
@@ -680,8 +962,9 @@ function buildMissions(seed: SkillSeed): Mission[] {
       {
         id: `${seed.id}-l${n}-video`,
         type: "VIDEO",
-        title: `${title} — video lesson`,
+        title: `${title} — Curated Video Lesson`,
         url: seed.videoIds[i % seed.videoIds.length],
+        creator: i % 2 === 0 ? "Fireship" : "Theo - t3.gg",
         minutes: 15,
       },
       ...(n === 1 ? STARTER_RESOURCES[seed.id] ?? [] : []),
@@ -692,7 +975,7 @@ function buildMissions(seed: SkillSeed): Mission[] {
         id: `${seed.id}-l${n}-step1`,
         type: "HOOK",
         title: "Curiosity Hook",
-        hookText: `What if mastering ${title} took only 5 minutes of focused action instead of weeks of passive video watching?`,
+        hookText: `Bro, today's mission is to master ${title} 😎. Let's turn you into a dangerous practitioner.`,
       },
       {
         id: `${seed.id}-l${n}-step2`,
@@ -705,9 +988,10 @@ function buildMissions(seed: SkillSeed): Mission[] {
         id: `${seed.id}-l${n}-step3`,
         type: "DISCOVERY",
         title: "The Concept Discovery",
-        discoveryText: n === 10
-          ? "A portfolio-grade capstone project ready to share with employers, clients, or investors."
-          : `By executing ${title}, you master the exact framework used by top industry practitioners.`,
+        discoveryText:
+          n === 10
+            ? "A portfolio-grade capstone project ready to share with employers, clients, or investors."
+            : `By executing ${title}, you master the exact framework used by top industry practitioners in 2026.`,
       },
       {
         id: `${seed.id}-l${n}-step4`,
@@ -761,178 +1045,45 @@ function buildMissions(seed: SkillSeed): Mission[] {
       neuronReward: n <= 6 ? 10 + n * 5 : n * 8,
       isPremium: n >= 5,
       isLocked: false,
-      isBossBattle: n % 5 === 0,
       steps: gamifiedSteps,
     };
   });
 }
 
 const SKILL_IMAGES: Record<string, string> = {
-  "ai-prompt-engineering": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80",
   "vibe-coding": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
-  entrepreneurship: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=800&q=80",
-  "financial-literacy": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
+  "ai-automation": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+  "ai-product-management": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+  "fullstack-web": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
+  "ui-ux-design": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=800&q=80",
+  "ai-content-creation": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80",
+  "digital-growth": "https://images.unsplash.com/photo-1533750349088-cd871a92f312?auto=format&fit=crop&w=800&q=80",
   freelancing: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
-  "content-creation": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80",
-  "video-editing": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80",
-  "sales-negotiation": "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=800&q=80",
-  communication: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80",
-  "public-speaking": "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=800&q=80",
-  productivity: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80",
-  "project-management": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
+  "data-analytics": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
+  cybersecurity: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
+  "research-critical-thinking": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80",
+  "prompt-engineering": "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80",
 };
 
-const SKILL_DIFFICULTY: Record<string, Difficulty> = {
-  "ai-prompt-engineering": "Beginner",
-  "vibe-coding": "Intermediate",
-  entrepreneurship: "Intermediate",
-  "financial-literacy": "Beginner",
-  freelancing: "Beginner",
-  "content-creation": "Beginner",
-  "video-editing": "Beginner",
-  "sales-negotiation": "Intermediate",
-  communication: "Beginner",
-  "public-speaking": "Beginner",
-  productivity: "Beginner",
-  "project-management": "Intermediate",
-};
-
-export const SKILL_TRANSFORMATIONS: Record<string, SkillTransformation> = {
-  "ai-prompt-engineering": {
-    become: "AI Productivity Expert & Automation Specialist",
-    headline: "By completing this skill, you'll become an AI Productivity Expert who can automate work and multiply productivity using AI.",
-    canBuild: ["Custom GPTs & Prompt Packs", "RAG Knowledge Systems", "n8n & Make Automations", "AI Agentic Workflows"],
-    realWorldOutcomes: ["Automate 80% of repetitive work", "Research 10x faster with AI", "Eliminate manual data entry", "Build autonomous agentic tools"],
-    projectsCompleted: ["LLM Benchmark Matrix", "AI Research System", "Make/n8n Automation", "Autonomous AI Agent"],
-    careerOpportunities: ["AI Operations Specialist", "AI Prompt Engineer", "AI Consultant", "Automation Strategist"],
-  },
-  "vibe-coding": {
-    become: "AI Software Engineer",
-    headline: "By completing this skill, you'll become an AI Software Engineer capable of building real-world software using AI.",
-    canBuild: ["Websites using AI", "SaaS products", "Mobile apps", "AI tools & agents", "Automations & API integrations"],
-    realWorldOutcomes: ["Ship full-stack products in days", "Debug code using AI", "Deploy production apps", "Automate development workflows"],
-    projectsCompleted: ["AI SaaS MVP", "Full-Stack Web App", "Mobile App", "Multi-Agent Automation"],
-    careerOpportunities: ["AI Software Engineer", "Full Stack Developer", "Founding Engineer", "Technical Co-Founder"],
-  },
-  entrepreneurship: {
-    become: "Startup Founder",
-    headline: "By completing this skill, you'll become a Startup Founder who can validate ideas, build MVPs, acquire customers and launch a business.",
-    canBuild: ["Problem-Solution Fit MVPs", "Waitlists & Validation Pages", "Go-To-Market Plans", "Investor Pitch Decks"],
-    realWorldOutcomes: ["Discover high-value pain points", "Conduct customer discovery interviews", "Acquire initial 100 users", "Launch on Product Hunt"],
-    projectsCompleted: ["Problem Opportunity Database", "Validation Case Study", "No-Code/AI Startup MVP", "Full Founder Pitch Deck"],
-    careerOpportunities: ["Startup Founder", "Venture Builder", "Product Manager", "Innovation Lead"],
-  },
-  "financial-literacy": {
-    become: "Financially Smart & Wealth Strategist",
-    headline: "By completing this skill, you'll become financially smart by understanding budgeting, investing, taxes, saving and wealth creation.",
-    canBuild: ["Personal Budget Dashboards", "Automated Wealth Systems", "SIP Investment Portfolios", "Tax & Cashflow Blueprints"],
-    realWorldOutcomes: ["Master 50/30/20 budgeting", "Protect money from digital scams", "Understand stocks, mutual funds & GST", "Build long-term financial freedom"],
-    projectsCompleted: ["Money Assessment Report", "Personal Budget System", "Virtual Investment Strategy", "Comprehensive Wealth Roadmap"],
-    careerOpportunities: ["Personal Finance Strategist", "Wealth Manager", "Financial Analyst", "Independent Investor"],
-  },
-  freelancing: {
-    become: "Successful Freelancer",
-    headline: "By completing this skill, you'll become a successful freelancer capable of finding clients, delivering projects and earning online.",
-    canBuild: ["Upwork & LinkedIn Profiles", "Client Proposals & Contracts", "Freelance Service Packages", "Invoicing & Payment Portals"],
-    realWorldOutcomes: ["Land global clients online", "Price services for high profit", "Deliver 5-star projects", "Build a recurring freelance business"],
-    projectsCompleted: ["Freelance Offer Blueprint", "Upwork Profile Optimization", "Client Proposal Kit", "Freelance Income Dashboard"],
-    careerOpportunities: ["Independent Freelancer", "Agency Founder", "Remote Consultant", "Contract Specialist"],
-  },
-  "content-creation": {
-    become: "Content Creator & Personal Brand Builder",
-    headline: "By completing this skill, you'll become a Content Creator who can build a personal brand, create viral content and grow an audience.",
-    canBuild: ["Multi-Platform Content Engines", "Viral Hooks & Scripts", "Personal Brand Profile Systems", "Monetization Funnels"],
-    realWorldOutcomes: ["Grow audience on X, LinkedIn & YouTube", "Script high-engagement posts", "Monetize content & brand", "Build personal authority"],
-    projectsCompleted: ["Content Strategy Matrix", "30-Day Content Sprint", "Viral Video Script", "Creator Monetization Plan"],
-    careerOpportunities: ["Content Creator", "Personal Brand Strategist", "Social Media Manager", "Growth Creator"],
-  },
-  "video-editing": {
-    become: "Professional Video Editor",
-    headline: "By completing this skill, you'll become a Professional Video Editor capable of editing reels, YouTube videos, advertisements and commercial content.",
-    canBuild: ["Viral Shorts & Reels", "YouTube Long-Form Videos", "High-Converting Ad Creatives", "Motion Graphics & Color Grading"],
-    realWorldOutcomes: ["Pace videos for retention", "Master Premiere, CapCut & DaVinci", "Design sound & visual effects", "Land video clients"],
-    projectsCompleted: ["Short-Form Reel Edit", "YouTube Video Cut", "Commercial Ad Project", "Video Showreel"],
-    careerOpportunities: ["Video Editor", "Content Producer", "YouTube Editor", "Creative Media Strategist"],
-  },
-  "sales-negotiation": {
-    become: "Sales Professional & Deal Closer",
-    headline: "By completing this skill, you'll become a Sales Professional who can confidently pitch, negotiate and close deals.",
-    canBuild: ["Client Outreach Systems", "Discovery Call Frameworks", "Negotiation Playbooks", "High-Converting DM & Email Flows"],
-    realWorldOutcomes: ["Overcome objections effortlessly", "Conduct discovery & demo calls", "Negotiate win-win contracts", "Close high-ticket clients"],
-    projectsCompleted: ["Sales Philosophy & Mindset", "Negotiation Playbook", "Lead Generation Dashboard", "Complete Sales Funnel System"],
-    careerOpportunities: ["Sales Director", "Account Executive", "Business Development Lead", "Client Acquisition Specialist"],
-  },
-  communication: {
-    become: "Confident Communicator & Influential Speaker",
-    headline: "By completing this skill, you'll become a Confident Communicator who can speak, present ideas, tell compelling stories and build meaningful relationships.",
-    canBuild: ["TED-Style Talk Presentations", "Personal Brand Blueprints", "Cold DM & Email Systems", "Startup Pitch Decks"],
-    realWorldOutcomes: ["Speak without stage fear", "Deliver persuasive pitches", "Ace job & startup interviews", "Network with high-value peers"],
-    projectsCompleted: ["Professional Introduction Video", "TED-Style Speech Recording", "Personal Brand Strategy", "Startup Pitch Presentation"],
-    careerOpportunities: ["Public Speaker", "Communications Lead", "Community Director", "Executive Presenter"],
-  },
-  "product-building": {
-    become: "Product Builder & One-Person Business Operator",
-    headline: "By completing this skill, you'll become a Product Builder who can design, validate, launch digital products and build recurring revenue systems.",
-    canBuild: ["Digital Products (Ebooks/Templates)", "High-Converting Landing Pages", "Gumroad/Lemon Squeezy Stores", "Automated Sales Funnels"],
-    realWorldOutcomes: ["Validate product ideas before building", "Launch on Product Hunt & X", "Build email distribution lists", "Generate recurring revenue"],
-    projectsCompleted: ["Product Opportunity Database", "Digital Product MVP", "Distribution System Blueprint", "Real Product Launch"],
-    careerOpportunities: ["Product Builder", "Growth Marketer", "Indie Hacker", "Digital Business Owner"],
-  },
-  "research-thinking": {
-    become: "Strategic Problem Solver & Deep Researcher",
-    headline: "By completing this skill, you'll become a strategic problem solver who can research deeply, verify information, detect misinformation and make better decisions.",
-    canBuild: ["Fact-Checking Systems", "Deep Research Workflows with AI", "Competitive Analysis Audits", "Decision Making Frameworks"],
-    realWorldOutcomes: ["Detect media bias & fake news", "Make evidence-based decisions", "Synthesize complex data with AI", "Apply first-principles thinking"],
-    projectsCompleted: ["Topic Research Summary", "Critical Thinking Audit", "AI Research System", "Industry Competitive Report"],
-    careerOpportunities: ["Research Analyst", "Strategy Consultant", "Data Intelligence Lead", "Policy & Risk Analyst"],
-  },
-  "graphic-design": {
-    become: "Professional Graphic Designer",
-    headline: "By completing this skill, you'll become a Professional Graphic Designer capable of creating branding, social media creatives, marketing assets and client-ready designs.",
-    canBuild: ["Complete Brand Kits & Logos", "High-CTR YouTube Thumbnails", "Instagram & LinkedIn Carousels", "AI Design Assets with Firefly/Midjourney"],
-    realWorldOutcomes: ["Understand visual hierarchy & color psychology", "Master Canva, Photoshop & AI design", "Deliver client-ready brand systems", "Build a high-ticket design portfolio"],
-    projectsCompleted: ["Design Improvement Case Study", "Complete Brand Identity Package", "Social Media Content Suite", "Design Portfolio Showcase"],
-    careerOpportunities: ["Brand Designer", "Visual Graphic Designer", "Creative Director", "UI/UX & Asset Designer"],
-  },
-};
-
-export const SKILLS: Skill[] = SEEDS.map((seed) => {
-  const missions = buildMissions(seed);
+export const INITIAL_SKILLS: Skill[] = SKILL_SEEDS.map((s) => {
+  const missions = buildMissions(s);
   return {
-    id: seed.id,
-    title: seed.title,
-    category: seed.category,
-    iconName: seed.iconName,
-    description: seed.description,
-    color: seed.color,
-    thumbnailUrl: SKILL_IMAGES[seed.id] ?? "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
-    difficulty: SKILL_DIFFICULTY[seed.id] ?? "Beginner",
+    id: s.id,
+    title: s.title,
+    category: s.category,
+    iconName: s.iconName,
+    description: s.description,
+    color: s.color,
+    thumbnailUrl: SKILL_IMAGES[s.id] ?? "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
+    difficulty: "Beginner",
     estimatedHours: Math.round(missions.reduce((sum, m) => sum + m.estimatedMinutes, 0) / 60),
-    transformation: SKILL_TRANSFORMATIONS[seed.id],
+    transformation: SKILL_TRANSFORMATIONS[s.id],
     missions,
     isPublished: true,
   };
 });
 
-/* --------------------------------- badges --------------------------------- */
-
-export const BADGES: BadgeDef[] = [
-  { id: "first-mission", name: "First Ship", description: "Got your first project approved", iconName: "Flag", color: "#3b82f6" },
-  { id: "projects-5", name: "Builder", description: "5 approved projects", iconName: "Hammer", color: "#8b5cf6" },
-  { id: "projects-20", name: "Shipping Machine", description: "20 approved projects", iconName: "Package", color: "#06b6d4" },
-  { id: "streak-7", name: "Week Warrior", description: "7-day learning streak", iconName: "Flame", color: "#f97316" },
-  { id: "streak-30", name: "Unstoppable", description: "30-day learning streak", iconName: "Flame", color: "#ef4444" },
-  { id: "phase-complete", name: "Phase Cleared", description: "Completed a skill phase", iconName: "Milestone", color: "#eab308" },
-  { id: "skill-complete", name: "Skill Master", description: "Completed all 10 missions of a skill", iconName: "GraduationCap", color: "#22c55e" },
-  { id: "tournament-winner", name: "Arena Champion", description: "Won a weekly tournament", iconName: "Trophy", color: "#facc15" },
-  { id: "founder", name: "Founding Member", description: "Founder Lifetime supporter", iconName: "Crown", color: "#8b5cf6" },
-];
-
-export function badgeDef(id: string): BadgeDef | undefined {
-  return BADGES.find((b) => b.id === id);
-}
-
-/* ------------------------------ catalog lookups ------------------------------ */
+export const SKILLS: Skill[] = INITIAL_SKILLS;
 
 export function findSkill(catalog: Skill[], skillId: string) {
   return catalog.find((s) => s.id === skillId);
@@ -946,63 +1097,86 @@ export function findMission(catalog: Skill[], missionId: string): { skill: Skill
   return null;
 }
 
-/** static-seed lookup (used for quiz seeds only — pages must use the store catalog) */
 export function getSkill(skillId: string) {
   return SKILLS.find((s) => s.id === skillId);
 }
 
-/* --------------------------------- seed state ------------------------------- */
-
-const now = Date.now();
-const iso = (offsetMs: number) => new Date(now + offsetMs).toISOString();
-const H = 3600000;
-const D = 24 * H;
-
-const quizBankFrom = (skillId: string, count: number): Question[] => {
-  const skill = getSkill(skillId)!;
-  const qs: Question[] = [];
-  const seen = new Set<string>();
-  for (const m of skill.missions) {
-    for (const q of m.quiz) {
-      if (!seen.has(q.prompt) && qs.length < count) {
-        seen.add(q.prompt);
-        qs.push({ ...q, id: `qz-${q.id}` });
-      }
-    }
-  }
-  return qs;
-};
-
-const seedQuizzes: Quiz[] = [
+export const INITIAL_QUIZZES: Quiz[] = [
   {
-    id: "quiz-ai-battle",
-    title: "AI Prompt Battle Royale",
-    category: "AI & Automation",
+    id: "tournament-weekly-1",
+    title: "Weekly AI & Tech Grand Tournament",
+    category: "Weekly Tournament",
     entryFeeNeurons: 20,
     prizePoolNeurons: 500,
-    startTime: iso(2 * D),
-    durationMins: 45,
+    startTime: new Date().toISOString(),
+    durationMins: 10,
     secondsPerQuestion: 15,
-    questions: quizBankFrom("ai-prompt-engineering", 6),
-    isActive: true,
-    winnersDeclared: false,
-  },
-  {
-    id: "quiz-founder-gauntlet",
-    title: "Founder Gauntlet: Startup IQ",
-    category: "Business & Money",
-    entryFeeNeurons: 0,
-    prizePoolNeurons: 300,
-    startTime: iso(5 * D + 3 * H),
-    durationMins: 30,
-    secondsPerQuestion: 15,
-    questions: quizBankFrom("entrepreneurship", 6),
+    questions: [
+      {
+        id: "tq1",
+        prompt: "What file configures tech stack rules and coding standards for Cursor AI?",
+        options: [".cursorrules", "package.json", "styles.css", "tsconfig.json"],
+        answerIndex: 0,
+      },
+      {
+        id: "tq2",
+        prompt: "Which tool is open-source and allows self-hosted workflow automation?",
+        options: ["n8n", "Make.com", "Zapier", "IFTTT"],
+        answerIndex: 0,
+      },
+      {
+        id: "tq3",
+        prompt: "In Next.js 14 App Router, what directive renders a component on the client?",
+        options: ["'use client'", "'use browser'", "'use react'", "'client only'"],
+        answerIndex: 0,
+      },
+    ],
     isActive: true,
     winnersDeclared: false,
   },
 ];
 
+export const INITIAL_BADGES: BadgeDef[] = [
+  {
+    id: "first-mission",
+    name: "First Ship",
+    description: "Got your first project approved",
+    iconName: "Flag",
+    color: "#3b82f6",
+  },
+  {
+    id: "projects-5",
+    name: "Builder",
+    description: "5 approved projects",
+    iconName: "Hammer",
+    color: "#8b5cf6",
+  },
+  {
+    id: "streak-7",
+    name: "Week Warrior",
+    description: "7-day learning streak",
+    iconName: "Flame",
+    color: "#f97316",
+  },
+  {
+    id: "skill-complete",
+    name: "Skill Master",
+    description: "Completed all 10 missions of a skill",
+    iconName: "GraduationCap",
+    color: "#22c55e",
+  },
+];
+
+export const BADGES: BadgeDef[] = INITIAL_BADGES;
+
+export function badgeDef(id: string): BadgeDef | undefined {
+  return BADGES.find((b) => b.id === id);
+}
+
 export function seedState(): AppState {
+  const now = Date.now();
+  const iso = (offsetMs: number) => new Date(now + offsetMs).toISOString();
+
   const officialAdmin: User = {
     id: "u-admin-official",
     name: "Skill Edge Admin",
@@ -1031,7 +1205,7 @@ export function seedState(): AppState {
     transactions: [],
     payments: [],
     coupons: [{ code: "LAUNCH20", percentOff: 20, active: true }],
-    quizzes: seedQuizzes,
+    quizzes: INITIAL_QUIZZES,
     quizEntries: [],
     certificates: [],
     notifications: [],
@@ -1046,13 +1220,6 @@ export function seedState(): AppState {
   };
 }
 
-
-/* ------------------------------ student tier lookup ------------------------------ */
-
-export function studentTierForXp(xp: number): StudentTier {
-  let tier = STUDENT_TIERS[0];
-  for (const t of STUDENT_TIERS) {
-    if (xp >= t.minXp) tier = t;
-  }
-  return tier;
+export function getInitialState(): AppState {
+  return seedState();
 }

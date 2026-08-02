@@ -61,6 +61,8 @@ export interface LearningResource {
   type: ResourceType;
   title: string;
   url: string; // YouTube id or full URL depending on type
+  creator?: string; // e.g. Fireship, Theo - t3.gg, Figma, OpenAI
+  isOfficialDocs?: boolean; // true if official documentation link
   minutes?: number;
 }
 

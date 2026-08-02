@@ -624,7 +624,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             portfolio = [item, ...s.portfolio];
 
             // certificates at phase (order 5) and completion (order 10)
-            if (CERT_TIERS.includes(mission.order)) {
+            if (CERT_TIERS.some((ct) => ct.level === mission.order)) {
               const exists = s.certificates.some(
                 (c) => c.userId === sub.userId && c.skillId === skill.id && c.levelTier === mission.order
               );
