@@ -91,6 +91,47 @@ export interface Question {
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Expert";
 
+export type MiniMissionType =
+  | "MATCH_PAIRS"
+  | "DRAG_ORDER"
+  | "FILL_BLANKS"
+  | "FIND_MISTAKE"
+  | "SCENARIO"
+  | "PREDICT";
+
+export interface MatchPair {
+  left: string;
+  right: string;
+}
+
+export interface MiniMissionData {
+  type: MiniMissionType;
+  question: string;
+  pairs?: MatchPair[]; // for MATCH_PAIRS
+  orderItems?: string[]; // for DRAG_ORDER
+  fillBlankSentence?: string; // e.g. "AI works by recognizing ___"
+  blankOptions?: string[]; // for FILL_BLANKS
+  correctAnswer?: string | number;
+  options?: string[]; // for SCENARIO, PREDICT, FIND_MISTAKE
+  explanation: string;
+}
+
+export interface GamifiedStep {
+  id: string;
+  type: "HOOK" | "STORY" | "DISCOVERY" | "PATTERN" | "MINI_MISSION" | "REFLECTION" | "REWARD";
+  title?: string;
+  hookText?: string;
+  storyText?: string;
+  storyAnalogy?: string;
+  discoveryText?: string;
+  patternPrompt?: string;
+  patternAnswer?: string;
+  miniMission?: MiniMissionData;
+  reflectionQuestion?: string;
+  xpReward?: number;
+  neuronReward?: number;
+}
+
 export interface Mission {
   id: string; // `${skillId}-level-${n}` (kept from v1 so progress migrates)
   skillId: string;
@@ -111,6 +152,9 @@ export interface Mission {
   neuronReward: number;
   isPremium: boolean; // required Pro/Family plan
   isLocked: boolean; // admin hard-lock overrides everything
+  isBossBattle?: boolean;
+  steps?: GamifiedStep[];
+  starsEarned?: number;
 }
 
 export interface SkillTransformation {

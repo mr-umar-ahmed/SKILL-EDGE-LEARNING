@@ -22,6 +22,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { EmptyState, ProgressBar, Skeleton, SkeletonCard, StatusPill } from "@/components/ui";
 import { SkillTransformationHero } from "@/components/SkillTransformationHero";
 import { DuolingoMissionPath } from "@/components/DuolingoMissionPath";
+import { RpgSkillTree } from "@/components/RpgSkillTree";
 import { useApp } from "@/lib/store";
 import type { Mission, Skill, Submission } from "@/lib/types";
 import { cn, fmtMinutes, fmtNum } from "@/lib/utils";
@@ -274,7 +275,7 @@ export default function SkillMapPage() {
 
         {/* Mode Toggle & Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-white">Mission Path</h2>
+          <h2 className="font-display text-lg font-bold text-white">Campaign Map</h2>
           <div className="flex rounded-xl border border-line bg-card p-1">
             <button
               onClick={() => setViewMode("duolingo")}
@@ -283,7 +284,7 @@ export default function SkillMapPage() {
                 viewMode === "duolingo" ? "bg-brand text-white shadow" : "text-zinc-400 hover:text-white"
               )}
             >
-              Duolingo Path
+              RPG Skill Tree
             </button>
             <button
               onClick={() => setViewMode("list")}
@@ -297,9 +298,9 @@ export default function SkillMapPage() {
           </div>
         </div>
 
-        {/* Render Duolingo Path or List */}
+        {/* Render RPG Skill Tree Path or List */}
         {viewMode === "duolingo" ? (
-          <DuolingoMissionPath skill={skill} phases={phases} />
+          <RpgSkillTree skill={skill} />
         ) : (
           <div className="animate-fade-up">
             {phases.map((phase) => (

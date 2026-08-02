@@ -10,6 +10,7 @@ import {
   Megaphone,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
   Target,
   Users2,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AdminAnnouncementsTab } from "@/components/admin/AdminAnnouncementsTab";
+import { AdminBuilderTab } from "@/components/admin/AdminBuilderTab";
 import { AdminMissionsTab } from "@/components/admin/AdminMissionsTab";
 import { AdminOverviewTab } from "@/components/admin/AdminOverviewTab";
 import { AdminPaymentsTab } from "@/components/admin/AdminPaymentsTab";
@@ -28,10 +30,11 @@ import { EmptyState, PageHeader, Skeleton, SkeletonCard } from "@/components/ui"
 import { useApp } from "@/lib/store";
 import { adminEmails, cn } from "@/lib/utils";
 
-type TabId = "overview" | "reviews" | "skills" | "missions" | "users" | "payments" | "announcements" | "system";
+type TabId = "overview" | "builder" | "reviews" | "skills" | "missions" | "users" | "payments" | "announcements" | "system";
 
 const TABS: { id: TabId; label: string; icon: LucideIcon }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "builder", label: "Mission Builder", icon: Sparkles },
   { id: "reviews", label: "Reviews", icon: ClipboardCheck },
   { id: "skills", label: "Skills", icon: Layers },
   { id: "missions", label: "Missions", icon: Target },
@@ -145,6 +148,7 @@ export default function AdminPage() {
 
         <div className="animate-fade-up" key={tab}>
           {tab === "overview" && <AdminOverviewTab />}
+          {tab === "builder" && <AdminBuilderTab />}
           {tab === "reviews" && <AdminReviewsTab />}
           {tab === "skills" && <AdminSkillsTab />}
           {tab === "missions" && <AdminMissionsTab />}

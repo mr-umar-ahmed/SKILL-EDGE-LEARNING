@@ -193,11 +193,13 @@ interface AppApi {
   hydrated: boolean;
   /** published skills for students; admin sees all via state.catalog */
   catalog: Skill[];
+  skills: Skill[];
   currentUser: User | null;
   isAdmin: boolean;
   isAuthenticated: boolean;
   /** active paid plan (Pro or Founder) */
   isPro: boolean;
+  adminSaveSkill: (skill: Skill) => void;
   progressFor: (userId: string) => UserProgress;
   myProgress: UserProgress;
   missionById: (missionId: string) => { skill: Skill; mission: Mission } | null;
@@ -1417,11 +1419,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     state,
     hydrated,
     catalog,
+    skills: catalog,
     currentUser,
     isAdmin,
     isAuthenticated: Boolean(currentUser),
     isPro,
     loginWithCredentials,
+    adminSaveSkill: adminUpsertSkill,
 
     progressFor,
     myProgress,
