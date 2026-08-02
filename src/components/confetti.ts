@@ -1,6 +1,6 @@
 "use client";
 
-const COLORS = ["#06b6d4", "#8b5cf6", "#eab308", "#22d3ee", "#facc15"];
+const COLORS = ["#3b82f6", "#8b5cf6", "#06b6d4", "#22c55e", "#facc15"];
 
 export async function fireConfetti() {
   const confetti = (await import("canvas-confetti")).default;
