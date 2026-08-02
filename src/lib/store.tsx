@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { CERT_TIERS, SKILLS, getLevelById, getSkill, seedState } from "./data";
 import type {
@@ -83,6 +84,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     setHydrated(true);
   }, []);
+
+  const { isLoaded, isSignedIn, user: clerkUser } = useUser();
+
+  useEffect(() => {
+    if (!hydrated || !isLoaded || !isSignedIn || !clerkUser) return;
+    const email = clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses[0]?.emailAddress || "";
+    if (!email) return;
+    const fullName = clerkUser.fullName || clerkUser.firstName || clerkUser.username || email.split("@")[0] || "Learner";
+    const role: "USER" | "ADMIN" = email.toLowerCase() === "skilledgelearning@gmail.com" ? "ADMIN" : "USER";
+
+    setState((s) => {
+      const cleanEmail = email.toLowerCase();
+      const existing = s.users.find((u) => u.email.toLowerCase() === cleanEmail || u.id === clerkUser.id);
+
+      if (existing) {
+        if (existing.name === fullName && existing.email === cleanEmail && s.currentUserId === existing.id) {
+          return s;
+        }
+        const updatedUsers = s.users.map((u) =>
+          u.id === existing.id ? { ...u, name: fullName, email: cleanEmail, role } : u
+        );
+        return { ...s, users: updatedUsers, currentUserId: existing.id };
+      }
+
+      const newUser: User = {
+        id: clerkUser.id,
+        name: fullName,
+        email: cleanEmail,
+        role,
+        avatar: role === "ADMIN" ? "🛡️" : "🚀",
+        title: role === "ADMIN" ? "System Admin" : "Novice Builder",
+        avatarFrame: role === "ADMIN" ? "gold" : "cyan",
+        edgeCoins: 100,
+        xp: 0,
+        streakCount: 1,
+        lastActiveDay: todayKey(),
+        createdAt: new Date().toISOString(),
+      };
+
+      return {
+        ...s,
+        users: [...s.users, newUser],
+        currentUserId: newUser.id,
+        notifications: [
+          makeNotification(newUser.id, `🎉 Welcome to Skill Edge OS, ${newUser.name}! +100 ↁ bonus credited!`),
+          ...s.notifications,
+        ],
+      };
+    });
+  }, [hydrated, isLoaded, isSignedIn, clerkUser]);
 
   useEffect(() => {
     if (!hydrated) return;

@@ -267,7 +267,7 @@ export default function DashboardPage() {
                     </span>
                     <span className="truncate text-zinc-300 max-w-48 sm:max-w-64">{t.note}</span>
                   </div>
-                  <span className="shrink-0 font-mono text-[10px] text-zinc-500">{timeAgo(t.createdAt)}</span>
+                  <span suppressHydrationWarning className="shrink-0 font-mono text-[10px] text-zinc-500">{timeAgo(t.createdAt)}</span>
                 </div>
               ))}
             </div>
@@ -297,7 +297,7 @@ export default function DashboardPage() {
                       <Swords className="h-8 w-8 shrink-0 rounded-xl bg-amber-500/10 p-1.5 text-amber-400" strokeWidth={1.5} />
                       <div>
                         <div className="truncate font-bold text-white text-xs">{q.title}</div>
-                        <div className="text-[10px] text-zinc-400">
+                        <div suppressHydrationWarning className="text-[10px] text-zinc-400">
                           {live ? "LIVE NOW" : fmtDateTime(q.startTime)} · Prize ↁ{q.prizePoolCoins}
                         </div>
                       </div>

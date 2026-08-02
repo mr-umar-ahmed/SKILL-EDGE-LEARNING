@@ -150,7 +150,7 @@ function NotificationsBell() {
             {mine.map((n) => (
               <div key={n.id} className="rounded-xl px-2 py-2 text-xs text-zinc-200 hover:bg-white/[0.04]">
                 <div>{n.message}</div>
-                <div className="mt-0.5 text-[10px] text-zinc-400">{timeAgo(n.createdAt)}</div>
+                <div suppressHydrationWarning className="mt-0.5 text-[10px] text-zinc-400">{timeAgo(n.createdAt)}</div>
               </div>
             ))}
           </div>

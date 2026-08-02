@@ -128,7 +128,7 @@ export default function PaymentPage() {
                       <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] text-zinc-400 font-mono">
                         <span>{t.type}</span>
                         {t.utrNumber && <span>UTR {t.utrNumber}</span>}
-                        <span>{timeAgo(t.createdAt)}</span>
+                        <span suppressHydrationWarning>{timeAgo(t.createdAt)}</span>
                       </div>
                     </div>
                   </div>

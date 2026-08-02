@@ -322,7 +322,7 @@ function PaymentsTab() {
                   </div>
                   <div className="text-right">
                     <div className="font-mono text-lg font-bold text-yellow-300">₹{fmtNum(t.amountInr ?? 0)} → ↁ{fmtNum(t.amountCoins)}</div>
-                    <div className="text-[11px] text-zinc-500">{timeAgo(t.createdAt)}</div>
+                    <div suppressHydrationWarning className="text-[11px] text-zinc-500">{timeAgo(t.createdAt)}</div>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -847,7 +847,7 @@ function AuditTab() {
                 <span className="text-xl">{u?.avatar || "👤"}</span>
                 <div>
                   <div className="font-semibold text-zinc-100">{u?.name} ({u?.email})</div>
-                  <div className="font-mono text-[11px] text-zinc-500">{t.note} · {timeAgo(t.createdAt)}</div>
+                  <div suppressHydrationWarning className="font-mono text-[11px] text-zinc-500">{t.note} · {timeAgo(t.createdAt)}</div>
                 </div>
               </div>
 

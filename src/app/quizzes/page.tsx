@@ -99,7 +99,7 @@ export default function QuizzesPage() {
             {phase === "live" && <span className="btn-primary !px-4 !py-2 text-xs sm:text-sm">Play →</span>}
           </div>
         </div>
-        {phase === "upcoming" && <div className="mt-2 text-[11px] text-zinc-400 font-mono">Starts {fmtDateTime(q.startTime)}</div>}
+        {phase === "upcoming" && <div suppressHydrationWarning className="mt-2 text-[11px] text-zinc-400 font-mono">Starts {fmtDateTime(q.startTime)}</div>}
         {phase === "ended" && winners.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-white/10">
             {winners.slice(0, 3).map((w) => {
