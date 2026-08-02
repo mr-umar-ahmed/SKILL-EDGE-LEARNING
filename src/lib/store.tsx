@@ -291,16 +291,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(rawV2) as AppState;
         if (parsed?.version === 2) {
           // catalog may gain new fields over releases — merge defensively
+          const seededUsers = seedState().users;
           const cleanUsers = (parsed.users || []).filter((u) => !V1_DEMO_IDS.has(u.id));
+          const mergedUsers = cleanUsers.some((u) => adminEmails().includes(u.email.toLowerCase()))
+            ? cleanUsers
+            : [...seededUsers, ...cleanUsers];
+          const activeUserId = parsed.currentUserId && mergedUsers.some((u) => u.id === parsed.currentUserId)
+            ? parsed.currentUserId
+            : mergedUsers[0]?.id || "";
           setState({
             ...seedState(),
             ...parsed,
-            users: cleanUsers,
+            currentUserId: activeUserId,
+            users: mergedUsers,
             catalog: parsed.catalog?.length ? parsed.catalog : SKILLS,
           });
           setHydrated(true);
           return;
         }
+
 
       }
       const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
