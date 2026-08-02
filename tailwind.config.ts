@@ -5,25 +5,28 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        base: "#0B0F19",
-        surface: "#111827",
-        card: "#1A2235",
-        hover: "#222C44",
-        line: "#2D3748",
+        base: "#000000",
+        surface: "#111114",
+        card: "#18181C",
+        hover: "#222228",
+        line: "#333333",
         brand: {
-          DEFAULT: "#3B82F6",
-          deep: "#2563EB",
+          DEFAULT: "#E85002",
+          deep: "#C10801",
+          bright: "#F16001",
+          sand: "#D9C3AB",
         },
-        accent: "#06B6D4",
+        accent: "#F16001",
         premium: "#8B5CF6",
         success: "#22C55E",
         warning: "#FACC15",
         danger: "#EF4444",
         // legacy aliases still referenced by v1 pages — mapped onto the v2 palette
         edge: {
-          cyan: "#06B6D4",
+          cyan: "#F16001",
           violet: "#8B5CF6",
           gold: "#FACC15",
+          orange: "#E85002",
         },
       },
       fontFamily: {

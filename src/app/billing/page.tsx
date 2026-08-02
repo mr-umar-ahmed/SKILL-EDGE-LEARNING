@@ -23,7 +23,7 @@ import { useApp } from "@/lib/store";
 import type { PlanId } from "@/lib/types";
 import { cn, fmtDate, fmtDateTime, fmtInr, fmtNum, isPaidPlan, planDef } from "@/lib/utils";
 
-const PLAN_IDS: PlanId[] = ["FREE", "PRO_MONTHLY", "PRO_YEARLY", "FOUNDER_LIFETIME"];
+const PLAN_IDS: PlanId[] = ["FREE", "PRO_MONTHLY", "PRO_YEARLY", "FAMILY"];
 
 type StripeVerifyState = "idle" | "verifying" | "success" | "failed";
 

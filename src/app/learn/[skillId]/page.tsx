@@ -12,6 +12,7 @@ import {
   Lock,
   Zap,
 } from "lucide-react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -19,6 +20,8 @@ import { AppShell } from "@/components/AppShell";
 import { SkillIcon } from "@/components/SkillIcon";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { EmptyState, ProgressBar, Skeleton, SkeletonCard, StatusPill } from "@/components/ui";
+import { SkillTransformationHero } from "@/components/SkillTransformationHero";
+import { DuolingoMissionPath } from "@/components/DuolingoMissionPath";
 import { useApp } from "@/lib/store";
 import type { Mission, Skill, Submission } from "@/lib/types";
 import { cn, fmtMinutes, fmtNum } from "@/lib/utils";
@@ -150,9 +153,13 @@ function MissionRow({ skill, mission }: { skill: Skill; mission: Mission }) {
   );
 }
 
+/* toggle modes: visual Duolingo node path by default */
+
 export default function SkillMapPage() {
   const params = useParams<{ skillId: string }>();
   const { hydrated, catalog, myProgress } = useApp();
+  const [viewMode, setViewMode] = useState<"duolingo" | "list">("duolingo");
+
   const skill = catalog.find((s) => s.id === params.skillId);
 
   if (!hydrated) {
@@ -262,25 +269,57 @@ export default function SkillMapPage() {
           </div>
         </div>
 
-        {/* mission timeline grouped by phase */}
-        <div className="animate-fade-up">
-          {phases.map((phase) => (
-            <div key={phase.tier} className="mb-2">
-              <div className="mb-4 flex items-center gap-3">
-                <span
-                  className="rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-widest"
-                  style={{ borderColor: `${skill.color}55`, background: `${skill.color}14`, color: skill.color }}
-                >
-                  {phase.tier}
-                </span>
-                <div className="h-px flex-1 bg-line" />
-              </div>
-              {phase.missions.map((m) => (
-                <MissionRow key={m.id} skill={skill} mission={m} />
-              ))}
-            </div>
-          ))}
+        {/* Skill Transformation Outcome Section */}
+        <SkillTransformationHero transformation={skill.transformation} skillTitle={skill.title} skillColor={skill.color} />
+
+        {/* Mode Toggle & Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="font-display text-lg font-bold text-white">Mission Path</h2>
+          <div className="flex rounded-xl border border-line bg-card p-1">
+            <button
+              onClick={() => setViewMode("duolingo")}
+              className={cn(
+                "rounded-lg px-3 py-1 text-xs font-semibold transition",
+                viewMode === "duolingo" ? "bg-brand text-white shadow" : "text-zinc-400 hover:text-white"
+              )}
+            >
+              Duolingo Path
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "rounded-lg px-3 py-1 text-xs font-semibold transition",
+                viewMode === "list" ? "bg-brand text-white shadow" : "text-zinc-400 hover:text-white"
+              )}
+            >
+              List View
+            </button>
+          </div>
         </div>
+
+        {/* Render Duolingo Path or List */}
+        {viewMode === "duolingo" ? (
+          <DuolingoMissionPath skill={skill} phases={phases} />
+        ) : (
+          <div className="animate-fade-up">
+            {phases.map((phase) => (
+              <div key={phase.tier} className="mb-2">
+                <div className="mb-4 flex items-center gap-3">
+                  <span
+                    className="rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-widest"
+                    style={{ borderColor: `${skill.color}55`, background: `${skill.color}14`, color: skill.color }}
+                  >
+                    {phase.tier}
+                  </span>
+                  <div className="h-px flex-1 bg-line" />
+                </div>
+                {phase.missions.map((m) => (
+                  <MissionRow key={m.id} skill={skill} mission={m} />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
 
         <AdSlot className="mt-8" />
       </div>

@@ -8,7 +8,7 @@ export type Role = "USER" | "ADMIN";
 
 /* ------------------------------ plans ------------------------------ */
 
-export type PlanId = "FREE" | "PRO_MONTHLY" | "PRO_YEARLY" | "FOUNDER_LIFETIME";
+export type PlanId = "FREE" | "PRO_MONTHLY" | "PRO_YEARLY" | "FAMILY" | "FOUNDER_LIFETIME";
 
 export interface Subscription {
   plan: PlanId;
@@ -81,9 +81,9 @@ export type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Expert";
 export interface Mission {
   id: string; // `${skillId}-level-${n}` (kept from v1 so progress migrates)
   skillId: string;
-  order: number; // 1-10
+  order: number; // 1-10+
   title: string;
-  tier: string; // display tier name
+  tier: string; // display tier name / phase
   objective: string; // one-line mission objective
   expectedOutcome: string; // what the student walks away with
   description: string;
@@ -96,8 +96,17 @@ export interface Mission {
   quiz: Question[]; // optional knowledge check — never the completion criterion
   xpReward: number;
   neuronReward: number;
-  isPremium: boolean; // orders 5-10 require Pro plan
+  isPremium: boolean; // required Pro/Family plan
   isLocked: boolean; // admin hard-lock overrides everything
+}
+
+export interface SkillTransformation {
+  become: string; // e.g. "AI Software Engineer"
+  headline: string; // e.g. "By completing this skill, you'll become an AI Software Engineer..."
+  canBuild: string[];
+  realWorldOutcomes: string[];
+  projectsCompleted: string[];
+  careerOpportunities: string[];
 }
 
 export interface Skill {
@@ -110,6 +119,7 @@ export interface Skill {
   thumbnailUrl: string;
   difficulty: Difficulty;
   estimatedHours: number;
+  transformation?: SkillTransformation;
   missions: Mission[];
   isPublished: boolean;
 }
@@ -226,6 +236,8 @@ export interface BadgeDef {
   description: string;
   iconName: string; // lucide icon name
   color: string;
+  tierColor?: string;
+  shape?: "Hexagon" | "Shield";
 }
 
 export interface StudentTier {
@@ -273,6 +285,14 @@ export type CertificateType =
   | "Skill Completion"
   | "Skill Excellence"
   | "Master Practitioner"
+  | "Pro Certificate"
+  | "Elite Certificate"
+  | "Legend Certificate"
+  | "Founding Ambassador"
+  | "Founding Creator"
+  | "Growth Leader"
+  | "City Launch Head"
+  | "Elite Ambassador"
   | "Ambassador"
   | "Special";
 
@@ -287,6 +307,10 @@ export interface Certificate {
   verificationCode: string;
   issuedAt: string;
   status?: "Active" | "Revoked";
+  themeColor?: string; // hex or preset theme
+  badgeLevel?: string;
+  badgeShape?: "Hexagon" | "Shield";
+  description?: string;
 }
 
 /* ------------------------------- messaging ------------------------------- */

@@ -176,56 +176,65 @@ export default function CertificatePage() {
             <div className="pointer-events-none absolute inset-4 rounded-[14px] border border-white/10 sm:inset-6" />
 
             <div className="relative text-center">
-              {/* wordmark */}
-              <div className="flex flex-col items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-deep shadow-brand">
-                  <Hexagon className="h-6 w-6 text-white" strokeWidth={2.5} />
+              {/* top section: wordmark & powered by ARIA */}
+              <div className="flex flex-col items-center gap-2">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand via-brand-bright to-brand-deep shadow-brand">
+                  <Hexagon className="h-7 w-7 text-white" strokeWidth={2.5} />
                 </span>
-                <div className="font-display text-sm font-bold uppercase tracking-[0.35em] text-zinc-300">
+                <div className="font-display text-base font-extrabold uppercase tracking-[0.35em] text-white">
                   Skill Edge Learning
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-3 py-0.5 text-[10px] font-bold tracking-widest text-brand">
+                  <span>POWERED BY ARIA NEURAL INTELLIGENCE</span>
                 </div>
               </div>
 
-              <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
+              <div className="mx-auto mt-6 h-px w-32 bg-gradient-to-r from-transparent via-brand to-transparent" />
 
-              <div className="mt-6 text-[11px] font-bold uppercase tracking-[0.3em] text-zinc-500">Certificate of</div>
-              <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">{certType}</h1>
+              {/* center section */}
+              <div className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.3em] text-brand">Certificate of</div>
+              <h1 className="mt-1 font-display text-2xl font-black tracking-tight text-white sm:text-4xl uppercase">{certType}</h1>
 
-              <div className="mt-8 text-sm text-zinc-400">This certifies that</div>
-              <div className="mt-2 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">{studentName}</div>
+              <div className="mt-8 text-sm font-medium text-zinc-400">This certifies that</div>
+              <div className="mt-2 font-display text-3xl font-black tracking-tight text-white sm:text-5xl">{studentName}</div>
 
-              <div className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-zinc-400">
-                has successfully completed the required real-world project work
-                {certType === "Phase Completion" ? " for the foundation phase of" : " for every mission of"}
+              <div className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-zinc-300">
+                {cert.description ?? `has successfully completed the required real-world practical work and demonstrated exceptional mastery for`}
               </div>
               <div className="mt-2 font-display text-xl font-bold sm:text-2xl" style={{ color: skillColor }}>
                 {skillTitle}
               </div>
 
-              {/* meta row */}
-              <div className="mt-10 flex flex-col items-center justify-center gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:text-left">
+              {/* bottom section */}
+              <div className="mt-12 flex flex-col items-center justify-center gap-6 border-t border-line/80 pt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:text-left">
+                {/* left: cert id & issue date */}
                 <div className="order-2 sm:order-1">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Issued</div>
-                  <div className="mt-1 text-sm font-semibold text-zinc-300">{fmtDate(cert.issuedAt)}</div>
-                  <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Verification Code</div>
-                  <div className="mt-1 font-mono text-sm font-bold text-accent">{cert.verificationCode}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Certificate ID</div>
+                  <div className="mt-1 font-mono text-sm font-bold text-brand">{cert.verificationCode}</div>
+                  <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Issued On</div>
+                  <div className="mt-0.5 text-xs font-semibold text-zinc-300">{fmtDate(cert.issuedAt)}</div>
                 </div>
 
+                {/* center: QR code */}
                 <div className="order-1 text-center sm:order-2">
-                  <div className="mx-auto h-px w-40 bg-white/20" />
-                  <div className="mt-2 font-display text-sm font-semibold italic text-zinc-300">Skill Edge Learning</div>
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-500">Director of Learning</div>
+                  <div className="mx-auto flex flex-col items-center">
+                    {qr ? (
+                      <img src={qr} alt="Scan to verify this certificate" className="h-24 w-24 rounded-xl border border-brand/40 p-1 bg-white" />
+                    ) : (
+                      <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-brand/40 bg-white/5">
+                        <QrCode className="h-8 w-8 text-zinc-500" />
+                      </div>
+                    )}
+                    <div className="mt-1.5 text-[9px] font-bold uppercase tracking-widest text-zinc-400">QR Verification Code</div>
+                  </div>
                 </div>
 
-                <div className="order-3 flex flex-col items-center sm:items-end">
-                  {qr ? (
-                    <img src={qr} alt="Scan to verify this certificate" className="h-24 w-24 rounded-lg border border-white/15" />
-                  ) : (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-white/15 bg-white/5">
-                      <QrCode className="h-8 w-8 text-zinc-600" />
-                    </div>
-                  )}
-                  <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Scan to verify</div>
+                {/* right: authorized signature */}
+                <div className="order-3 flex flex-col items-center sm:items-end text-center sm:text-right">
+                  <div className="h-px w-36 bg-gradient-to-r from-transparent via-brand to-transparent sm:via-white/30" />
+                  <div className="mt-2 font-display text-sm font-bold italic text-white">Skill Edge Learning</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-brand">Authorized Credential</div>
+                  <div className="text-[9px] text-zinc-500">ARIA Neural Intelligence Verified</div>
                 </div>
               </div>
             </div>

@@ -94,7 +94,7 @@ const PLAN_ICONS: Record<string, typeof Zap> = {
   FREE: Rocket,
   PRO_MONTHLY: Zap,
   PRO_YEARLY: TrendingUp,
-  FOUNDER_LIFETIME: Crown,
+  FAMILY: ShieldCheck,
 };
 
 /* ------------------------------ checkout modal ------------------------------ */
@@ -419,8 +419,8 @@ const FAQS: { q: string; a: string }[] = [
     a: "The first 4 missions of every skill, real project submissions with feedback, basic certificates and community access. Missions 5–10, advanced certificates and the ad-free experience need Pro.",
   },
   {
-    q: "What makes Founder Lifetime special?",
-    a: "One payment, lifetime access to everything — including every skill we add in the future — plus a permanent Founder badge on your profile and portfolio. The launch price is limited.",
+    q: "How does the Family Plan work?",
+    a: "The Family Plan allows parents to purchase one subscription for multiple children/siblings. Each child gets a separate profile with independent progress tracking, individual portfolios, certificates, XP, and Neurons.",
   },
   {
     q: "Do you offer refunds?",

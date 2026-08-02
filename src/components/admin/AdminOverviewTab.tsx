@@ -39,7 +39,7 @@ export function AdminOverviewTab() {
       .reduce((sum, t) => sum + (t.amountInr ?? 0), 0);
     const revenue = paymentRevenue + topupRevenue;
 
-    const plansCount: Record<string, number> = { FREE: 0, PRO_MONTHLY: 0, PRO_YEARLY: 0, FOUNDER_LIFETIME: 0 };
+    const plansCount: Record<string, number> = { FREE: 0, PRO_MONTHLY: 0, PRO_YEARLY: 0, FAMILY: 0 };
     state.users.forEach((u) => {
       plansCount[u.subscription.plan] = (plansCount[u.subscription.plan] ?? 0) + 1;
     });

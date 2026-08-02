@@ -8,6 +8,7 @@ import type {
   Question,
   Quiz,
   Skill,
+  SkillTransformation,
   StudentTier,
   SubmissionKind,
   User,
@@ -742,6 +743,105 @@ const SKILL_DIFFICULTY: Record<string, Difficulty> = {
   "project-management": "Intermediate",
 };
 
+export const SKILL_TRANSFORMATIONS: Record<string, SkillTransformation> = {
+  "ai-prompt-engineering": {
+    become: "AI Productivity Expert & Automation Specialist",
+    headline: "By completing this skill, you'll become an AI Productivity Expert who can automate work and multiply productivity using AI.",
+    canBuild: ["Custom GPTs & Prompt Packs", "RAG Knowledge Systems", "n8n & Make Automations", "AI Agentic Workflows"],
+    realWorldOutcomes: ["Automate 80% of repetitive work", "Research 10x faster with AI", "Eliminate manual data entry", "Build autonomous agentic tools"],
+    projectsCompleted: ["LLM Benchmark Matrix", "AI Research System", "Make/n8n Automation", "Autonomous AI Agent"],
+    careerOpportunities: ["AI Operations Specialist", "AI Prompt Engineer", "AI Consultant", "Automation Strategist"],
+  },
+  "vibe-coding": {
+    become: "AI Software Engineer",
+    headline: "By completing this skill, you'll become an AI Software Engineer capable of building real-world software using AI.",
+    canBuild: ["Websites using AI", "SaaS products", "Mobile apps", "AI tools & agents", "Automations & API integrations"],
+    realWorldOutcomes: ["Ship full-stack products in days", "Debug code using AI", "Deploy production apps", "Automate development workflows"],
+    projectsCompleted: ["AI SaaS MVP", "Full-Stack Web App", "Mobile App", "Multi-Agent Automation"],
+    careerOpportunities: ["AI Software Engineer", "Full Stack Developer", "Founding Engineer", "Technical Co-Founder"],
+  },
+  entrepreneurship: {
+    become: "Startup Founder",
+    headline: "By completing this skill, you'll become a Startup Founder who can validate ideas, build MVPs, acquire customers and launch a business.",
+    canBuild: ["Problem-Solution Fit MVPs", "Waitlists & Validation Pages", "Go-To-Market Plans", "Investor Pitch Decks"],
+    realWorldOutcomes: ["Discover high-value pain points", "Conduct customer discovery interviews", "Acquire initial 100 users", "Launch on Product Hunt"],
+    projectsCompleted: ["Problem Opportunity Database", "Validation Case Study", "No-Code/AI Startup MVP", "Full Founder Pitch Deck"],
+    careerOpportunities: ["Startup Founder", "Venture Builder", "Product Manager", "Innovation Lead"],
+  },
+  "financial-literacy": {
+    become: "Financially Smart & Wealth Strategist",
+    headline: "By completing this skill, you'll become financially smart by understanding budgeting, investing, taxes, saving and wealth creation.",
+    canBuild: ["Personal Budget Dashboards", "Automated Wealth Systems", "SIP Investment Portfolios", "Tax & Cashflow Blueprints"],
+    realWorldOutcomes: ["Master 50/30/20 budgeting", "Protect money from digital scams", "Understand stocks, mutual funds & GST", "Build long-term financial freedom"],
+    projectsCompleted: ["Money Assessment Report", "Personal Budget System", "Virtual Investment Strategy", "Comprehensive Wealth Roadmap"],
+    careerOpportunities: ["Personal Finance Strategist", "Wealth Manager", "Financial Analyst", "Independent Investor"],
+  },
+  freelancing: {
+    become: "Successful Freelancer",
+    headline: "By completing this skill, you'll become a successful freelancer capable of finding clients, delivering projects and earning online.",
+    canBuild: ["Upwork & LinkedIn Profiles", "Client Proposals & Contracts", "Freelance Service Packages", "Invoicing & Payment Portals"],
+    realWorldOutcomes: ["Land global clients online", "Price services for high profit", "Deliver 5-star projects", "Build a recurring freelance business"],
+    projectsCompleted: ["Freelance Offer Blueprint", "Upwork Profile Optimization", "Client Proposal Kit", "Freelance Income Dashboard"],
+    careerOpportunities: ["Independent Freelancer", "Agency Founder", "Remote Consultant", "Contract Specialist"],
+  },
+  "content-creation": {
+    become: "Content Creator & Personal Brand Builder",
+    headline: "By completing this skill, you'll become a Content Creator who can build a personal brand, create viral content and grow an audience.",
+    canBuild: ["Multi-Platform Content Engines", "Viral Hooks & Scripts", "Personal Brand Profile Systems", "Monetization Funnels"],
+    realWorldOutcomes: ["Grow audience on X, LinkedIn & YouTube", "Script high-engagement posts", "Monetize content & brand", "Build personal authority"],
+    projectsCompleted: ["Content Strategy Matrix", "30-Day Content Sprint", "Viral Video Script", "Creator Monetization Plan"],
+    careerOpportunities: ["Content Creator", "Personal Brand Strategist", "Social Media Manager", "Growth Creator"],
+  },
+  "video-editing": {
+    become: "Professional Video Editor",
+    headline: "By completing this skill, you'll become a Professional Video Editor capable of editing reels, YouTube videos, advertisements and commercial content.",
+    canBuild: ["Viral Shorts & Reels", "YouTube Long-Form Videos", "High-Converting Ad Creatives", "Motion Graphics & Color Grading"],
+    realWorldOutcomes: ["Pace videos for retention", "Master Premiere, CapCut & DaVinci", "Design sound & visual effects", "Land video clients"],
+    projectsCompleted: ["Short-Form Reel Edit", "YouTube Video Cut", "Commercial Ad Project", "Video Showreel"],
+    careerOpportunities: ["Video Editor", "Content Producer", "YouTube Editor", "Creative Media Strategist"],
+  },
+  "sales-negotiation": {
+    become: "Sales Professional & Deal Closer",
+    headline: "By completing this skill, you'll become a Sales Professional who can confidently pitch, negotiate and close deals.",
+    canBuild: ["Client Outreach Systems", "Discovery Call Frameworks", "Negotiation Playbooks", "High-Converting DM & Email Flows"],
+    realWorldOutcomes: ["Overcome objections effortlessly", "Conduct discovery & demo calls", "Negotiate win-win contracts", "Close high-ticket clients"],
+    projectsCompleted: ["Sales Philosophy & Mindset", "Negotiation Playbook", "Lead Generation Dashboard", "Complete Sales Funnel System"],
+    careerOpportunities: ["Sales Director", "Account Executive", "Business Development Lead", "Client Acquisition Specialist"],
+  },
+  communication: {
+    become: "Confident Communicator & Influential Speaker",
+    headline: "By completing this skill, you'll become a Confident Communicator who can speak, present ideas, tell compelling stories and build meaningful relationships.",
+    canBuild: ["TED-Style Talk Presentations", "Personal Brand Blueprints", "Cold DM & Email Systems", "Startup Pitch Decks"],
+    realWorldOutcomes: ["Speak without stage fear", "Deliver persuasive pitches", "Ace job & startup interviews", "Network with high-value peers"],
+    projectsCompleted: ["Professional Introduction Video", "TED-Style Speech Recording", "Personal Brand Strategy", "Startup Pitch Presentation"],
+    careerOpportunities: ["Public Speaker", "Communications Lead", "Community Director", "Executive Presenter"],
+  },
+  "product-building": {
+    become: "Product Builder & One-Person Business Operator",
+    headline: "By completing this skill, you'll become a Product Builder who can design, validate, launch digital products and build recurring revenue systems.",
+    canBuild: ["Digital Products (Ebooks/Templates)", "High-Converting Landing Pages", "Gumroad/Lemon Squeezy Stores", "Automated Sales Funnels"],
+    realWorldOutcomes: ["Validate product ideas before building", "Launch on Product Hunt & X", "Build email distribution lists", "Generate recurring revenue"],
+    projectsCompleted: ["Product Opportunity Database", "Digital Product MVP", "Distribution System Blueprint", "Real Product Launch"],
+    careerOpportunities: ["Product Builder", "Growth Marketer", "Indie Hacker", "Digital Business Owner"],
+  },
+  "research-thinking": {
+    become: "Strategic Problem Solver & Deep Researcher",
+    headline: "By completing this skill, you'll become a strategic problem solver who can research deeply, verify information, detect misinformation and make better decisions.",
+    canBuild: ["Fact-Checking Systems", "Deep Research Workflows with AI", "Competitive Analysis Audits", "Decision Making Frameworks"],
+    realWorldOutcomes: ["Detect media bias & fake news", "Make evidence-based decisions", "Synthesize complex data with AI", "Apply first-principles thinking"],
+    projectsCompleted: ["Topic Research Summary", "Critical Thinking Audit", "AI Research System", "Industry Competitive Report"],
+    careerOpportunities: ["Research Analyst", "Strategy Consultant", "Data Intelligence Lead", "Policy & Risk Analyst"],
+  },
+  "graphic-design": {
+    become: "Professional Graphic Designer",
+    headline: "By completing this skill, you'll become a Professional Graphic Designer capable of creating branding, social media creatives, marketing assets and client-ready designs.",
+    canBuild: ["Complete Brand Kits & Logos", "High-CTR YouTube Thumbnails", "Instagram & LinkedIn Carousels", "AI Design Assets with Firefly/Midjourney"],
+    realWorldOutcomes: ["Understand visual hierarchy & color psychology", "Master Canva, Photoshop & AI design", "Deliver client-ready brand systems", "Build a high-ticket design portfolio"],
+    projectsCompleted: ["Design Improvement Case Study", "Complete Brand Identity Package", "Social Media Content Suite", "Design Portfolio Showcase"],
+    careerOpportunities: ["Brand Designer", "Visual Graphic Designer", "Creative Director", "UI/UX & Asset Designer"],
+  },
+};
+
 export const SKILLS: Skill[] = SEEDS.map((seed) => {
   const missions = buildMissions(seed);
   return {
@@ -754,6 +854,7 @@ export const SKILLS: Skill[] = SEEDS.map((seed) => {
     thumbnailUrl: SKILL_IMAGES[seed.id] ?? "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
     difficulty: SKILL_DIFFICULTY[seed.id] ?? "Beginner",
     estimatedHours: Math.round(missions.reduce((sum, m) => sum + m.estimatedMinutes, 0) / 60),
+    transformation: SKILL_TRANSFORMATIONS[seed.id],
     missions,
     isPublished: true,
   };

@@ -57,7 +57,15 @@ function SkillCard({ skill, approved }: { skill: Skill; approved: number }) {
           <h3 className="font-display text-base font-bold text-white transition-colors group-hover:text-brand">
             {skill.title}
           </h3>
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-zinc-400">{skill.description}</p>
+
+          {/* Outcome transformation badge */}
+          {skill.transformation && (
+            <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-brand/10 px-2 py-0.5 text-[11px] font-bold text-brand">
+              <span>Become: {skill.transformation.become}</span>
+            </div>
+          )}
+
+          <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-zinc-400">{skill.description}</p>
         </div>
 
         <div className="flex items-center gap-3 text-[11px] font-semibold text-zinc-400">
