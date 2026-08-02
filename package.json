@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.6.4",
     "@paper-design/shaders-react": "^0.0.78",
     "canvas-confetti": "^1.9.3",
     "framer-motion": "^12.43.0",

@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 28 — Reference Landing Page Redesign & WhatsApp Integration ✅
-- [x] [PLAN] Updated landing page (`src/app/page.tsx`) to match exact reference UI design (Header: `Home`, `Skills`, `Manifesto`, `Ambassador`, `About`, `Contact`; Hero: `BUILT BY STUDENTS, FOR STUDENTS`, `The future of learning starts with you.`, floating skill cards, and tags); added Let's Talk section and WhatsApp chat button linked directly to `+91 9342366833` (`https://wa.me/919342366833`).
-- [x] [BUILD] Updated `src/app/page.tsx`.
+## PHASE 29 — Clerk Authentication App Router Integration ✅
+- [x] [PLAN] Install `@clerk/nextjs`, create `src/proxy.ts` with `clerkMiddleware()` and matcher including `/__clerk/:path*`, wrap app with `<ClerkProvider>` inside `<body>` in `src/app/layout.tsx`.
+- [x] [BUILD] Created `src/proxy.ts`, updated `src/app/layout.tsx`, installed `@clerk/nextjs`.
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(landing-redesign-and-whatsapp)`
+- [x] [DEPLOY] Committed as `feat(clerk-auth-integration)`
 
 ---
 
@@ -81,6 +81,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-01: Phase 26 Hide Admin Credentials from Public UI created and pushed to GitHub (`sec(admin-credentials-hidden)`).
 - 2026-08-01: Phase 27 WebGL NeuralVortexBg Shader & Reference Landing Page Content created and pushed to GitHub (`feat(neural-vortex-shader-landing)`).
 - 2026-08-02: Phase 28 Reference Landing Page Redesign & WhatsApp Integration created and pushed to GitHub (`feat(landing-redesign-and-whatsapp)`).
+- 2026-08-02: Phase 29 Clerk Authentication App Router Integration created and pushed to GitHub (`feat(clerk-auth-integration)`).
 
 ## Backlog / Next iteration
 

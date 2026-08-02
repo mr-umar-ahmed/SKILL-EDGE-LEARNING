@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Outfit } from "next/font/google";
+import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 import { AppProvider } from "@/lib/store";
 import "./globals.css";
 
@@ -23,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`dark ${inter.variable} ${jetbrains.variable} ${outfit.variable}`} id="theme-root">
       <body className="dark font-sans antialiased selection:bg-yellow-400 selection:text-black">
-        <AppProvider>{children}</AppProvider>
+        <ClerkProvider>
+          <AppProvider>{children}</AppProvider>
+        </ClerkProvider>
       </body>
     </html>
   );
