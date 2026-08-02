@@ -99,18 +99,47 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
   const [userReflection, setUserReflection] = useState("");
   const [checked, setChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   if (!open) return null;
 
   const currentStep = steps[stepIndex] ?? steps[steps.length - 1];
   const progressPct = Math.round(((stepIndex + 1) / steps.length) * 100);
 
+  // Check if current step's activity is answered/complete
+  const hasAnsweredCurrentStep = () => {
+    if (currentStep.type === "REFLECTION") {
+      return userReflection.trim().length >= 3;
+    }
+    if (currentStep.type === "MINI_MISSION" && currentStep.miniMission) {
+      const mm = currentStep.miniMission;
+      if (mm.type === "MATCH_PAIRS" && mm.pairs) {
+        return Object.keys(completedMatches).length === mm.pairs.length;
+      }
+      if (mm.type === "FILL_BLANKS") {
+        return fillBlankSelected !== null;
+      }
+      return selectedAnswer !== null;
+    }
+    return true;
+  };
+
   const handleNextStep = () => {
+    setValidationError(null);
+
+    // Validate reflection step
+    if (currentStep.type === "REFLECTION" && !hasAnsweredCurrentStep()) {
+      setValidationError("Please type a quick reflection before continuing.");
+      return;
+    }
+
     playClickSound();
     setChecked(false);
     setIsCorrect(null);
     setSelectedAnswer(null);
     setMatchSelectedLeft(null);
+    setCompletedMatches({});
+    setFillBlankSelected(null);
 
     if (stepIndex < steps.length - 1) {
       setStepIndex((i) => i + 1);
@@ -124,9 +153,17 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
   };
 
   const handleCheckMiniMission = () => {
+    setValidationError(null);
+    const mm = currentStep.miniMission;
+
+    if (!hasAnsweredCurrentStep()) {
+      setValidationError("Please select or match all items before verifying your answer!");
+      return;
+    }
+
     playClickSound();
     setChecked(true);
-    const mm = currentStep.miniMission;
+
     if (!mm) {
       setIsCorrect(true);
       return;
@@ -145,6 +182,16 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
       setIsCorrect(correct);
       if (correct) playXpSound();
     }
+  };
+
+  const handleRetryMiniMission = () => {
+    playClickSound();
+    setChecked(false);
+    setIsCorrect(null);
+    setSelectedAnswer(null);
+    setCompletedMatches({});
+    setFillBlankSelected(null);
+    setValidationError(null);
   };
 
   return (
@@ -353,12 +400,44 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
 
         {/* Bottom Action Footer */}
         <div className="border-t border-line/80 pt-4 space-y-3">
-          {currentStep.type === "MINI_MISSION" && !checked ? (
-            <button onClick={handleCheckMiniMission} className="btn-primary w-full py-3 text-sm font-bold">
-              Check Answer
-            </button>
+          {validationError && (
+            <div className="rounded-xl border border-warning/40 bg-warning/15 p-2.5 text-xs font-bold text-warning flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{validationError}</span>
+            </div>
+          )}
+
+          {currentStep.type === "MINI_MISSION" ? (
+            !checked ? (
+              <button
+                onClick={handleCheckMiniMission}
+                className={cn(
+                  "btn-primary w-full py-3 text-sm font-bold",
+                  !hasAnsweredCurrentStep() && "opacity-60 cursor-not-allowed"
+                )}
+              >
+                Check Answer
+              </button>
+            ) : isCorrect ? (
+              <button onClick={handleNextStep} className="btn-primary w-full py-3 text-sm font-bold">
+                Continue <ArrowRight className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handleRetryMiniMission}
+                className="btn-ghost border-warning/40 bg-warning/10 text-warning w-full py-3 text-sm font-bold hover:bg-warning/20"
+              >
+                <RotateCcw className="h-4 w-4" /> Incorrect — Try Again
+              </button>
+            )
           ) : (
-            <button onClick={handleNextStep} className="btn-primary w-full py-3 text-sm font-bold">
+            <button
+              onClick={handleNextStep}
+              className={cn(
+                "btn-primary w-full py-3 text-sm font-bold",
+                currentStep.type === "REFLECTION" && !hasAnsweredCurrentStep() && "opacity-60 cursor-not-allowed"
+              )}
+            >
               {stepIndex < steps.length - 1 ? "Continue" : "Complete Mission"}
               <ArrowRight className="h-4 w-4" />
             </button>
@@ -372,7 +451,7 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
               )}
             >
               {isCorrect ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertCircle className="h-4 w-4 shrink-0" />}
-              <span>{isCorrect ? "Spot on! That's correct." : currentStep.miniMission?.explanation ?? "Great effort! Review the concept and continue."}</span>
+              <span>{isCorrect ? "Spot on! That's correct." : currentStep.miniMission?.explanation ?? "Incorrect answer. Click 'Try Again' above to re-attempt."}</span>
             </div>
           )}
         </div>
