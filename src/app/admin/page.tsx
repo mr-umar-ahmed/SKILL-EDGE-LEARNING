@@ -3,6 +3,7 @@
 import {
   ClipboardCheck,
   CreditCard,
+  HardDrive,
   Layers,
   LayoutDashboard,
   LucideIcon,
@@ -21,12 +22,13 @@ import { AdminOverviewTab } from "@/components/admin/AdminOverviewTab";
 import { AdminPaymentsTab } from "@/components/admin/AdminPaymentsTab";
 import { AdminReviewsTab } from "@/components/admin/AdminReviewsTab";
 import { AdminSkillsTab } from "@/components/admin/AdminSkillsTab";
+import { AdminSystemTab } from "@/components/admin/AdminSystemTab";
 import { AdminUsersTab } from "@/components/admin/AdminUsersTab";
 import { EmptyState, PageHeader, Skeleton, SkeletonCard } from "@/components/ui";
 import { useApp } from "@/lib/store";
 import { adminEmails, cn } from "@/lib/utils";
 
-type TabId = "overview" | "reviews" | "skills" | "missions" | "users" | "payments" | "announcements";
+type TabId = "overview" | "reviews" | "skills" | "missions" | "users" | "payments" | "announcements" | "system";
 
 const TABS: { id: TabId; label: string; icon: LucideIcon }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -36,6 +38,7 @@ const TABS: { id: TabId; label: string; icon: LucideIcon }[] = [
   { id: "users", label: "Users", icon: Users2 },
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "announcements", label: "Announcements", icon: Megaphone },
+  { id: "system", label: "System & Data", icon: HardDrive },
 ];
 
 export default function AdminPage() {
@@ -148,6 +151,7 @@ export default function AdminPage() {
           {tab === "users" && <AdminUsersTab />}
           {tab === "payments" && <AdminPaymentsTab />}
           {tab === "announcements" && <AdminAnnouncementsTab />}
+          {tab === "system" && <AdminSystemTab />}
         </div>
       </div>
     </AppShell>

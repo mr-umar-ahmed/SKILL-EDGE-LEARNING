@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, BadgeCheck, Flame, Hexagon, Search, Settings2, ShieldCheck, Users2, Zap } from "lucide-react";
+import { Award, BadgeCheck, Flame, Hexagon, RefreshCw, Search, Settings2, ShieldCheck, Trash2, Users2, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { EmptyState, Modal, NeuronBadge, SectionTitle } from "@/components/ui";
@@ -9,7 +9,17 @@ import type { PlanId } from "@/lib/types";
 import { PLANS, cn, fmtDate, fmtNum, planDef } from "@/lib/utils";
 
 export function AdminUsersTab() {
-  const { state, adminAdjustNeurons, adminGrantXp, adminGrantPlan, adminIssueCertificate } = useApp();
+  const {
+    state,
+    adminAdjustNeurons,
+    adminGrantXp,
+    adminGrantPlan,
+    adminIssueCertificate,
+    adminToggleUserRole,
+    adminDeleteUser,
+    adminResetUserProgress,
+    adminPurgeUserbase,
+  } = useApp();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -83,14 +93,26 @@ export function AdminUsersTab() {
 
   return (
     <div className="space-y-4">
-      <div className="relative max-w-md">
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name or email…"
-          className="input-dark pl-10"
-        />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or email…"
+            className="input-dark pl-10"
+          />
+        </div>
+        <button
+          onClick={() => {
+            if (confirm("Are you sure you want to clear all student profiles and start a new clean state? Only Admin accounts will remain.")) {
+              adminPurgeUserbase();
+            }
+          }}
+          className="btn-ghost border-danger/40 text-danger text-xs font-bold shrink-0"
+        >
+          <Trash2 className="h-4 w-4 text-danger" /> Clear User Base (Start Fresh)
+        </button>
       </div>
 
       {users.length === 0 ? (
@@ -288,6 +310,41 @@ export function AdminUsersTab() {
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* danger zone controls */}
+            <div className="space-y-2.5 rounded-xl border border-danger/40 bg-danger/5 p-4">
+              <SectionTitle>Danger Zone</SectionTitle>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    adminToggleUserRole(selected.id);
+                    say(`Role updated to ${selected.role === "ADMIN" ? "Student" : "Admin"}`);
+                  }}
+                  className="btn-ghost border-warning/40 text-warning text-xs"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {selected.role === "ADMIN" ? "Demote to Student" : "Promote to Admin"}
+                </button>
+                <button
+                  onClick={() => {
+                    adminResetUserProgress(selected.id);
+                    say("User progress reset to 0.");
+                  }}
+                  className="btn-ghost border-danger/40 text-danger text-xs"
+                >
+                  Reset All Progress
+                </button>
+                <button
+                  onClick={() => {
+                    adminDeleteUser(selected.id);
+                    setSelectedId(null);
+                  }}
+                  className="btn-danger text-xs"
+                >
+                  Delete User Account
+                </button>
+              </div>
             </div>
           </div>
         )}

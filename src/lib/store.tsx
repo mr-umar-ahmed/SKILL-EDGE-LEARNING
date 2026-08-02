@@ -229,6 +229,11 @@ interface AppApi {
   adminSetTxnStatus: (txnId: string, status: "APPROVED" | "REJECTED") => void;
   adminAdjustNeurons: (userId: string, delta: number, note: string) => void;
   adminGrantXp: (userId: string, amount: number) => void;
+  /* admin user management */
+  adminToggleUserRole: (userId: string) => void;
+  adminDeleteUser: (userId: string) => void;
+  adminResetUserProgress: (userId: string) => void;
+  adminPurgeUserbase: () => void;
 
   /* family plan */
   createFamilyChildProfile: (name: string) => void;
@@ -298,9 +303,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           // catalog may gain new fields over releases — merge defensively
           const seededUsers = seedState().users;
           const cleanUsers = (parsed.users || []).filter((u) => !V1_DEMO_IDS.has(u.id));
-          const mergedUsers = cleanUsers.some((u) => adminEmails().includes(u.email.toLowerCase()))
-            ? cleanUsers
-            : [...seededUsers, ...cleanUsers];
+          const hasOfficialAdmin = cleanUsers.some((u) => u.email.toLowerCase() === "learningskilledge@gmail.com");
+          const mergedUsers = hasOfficialAdmin ? cleanUsers : [...seededUsers, ...cleanUsers];
           const activeUserId = parsed.currentUserId && mergedUsers.some((u) => u.id === parsed.currentUserId)
             ? parsed.currentUserId
             : mergedUsers[0]?.id || "";
@@ -818,6 +822,64 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       users: s.users.map((u) => (u.id === userId ? { ...u, xp: Math.max(0, u.xp + amount) } : u)),
       notifications: [makeNotification(userId, `Admin boosted you +${amount} XP!`), ...s.notifications],
     }));
+  }, []);
+
+  const adminToggleUserRole = useCallback((userId: string) => {
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) => {
+        if (u.id === userId) {
+          const nextRole = u.role === "ADMIN" ? "USER" : "ADMIN";
+          return { ...u, role: nextRole };
+        }
+        return u;
+      }),
+    }));
+  }, []);
+
+  const adminDeleteUser = useCallback((userId: string) => {
+    setState((s) => {
+      const nextUsers = s.users.filter((u) => u.id !== userId);
+      const nextProgress = { ...s.progress };
+      delete nextProgress[userId];
+      return {
+        ...s,
+        users: nextUsers,
+        progress: nextProgress,
+        submissions: s.submissions.filter((sub) => sub.userId !== userId),
+        certificates: s.certificates.filter((cert) => cert.userId !== userId),
+      };
+    });
+  }, []);
+
+  const adminResetUserProgress = useCallback((userId: string) => {
+    setState((s) => {
+      const nextProgress = { ...s.progress };
+      delete nextProgress[userId];
+      return {
+        ...s,
+        progress: nextProgress,
+        submissions: s.submissions.filter((sub) => sub.userId !== userId),
+        users: s.users.map((u) => (u.id === userId ? { ...u, xp: 0, neurons: 100, streakCount: 0 } : u)),
+      };
+    });
+  }, []);
+
+  const adminPurgeUserbase = useCallback(() => {
+    setState((s) => {
+      const adminUsers = s.users.filter((u) => u.role === "ADMIN" || adminEmails().includes(u.email.toLowerCase()));
+      const adminIds = new Set(adminUsers.map((u) => u.id));
+      const nextProgress = Object.fromEntries(Object.entries(s.progress).filter(([uid]) => adminIds.has(uid)));
+      return {
+        ...s,
+        users: adminUsers.length ? adminUsers : seedState().users,
+        progress: nextProgress,
+        submissions: s.submissions.filter((sub) => adminIds.has(sub.userId)),
+        certificates: s.certificates.filter((cert) => adminIds.has(cert.userId)),
+        transactions: s.transactions.filter((tx) => adminIds.has(tx.userId)),
+        payments: s.payments.filter((p) => adminIds.has(p.userId)),
+      };
+    });
   }, []);
 
   /* ----------------------------- family plan ----------------------------- */
@@ -1379,6 +1441,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     adminSetTxnStatus,
     adminAdjustNeurons,
     adminGrantXp,
+    adminToggleUserRole,
+    adminDeleteUser,
+    adminResetUserProgress,
+    adminPurgeUserbase,
     createFamilyChildProfile,
     switchFamilyChildProfile,
     purchasePlanUpi,

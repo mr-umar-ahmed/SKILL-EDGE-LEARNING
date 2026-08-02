@@ -3,143 +3,177 @@
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Award,
+  BadgeCheck,
   BookOpen,
   Briefcase,
+  Check,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   Compass,
+  Cpu,
+  Crown,
+  Figma,
   Flame,
+  Github,
   Globe,
+  GraduationCap,
   Hammer,
+  HardDrive,
   Hexagon,
   Layers,
+  Link2,
+  Lock,
   MessageCircle,
+  Play,
   QrCode,
   Rocket,
   ShieldCheck,
   Sparkles,
   Star,
-  Terminal,
+  Target,
+  Trophy,
   UploadCloud,
+  UserCheck,
   Users2,
   Wand2,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { SkillIcon } from "@/components/SkillIcon";
 import { SKILLS } from "@/lib/data";
 import { useApp } from "@/lib/store";
 import { PLANS, cn, fmtInr, fmtNum } from "@/lib/utils";
-import type { PlanDef } from "@/lib/utils";
-
-/* ------------------------------ derived stats ------------------------------ */
 
 const TOTAL_MISSIONS = SKILLS.reduce((n, s) => n + s.missions.length, 0);
 const TOTAL_HOURS = SKILLS.reduce((n, s) => n + s.estimatedHours, 0);
-const CATEGORIES = Array.from(new Set(SKILLS.map((s) => s.category)));
 
 const WHATSAPP_NUMBER = "919342366833";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Skill%20Edge%20Learning%2C%20I%20want%20to%20know%20more%20about%20the%20learning%20OS!`;
 
-const DIFF_COLORS: Record<string, string> = {
-  Beginner: "#22c55e",
-  Intermediate: "#facc15",
-  Advanced: "#f97316",
-  Expert: "#ef4444",
-};
+/* ------------------------------ 5-Step Learning Loop Guide ------------------------------ */
 
-/* ------------------------------ static content ------------------------------ */
-
-const LOOP_STEPS = [
+const GUIDE_STEPS = [
   {
-    icon: BookOpen,
-    title: "Learn",
-    text: "Curated videos, guides and templates — just enough theory to start acting.",
-    color: "#3b82f6",
+    step: "01",
+    title: "Choose Your Transformation",
+    desc: "Don't just pick a subject. Choose what you want to become (AI Software Engineer, Startup Founder, Brand Designer).",
+    icon: Target,
+    color: "#E85002",
   },
   {
-    icon: Hammer,
-    title: "Do the assignment",
-    text: "Every mission has a real brief with deliverables and an execution checklist.",
-    color: "#06b6d4",
+    step: "02",
+    title: "Duolingo Mission Path",
+    desc: "Follow a visual snake roadmap of 10 practical missions per skill. Each node unlocks sequentially as you ship.",
+    icon: Play,
+    color: "#F16001",
   },
   {
+    step: "03",
+    title: "Ship Real Deliverables",
+    desc: "No multiple choice traps. Attach GitHub repos, Figma prototypes, Canva decks, Google Drive files, or live URLs.",
     icon: UploadCloud,
-    title: "Submit your work",
-    text: "Ship it as links, files or a write-up — GitHub, Figma, Drive, whatever fits.",
-    color: "#8b5cf6",
+    color: "#8B5CF6",
   },
   {
-    icon: ClipboardCheckHelper,
-    title: "Get reviewed",
-    text: "A human reviews every submission with feedback, a score and a verdict.",
-    color: "#facc15",
+    step: "04",
+    title: "ARIA AI & Admin Review",
+    desc: "Get instant ARIA AI pre-flight feedback followed by expert admin evaluation with detailed notes and scores.",
+    icon: Cpu,
+    color: "#06B6D4",
   },
   {
-    icon: Briefcase,
-    title: "Portfolio grows",
-    text: "Approved work lands in your portfolio — plus XP, Neurons and badges.",
-    color: "#22c55e",
+    step: "05",
+    title: "Verified Certs & Portfolio",
+    desc: "Approved projects auto-populate your public portfolio. Earn QR-verified certificates & one-click LinkedIn credentials.",
+    icon: Award,
+    color: "#22C55E",
   },
 ];
 
-function ClipboardCheckHelper(props: { className?: string }) {
-  return <CheckCircle2 {...props} />;
-}
+/* ------------------------------ Skill Transformations ------------------------------ */
 
-const OUTCOME_CARDS: { skillId: string; outcomes: string[] }[] = [
+const SKILL_OUTCOMES = [
   {
-    skillId: "entrepreneurship",
-    outcomes: [
-      "5 real customer interviews, logged",
-      "A validated problem and lean canvas",
-      "A landing page with a live waitlist",
-      "A pitch deck and a shipped MVP",
-    ],
+    title: "AI Vibe Coding",
+    become: "AI Software Engineer",
+    builds: ["Full-stack Next.js Apps", "SaaS Products", "AI Agents", "Automations"],
+    icon: "code",
+    color: "#E85002",
   },
   {
-    skillId: "vibe-coding",
-    outcomes: [
-      "A Next.js app deployed on Vercel",
-      "Reusable components with real state",
-      "API-driven pages with loading states",
-      "5 seeded bugs fixed with AI pairing",
-    ],
+    title: "AI Tools Mastery",
+    become: "AI Productivity Specialist",
+    builds: ["Custom GPTs", "Automated Workflows", "AI Content Engines", "Prompt Pipelines"],
+    icon: "brain-circuit",
+    color: "#06B6D4",
   },
   {
-    skillId: "content-creation",
-    outcomes: [
-      "3 published threads and 5 posts",
-      "A 30-day multi-platform calendar",
-      "A lead magnet with email capture",
-      "Your documented content flywheel",
-    ],
+    title: "Product Building & Distribution",
+    become: "Product Builder & Growth Lead",
+    builds: ["Live MVPs", "Waitlist Engines", "Distribution Channels", "Product Analytics"],
+    icon: "rocket",
+    color: "#8B5CF6",
+  },
+  {
+    title: "Entrepreneurship",
+    become: "Startup Founder",
+    builds: ["Validated Business Models", "Pitch Decks", "Customer Portfolios", "Financial Models"],
+    icon: "lightbulb",
+    color: "#FACC15",
+  },
+  {
+    title: "Communication & Influence",
+    become: "Persuasive Communicator",
+    builds: ["Executive Decks", "Keynote Presentations", "Deal Frameworks", "Public Speeches"],
+    icon: "message-square",
+    color: "#EC4899",
+  },
+  {
+    title: "Graphic Design Mastery",
+    become: "Brand & UI Designer",
+    builds: ["Visual Brand Systems", "Figma UI Components", "Marketing Assets", "Design Kits"],
+    icon: "palette",
+    color: "#3B82F6",
   },
 ];
 
-function periodLabel(p: PlanDef) {
-  switch (p.period) {
-    case "forever":
-      return "forever";
-    case "month":
-      return "/ month";
-    case "year":
-      return "/ year";
-    case "lifetime":
-      return "one-time";
-  }
-}
+/* ------------------------------ FAQ Items ------------------------------ */
 
-/* ------------------------------ tiny helpers ------------------------------ */
+const FAQ_ITEMS = [
+  {
+    q: "How is Skill Edge Learning different from traditional course sites?",
+    a: "Traditional course sites measure completion by video watch time. Skill Edge Learning is a Skill Operating System — you master skills by executing 10 practical missions per skill. Every approved mission becomes a real item in your public portfolio and earns QR-verified certificates.",
+  },
+  {
+    q: "How does the Duolingo Mission Roadmap work?",
+    a: "Missions unlock sequentially like a visual game path. Green checkmark nodes show completed projects, pulsing orange nodes show your current mission, and milestone treasure chests award bonus Neurons & XP.",
+  },
+  {
+    q: "What is ARIA Neural Intelligence?",
+    a: "ARIA is our native AI intelligence system that performs instant pre-flight checks on your mission submissions (verifying link health, deliverable completeness, writeup depth) and powers automated certificate verification.",
+  },
+  {
+    q: "How does the Family Plan work for parents and siblings?",
+    a: "The Family Plan (₹9,999/yr) allows 1 parent subscription to manage up to 5 sibling profiles. Each child gets their own individual profile, progress map, XP leaderboard, portfolio, and QR-verified certificates.",
+  },
+  {
+    q: "Can I add my certificates to LinkedIn?",
+    a: "Yes! Every certificate (Phase Level 5 & Skill Completion Level 10) features a one-click 'Add to LinkedIn Profile' button that pre-fills LinkedIn's official Credentialing portal with your certificate ID and public verification link.",
+  },
+];
 
 function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.55, delay, ease: "easeOut" }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
     >
       {children}
     </motion.div>
@@ -149,96 +183,78 @@ function Reveal({ children, delay = 0, className }: { children: ReactNode; delay
 function BrandMark() {
   return (
     <span className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand via-brand-deep to-orange-500 shadow-brand">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand via-brand-bright to-brand-deep shadow-brand">
         <Hexagon className="h-5 w-5 text-white" strokeWidth={2.5} />
       </span>
       <span className="flex flex-col leading-none">
-        <span className="font-display text-sm font-bold tracking-tight text-white">SKILL EDGE</span>
-        <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.25em] text-amber-500">LEARNING</span>
+        <span className="font-display text-base font-extrabold tracking-tight text-white">SKILL EDGE</span>
+        <span className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.25em] text-brand">LEARNING v2</span>
       </span>
     </span>
   );
 }
 
-/* --------------------------------- page --------------------------------- */
-
 export default function LandingPage() {
   const { hydrated, isAuthenticated } = useApp();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const primaryHref = isAuthenticated ? "/dashboard" : "/register";
-  const skillHref = (skillId: string) => (isAuthenticated ? `/learn/${skillId}` : "/register");
 
   return (
-    <div className="relative min-h-dvh w-full overflow-x-hidden bg-base text-white">
-      {/* ---------- ambient background ---------- */}
+    <div className="relative min-h-dvh w-full overflow-x-hidden bg-base text-white bg-grid-pattern">
+      {/* ---------- Ambient Glowing Spotlights ---------- */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        <div className="absolute -top-48 left-1/2 h-[540px] w-[900px] -translate-x-1/2 rounded-full bg-orange-600/15 blur-[140px]" />
-        <div className="absolute -left-40 top-64 h-[420px] w-[420px] rounded-full bg-brand/10 blur-[120px]" />
-        <div className="absolute -right-40 top-32 h-[420px] w-[420px] rounded-full bg-amber-500/10 blur-[120px]" />
-        <div
-          className="absolute inset-x-0 top-0 h-[800px]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(249,115,22,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.05) 1px, transparent 1px)",
-            backgroundSize: "64px 64px",
-            maskImage: "radial-gradient(ellipse 80% 70% at 50% 0%, black, transparent)",
-            WebkitMaskImage: "radial-gradient(ellipse 80% 70% at 50% 0%, black, transparent)",
-          }}
-        />
+        <div className="absolute -top-48 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-brand/20 blur-[150px]" />
+        <div className="absolute left-10 top-96 h-[400px] w-[400px] rounded-full bg-brand-deep/15 blur-[140px]" />
+        <div className="absolute right-10 top-[1200px] h-[450px] w-[450px] rounded-full bg-brand-bright/15 blur-[140px]" />
       </div>
 
-      {/* ---------- sticky glass navbar ---------- */}
-      <header className="sticky top-0 z-50 border-b border-line/60 bg-base/85 backdrop-blur-xl">
+      {/* ---------- Sticky Glass Navbar ---------- */}
+      <header className="sticky top-0 z-50 border-b border-line/60 bg-base/90 backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/" aria-label="Skill Edge Learning home">
             <BrandMark />
           </Link>
 
-          <nav className="hidden items-center gap-6 text-xs font-semibold text-zinc-400 md:flex">
-            <a href="#hero" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
-              Home
+          <nav className="hidden items-center gap-6 text-xs font-semibold text-zinc-300 md:flex">
+            <a href="#hero" className="transition hover:text-brand">
+              Overview
             </a>
-            <a href="#skills" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
-              Skills
+            <a href="#guide" className="transition hover:text-brand">
+              How It Works
             </a>
-            <a href="#manifesto" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
-              Manifesto
+            <a href="#transformations" className="transition hover:text-brand">
+              Transformations
             </a>
-            <a href="#ambassador" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
-              Ambassador
+            <a href="#roadmap" className="transition hover:text-brand">
+              Duolingo Roadmap
             </a>
-            <a href="#about" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
-              About
+            <a href="#certificates" className="transition hover:text-brand">
+              Certificates
             </a>
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              Contact
+            <a href="#pricing" className="transition hover:text-brand">
+              Pricing
+            </a>
+            <a href="#faq" className="transition hover:text-brand">
+              FAQ
             </a>
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <a
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-ghost hidden gap-1.5 border-emerald-500/30 text-xs text-emerald-400 hover:border-emerald-500 hover:bg-emerald-500/10 sm:inline-flex"
+              className="btn-ghost hidden gap-1.5 border-emerald-500/40 text-xs text-emerald-400 hover:border-emerald-500 hover:bg-emerald-500/10 sm:inline-flex"
             >
               <MessageCircle className="h-3.5 w-3.5" />
               WhatsApp: 9342366833
             </a>
 
             {!hydrated ? (
-              <>
-                <div className="skeleton hidden h-9 w-20 sm:block" />
-                <div className="skeleton h-9 w-28" />
-              </>
+              <div className="skeleton h-9 w-24" />
             ) : isAuthenticated ? (
-              <Link href="/dashboard" className="btn-primary px-4 py-2 text-xs sm:text-sm">
+              <Link href="/dashboard" className="btn-primary px-4 py-2 text-xs font-bold sm:text-sm">
                 Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -248,7 +264,7 @@ export default function LandingPage() {
                   Sign In
                 </Link>
                 <Link href="/register" className="btn-primary px-4 py-2 text-xs sm:text-sm">
-                  Get Started
+                  Get Started Free
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </>
@@ -257,479 +273,155 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="relative z-10">
+      <main className="relative z-10 space-y-24 pb-20">
         {/* ============================================================
-            HERO SECTION (Image 1 reference design)
+            1. HERO SECTION & STATS BAR
             ============================================================ */}
-        <section id="hero" className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24">
+        <section id="hero" className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
-            {/* Top Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-amber-400 animate-fade-up">
-              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              BUILT BY STUDENTS, FOR STUDENTS
+            {/* Top Pill */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-brand animate-fade-up">
+              <Sparkles className="h-3.5 w-3.5 text-brand" />
+              POWERED BY ARIA NEURAL INTELLIGENCE
             </div>
 
-            {/* Main Headline */}
-            <h1
-              className="mt-8 max-w-4xl font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-white animate-fade-up sm:text-6xl lg:text-7xl"
-              style={{ animationDelay: "0.08s" }}
-            >
-              The{" "}
-              <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
-                future of learning
+            {/* Display Headline */}
+            <h1 className="mt-6 max-w-5xl font-display text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-7xl">
+              Don&apos;t Just Watch Courses.{" "}
+              <span className="bg-gradient-to-r from-brand via-brand-bright to-brand-sand bg-clip-text text-transparent">
+                Ship Real Products
               </span>{" "}
-              starts with you.
+              & Master 12 High-Income Skills.
             </h1>
 
             {/* Subtitle */}
-            <p
-              className="mt-6 max-w-2xl text-base leading-relaxed text-zinc-300 animate-fade-up sm:text-lg"
-              style={{ animationDelay: "0.16s" }}
-            >
-              Skill Edge Learning is a student-led learning OS that complements formal education with practical,
-              future-ready skills — built by students, for the world you&apos;ll graduate into.
+            <p className="mt-6 max-w-3xl text-base leading-relaxed text-zinc-300 sm:text-lg">
+              Not a traditional course site. Skill Edge Learning is a practical skill operating system. Complete 10
+              real-world missions per skill, build your public proof-of-work portfolio, earn QR-verified certificates,
+              and level up.
             </p>
 
-            {/* Hero CTAs */}
-            <div
-              className="mt-9 flex flex-wrap items-center justify-center gap-4 animate-fade-up"
-              style={{ animationDelay: "0.24s" }}
-            >
-              <Link
-                href={primaryHref}
-                className="group relative inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 px-8 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-orange-500/25 transition-all hover:scale-105 hover:shadow-orange-500/40 sm:text-base"
-              >
-                Join the Movement
-                <ArrowRight className="h-4.5 w-4.5 transition-transform group-hover:translate-x-1" />
+            {/* CTAs */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Link href={primaryHref} className="btn-primary px-8 py-3.5 text-sm font-bold sm:text-base">
+                Start Learning Free
+                <ArrowRight className="h-5 w-5" />
               </Link>
-              <a
-                href="#manifesto"
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/80 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-all hover:border-zinc-500 hover:bg-zinc-800 sm:text-base"
-              >
-                Read the Manifesto
+              <a href="#guide" className="btn-ghost px-7 py-3.5 text-sm font-bold text-zinc-300 sm:text-base">
+                How It Works Guide
               </a>
             </div>
 
-            {/* Hero Floating Cards (Left & Right showcase) */}
-            <div className="mt-12 grid w-full max-w-4xl gap-4 sm:grid-cols-2">
-              <div className="clay-card flex items-center justify-between gap-3 p-4 text-left border-orange-500/30 bg-orange-950/20">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/20 text-orange-400">
-                    <Wand2 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400">SKILL 01</span>
-                    <h4 className="font-display text-sm font-bold text-white">AI Tools Mastery</h4>
-                    <span className="text-[11px] text-zinc-400">6 weeks • Foundational</span>
-                  </div>
-                </div>
-                <span className="chip border-amber-500/40 bg-amber-500/10 text-[10px] font-semibold text-amber-400">
-                  Coming Soon
-                </span>
+            {/* Stats Grid Bar */}
+            <div className="mt-14 grid w-full max-w-4xl grid-cols-2 gap-4 rounded-2xl border border-line bg-card/80 p-5 backdrop-blur-md sm:grid-cols-4">
+              <div className="text-center space-y-1">
+                <div className="font-display text-2xl font-black text-white sm:text-3xl">12</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">High-Income Skills</div>
               </div>
-
-              <div className="clay-card flex items-center justify-between gap-3 p-4 text-left border-rose-500/30 bg-rose-950/20">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400">
-                    <Compass className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">SKILL 10</span>
-                    <h4 className="font-display text-sm font-bold text-white">Content & Branding</h4>
-                    <span className="text-[11px] text-zinc-400">Build an audience that builds you.</span>
-                  </div>
-                </div>
-                <span className="chip border-emerald-500/40 bg-emerald-500/10 text-[10px] font-semibold text-emerald-400">
-                  Live
-                </span>
+              <div className="text-center space-y-1 border-l border-line/60">
+                <div className="font-display text-2xl font-black text-brand sm:text-3xl">{TOTAL_MISSIONS}</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Practical Missions</div>
               </div>
-            </div>
-
-            {/* Bottom tags strip */}
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-up">
-              <span className="chip border-zinc-700 bg-zinc-900/60 px-3.5 py-1.5 text-xs text-zinc-300">
-                12 Future Skills
-              </span>
-              <span className="chip border-zinc-700 bg-zinc-900/60 px-3.5 py-1.5 text-xs text-zinc-300">
-                Built in India 🇮🇳
-              </span>
-              <span className="chip border-zinc-700 bg-zinc-900/60 px-3.5 py-1.5 text-xs text-zinc-300">
-                Student-Led
-              </span>
-              <span className="chip border-amber-500/40 bg-amber-500/10 px-3.5 py-1.5 text-xs text-amber-300">
-                Free Forever at Launch
-              </span>
+              <div className="text-center space-y-1 border-l border-line/60">
+                <div className="font-display text-2xl font-black text-white sm:text-3xl">100%</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Portfolio Proof</div>
+              </div>
+              <div className="text-center space-y-1 border-l border-line/60">
+                <div className="font-display text-2xl font-black text-brand sm:text-3xl">ARIA</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Verified Certs</div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ============================================================
-            MANIFESTO SECTION (Image 2 reference design)
+            2. USER GUIDE: THE 5-STEP LEARNING LOOP
             ============================================================ */}
-        <section id="manifesto" className="scroll-mt-20 border-y border-line/60 bg-zinc-950/70 py-24">
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-            <Reveal>
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-amber-400 uppercase">
-                <Sparkles className="h-3.5 w-3.5" />
-                THE MANIFESTO
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <h2 className="mt-8 font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
-                We exist to{" "}
-                <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
-                  redefine
-                </span>{" "}
-                what learning can be.
-              </h2>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-zinc-300 sm:text-xl">
-                Not another EdTech platform. A movement — built by students, for students, to complement formal
-                education with the skills the future actually rewards.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.3} className="mt-12 flex justify-center">
-              <div className="flex flex-col items-center gap-2 text-xs font-semibold tracking-widest text-zinc-500 uppercase">
-                <span>SCROLL TO EXPLORE</span>
-                <span className="h-6 w-0.5 rounded-full bg-amber-500 animate-bounce" />
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============================================================
-            SKILLS & FLAGSHIP TRANSFORMATION (Image 3 reference design)
-            ============================================================ */}
-        <section id="skills" className="scroll-mt-20 mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-orange-400 uppercase">
-              <Flame className="h-3.5 w-3.5" />
-              THE CATALOG
-            </div>
-            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-5xl">
-              Skills the market actually pays for
+        <section id="guide" className="mx-auto max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-3xl text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Student Guide</div>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-white sm:text-5xl">
+              How You Master Skills on Skill Edge Learning
             </h2>
             <p className="mt-3 text-sm text-zinc-400 sm:text-base">
-              Every track is 10 missions deep — from first principles to a portfolio-grade capstone.
+              A systematic 5-step loop designed to transform you from a beginner into a proof-backed practitioner.
             </p>
           </Reveal>
 
-          {/* Flagship Transformation Banner (Image 3 Top Card) */}
-          <Reveal delay={0.1} className="mt-12">
-            <div className="relative overflow-hidden rounded-3xl border border-orange-500/40 bg-gradient-to-r from-orange-950/40 via-card to-zinc-900/80 p-6 sm:p-10 shadow-2xl">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-3xl shadow-lg shadow-orange-500/30">
-                    🤖
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-orange-400">
-                        FLAGSHIP TRANSFORMATION
-                      </span>
-                      <span className="chip border-emerald-500/40 bg-emerald-500/10 text-[10px] font-bold text-emerald-400">
-                        LIVE
-                      </span>
-                    </div>
-                    <h3 className="mt-1 font-display text-2xl font-bold text-white sm:text-3xl">AI Mastery</h3>
-                    <p className="mt-1.5 text-sm text-zinc-300">
-                      Transform from an AI Beginner into an AI-Native Creator.
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-zinc-400">
-                      <span>7 Worlds</span>
-                      <span>•</span>
-                      <span>35 Missions</span>
-                      <span>•</span>
-                      <span className="text-amber-400">4,200 XP</span>
-                      <span>•</span>
-                      <span>12-16 weeks</span>
-                    </div>
-                  </div>
-                </div>
-
-                <Link
-                  href={skillHref("ai-prompt-engineering")}
-                  className="btn-primary shrink-0 self-start px-6 py-3.5 text-sm font-bold shadow-lg shadow-orange-500/20 lg:self-center"
-                >
-                  Start AI Mastery
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* Skills Grid */}
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Live Flagship item 1 */}
-            <Reveal delay={0.15}>
-              <div className="clay-card flex h-full flex-col justify-between p-6 border-emerald-500/30">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 text-2xl">
-                      🧠
-                    </div>
-                    <span className="chip border-emerald-500/40 bg-emerald-500/10 text-[10px] font-bold text-emerald-400">
-                      • Live
-                    </span>
-                  </div>
-                  <h4 className="mt-4 font-display text-lg font-bold text-white">AI Mastery Transformation</h4>
-                  <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                    Transform from beginner to AI-native creator. The flagship transformation with 7 worlds, 35
-                    missions, and 7 real-world projects.
-                  </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between">
-                  <div className="flex gap-2 text-[10px] font-semibold text-zinc-400">
-                    <span className="chip text-[10px]">Foundational</span>
-                    <span>12-16 wks</span>
-                  </div>
-                  <Link href={skillHref("ai-prompt-engineering")} className="text-xs font-bold text-brand hover:underline">
-                    Start Transformation →
-                  </Link>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Skill item 2 */}
-            <Reveal delay={0.2}>
-              <div className="clay-card flex h-full flex-col justify-between p-6">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 text-2xl">
-                      🧠
-                    </div>
-                    <span className="chip border-zinc-700 bg-zinc-800/60 text-[10px] font-medium text-zinc-400">
-                      🔒 Coming Soon
-                    </span>
-                  </div>
-                  <h4 className="mt-4 font-display text-lg font-bold text-white">AI Tools Mastery</h4>
-                  <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                    Work at the speed of thought. Master ChatGPT, Claude, Midjourney, and the AI stack that&apos;s reshaping
-                    every industry.
-                  </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between">
-                  <div className="flex gap-2 text-[10px] font-semibold text-zinc-400">
-                    <span className="chip text-[10px]">Foundational</span>
-                    <span>6 weeks</span>
-                  </div>
-                  <span className="text-xs font-semibold text-zinc-500">Explore Skill →</span>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Skill item 3 */}
-            <Reveal delay={0.25}>
-              <div className="clay-card flex h-full flex-col justify-between p-6">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/20 text-2xl">
-                      &lt;/&gt;
-                    </div>
-                    <span className="chip border-zinc-700 bg-zinc-800/60 text-[10px] font-medium text-zinc-400">
-                      🔒 Coming Soon
-                    </span>
-                  </div>
-                  <h4 className="mt-4 font-display text-lg font-bold text-white">Vibe Coding</h4>
-                  <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                    Build apps without fear of code. Code by intent. Use AI assistants, modern frameworks, and no-code
-                    tools to ship real products fast.
-                  </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between">
-                  <div className="flex gap-2 text-[10px] font-semibold text-zinc-400">
-                    <span className="chip text-[10px]">Intermediate</span>
-                    <span>8 weeks</span>
-                  </div>
-                  <span className="text-xs font-semibold text-zinc-500">Explore Skill →</span>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-
-          <Reveal className="mt-12 text-center">
-            <Link href={isAuthenticated ? "/skills" : "/register"} className="btn-ghost px-7 py-3 text-sm">
-              View All {SKILLS.length} Skills Catalog
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Reveal>
-        </section>
-
-        {/* ============================================================
-            AMBASSADOR PROGRAM (Image 4 reference design)
-            ============================================================ */}
-        <section id="ambassador" className="scroll-mt-20 border-t border-line/60 bg-zinc-950/80 py-24">
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-            <Reveal>
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-amber-400 uppercase">
-                <Users2 className="h-3.5 w-3.5" />
-                AMBASSADOR PROGRAM
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <h2 className="mt-8 font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
-                Become a{" "}
-                <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
-                  Founding Member
-                </span>{" "}
-                of Skill Edge Learning
-              </h2>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-300">
-                Help grow the community and shape the future of the platform. Be there from day one — and leave your
-                mark on how a generation of students learns.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.3} className="mt-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/90 px-5 py-2.5 text-xs text-zinc-400">
-                <Clock3 className="h-4 w-4 text-amber-400" />
-                Detailed program information will be announced officially during launch
-              </div>
-            </Reveal>
-
-            {/* Direct WhatsApp connection CTA */}
-            <Reveal delay={0.4} className="mt-10">
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 hover:scale-105"
-              >
-                <MessageCircle className="h-5 w-5" />
-                Connect with Founders on WhatsApp (+91 9342366833)
-              </a>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============================================================
-            ABOUT US SECTION (Image 5 reference design)
-            ============================================================ */}
-        <section id="about" className="scroll-mt-20 border-t border-line/60 bg-base py-24">
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-            <Reveal>
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-brand uppercase">
-                <Globe className="h-3.5 w-3.5" />
-                ABOUT US
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <h2 className="mt-8 font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
-                We&apos;re building the learning OS we{" "}
-                <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
-                  wish we had.
-                </span>
-              </h2>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-300">
-                Skill Edge Learning exists to bridge the gap between what school teaches and what the world now
-                rewards — built by students, for students, in India, for the world.
-              </p>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ---------- how it works loop ---------- */}
-        <section id="how" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8 border-t border-line/60">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">The mission loop</div>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              One loop. Repeated until you&apos;re dangerous.
-            </h2>
-            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
-              No passive completion bars. A mission only counts when your work is submitted, reviewed and approved.
-            </p>
-          </Reveal>
-
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {LOOP_STEPS.map((step, i) => (
-              <Reveal key={step.title} delay={i * 0.07} className="h-full">
-                <div className="clay-card relative flex h-full flex-col gap-3 p-5">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+            {GUIDE_STEPS.map((step, i) => (
+              <Reveal key={step.step} delay={i * 0.08} className="h-full">
+                <div className="clay-card relative flex h-full flex-col justify-between p-5 space-y-4 border-line/80">
                   <div className="flex items-center justify-between">
                     <span
-                      className="flex h-10 w-10 items-center justify-center rounded-xl"
-                      style={{ background: `${step.color}1f`, color: step.color }}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl font-bold"
+                      style={{ background: `${step.color}20`, color: step.color }}
                     >
                       <step.icon className="h-5 w-5" />
                     </span>
-                    <span className="font-mono text-xs font-bold text-zinc-600">0{i + 1}</span>
+                    <span className="font-mono text-xs font-black text-zinc-500">STEP {step.step}</span>
                   </div>
-                  <h3 className="font-display text-sm font-bold text-white">{step.title}</h3>
-                  <p className="text-xs leading-relaxed text-zinc-400">{step.text}</p>
+
+                  <div>
+                    <h3 className="font-display text-base font-bold text-white">{step.title}</h3>
+                    <p className="mt-2 text-xs leading-relaxed text-zinc-400">{step.desc}</p>
+                  </div>
+
+                  <div className="pt-2 border-t border-line/60">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand">
+                      {i === 4 ? "Goal Achieved!" : `Proceed to Step 0${i + 2}`}
+                    </span>
+                  </div>
                 </div>
               </Reveal>
             ))}
           </div>
         </section>
 
-        {/* ---------- pricing preview ---------- */}
-        <section id="pricing" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8 border-t border-line/60">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-premium">Pricing</div>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Start free. Upgrade when you&apos;re hooked.
+        {/* ============================================================
+            3. SKILL TRANSFORMATIONS SHOWCASE
+            ============================================================ */}
+        <section id="transformations" className="mx-auto max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-3xl text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Defined Outcomes</div>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-white sm:text-5xl">
+              What Will You Become After Completing a Skill?
             </h2>
             <p className="mt-3 text-sm text-zinc-400 sm:text-base">
-              The first 4 missions of every skill are free, forever. Pro unlocks the full depth of every track.
+              Every skill on Skill Edge Learning has a clearly defined transformation, build capabilities, and career outcome.
             </p>
           </Reveal>
 
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {PLANS.map((plan, i) => (
-              <Reveal key={plan.id} delay={i * 0.06} className="h-full">
-                <div
-                  className={cn(
-                    "clay-card relative flex h-full flex-col gap-4 p-6",
-                    plan.highlight && "border-brand/60 ring-1 ring-brand/40"
-                  )}
-                >
-                  {plan.highlight && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand to-brand-deep px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-brand">
-                      Most popular
-                    </span>
-                  )}
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {SKILL_OUTCOMES.map((out, i) => (
+              <Reveal key={out.title} delay={i * 0.08}>
+                <div className="clay-card relative flex h-full flex-col justify-between p-6 space-y-4 border-brand/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand">Transformation</span>
+                    <span className="chip border-brand/40 bg-brand/10 text-[10px] font-bold text-brand">10 Missions</span>
+                  </div>
+
                   <div>
-                    <h3 className="font-display text-base font-bold text-white">{plan.name}</h3>
-                    <p className="mt-0.5 text-xs text-zinc-500">{plan.tagline}</p>
+                    <h3 className="font-display text-xl font-black text-white">{out.title}</h3>
+                    <div className="mt-1 text-sm font-bold text-brand">Become: {out.become}</div>
+
+                    <div className="mt-4 space-y-2">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">What You&apos;ll Build:</div>
+                      <div className="grid grid-cols-2 gap-1.5 text-xs text-zinc-300">
+                        {out.builds.map((b) => (
+                          <div key={b} className="flex items-center gap-1.5">
+                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-brand" />
+                            <span>{b}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-display text-3xl font-bold text-white">{fmtInr(plan.priceInr)}</span>
-                    <span className="text-xs text-zinc-500">{periodLabel(plan)}</span>
-                  </div>
-                  <ul className="space-y-2">
-                    {plan.features.slice(0, 4).map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-zinc-300">
-                        <CheckCircle2
-                          className={cn(
-                            "mt-0.5 h-3.5 w-3.5 shrink-0",
-                            plan.id === "FOUNDER_LIFETIME" ? "text-premium" : "text-success"
-                          )}
-                        />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-auto pt-2">
-                    <Link
-                      href="/pricing"
-                      className={cn(
-                        "w-full py-2.5 text-xs",
-                        plan.id === "FOUNDER_LIFETIME" ? "btn-premium" : plan.highlight ? "btn-primary" : "btn-ghost"
-                      )}
-                    >
-                      {plan.priceInr === 0 ? "Start free" : `Get ${plan.name}`}
+
+                  <div className="pt-4 border-t border-line/60 flex items-center justify-between">
+                    <span className="text-xs text-zinc-400">Real-world Project Proof</span>
+                    <Link href="/skills" className="text-xs font-bold text-brand hover:underline">
+                      Explore Track →
                     </Link>
                   </div>
                 </div>
@@ -738,133 +430,287 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ---------- final CTA ---------- */}
-        <section className="mx-auto max-w-5xl px-4 pb-24 pt-12 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="relative overflow-hidden rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-950/30 via-card to-zinc-900/80 p-10 text-center sm:p-14">
-              <div
-                className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[480px] -translate-x-1/2 rounded-full bg-orange-500/20 blur-[100px]"
-                aria-hidden
-              />
-              <div className="relative">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg shadow-orange-500/30">
-                  <Hexagon className="h-7 w-7 text-white" strokeWidth={2.5} />
+        {/* ============================================================
+            4. INTERACTIVE DUOLINGO ROADMAP DEMO
+            ============================================================ */}
+        <section id="roadmap" className="mx-auto max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-brand/40 bg-surface/90 p-6 sm:p-10 backdrop-blur-xl">
+            <Reveal className="mx-auto max-w-3xl text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand/10 px-4 py-1 text-xs font-bold uppercase tracking-widest text-brand">
+                <Play className="h-3.5 w-3.5 fill-brand" /> DUOLINGO-STYLE MISSION MAP
+              </div>
+              <h2 className="mt-4 font-display text-3xl font-black text-white sm:text-4xl">
+                Sequential Node Unlock System
+              </h2>
+              <p className="mt-2 text-sm text-zinc-400">
+                Missions unlock in order — get your work approved to advance down the roadmap.
+              </p>
+            </Reveal>
+
+            {/* Visual Node Path Mockup */}
+            <div className="mt-10 mx-auto max-w-md flex flex-col items-center gap-6 py-4">
+              <div className="flex items-center gap-4 w-full rounded-2xl border border-success/40 bg-success/10 p-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-success text-white font-bold">
+                  <Check className="h-6 w-6 stroke-[3]" />
                 </div>
-                <h2 className="mt-6 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                  Your portfolio starts with mission one.
-                </h2>
-                <p className="mx-auto mt-3 max-w-xl text-sm text-zinc-400 sm:text-base">
-                  Pick a skill, ship your first project this week, and let every approved mission compound into proof.
-                </p>
-                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <Link href={primaryHref} className="btn-primary px-8 py-3 text-sm sm:text-base">
-                    {isAuthenticated ? "Open Dashboard" : "Create your free account"}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <a
-                    href={WHATSAPP_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-ghost inline-flex items-center gap-2 px-6 py-3 text-sm text-emerald-400 sm:text-base hover:text-emerald-300"
-                  >
-                    <MessageCircle className="h-4.5 w-4.5" />
-                    Chat on WhatsApp (9342366833)
-                  </a>
+                <div>
+                  <div className="text-xs font-bold text-success uppercase">Mission 01 · Completed</div>
+                  <div className="text-sm font-bold text-white">Foundations & Setup</div>
+                  <div className="text-[11px] text-zinc-400">+100 XP · +25 Neurons Earned</div>
+                </div>
+              </div>
+
+              <div className="h-8 w-1 bg-gradient-to-b from-success via-brand to-line" />
+
+              <div className="flex items-center gap-4 w-full rounded-2xl border border-brand bg-brand/15 p-4 shadow-[0_0_24px_rgba(232,80,2,0.4)] animate-pulse">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand text-white font-bold">
+                  <Play className="h-6 w-6 fill-white ml-0.5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-brand uppercase">Mission 02 · Current Mission</div>
+                  <div className="text-sm font-bold text-white">First Deliverable Build</div>
+                  <div className="text-[11px] text-zinc-300">Ready to execute & submit</div>
+                </div>
+              </div>
+
+              <div className="h-8 w-1 bg-line" />
+
+              <div className="flex items-center gap-4 w-full rounded-2xl border border-line bg-card/60 p-4 opacity-60">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-zinc-500">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-zinc-500 uppercase">Mission 03 · Locked</div>
+                  <div className="text-sm font-bold text-zinc-400">Advanced Integration</div>
+                  <div className="text-[11px] text-zinc-500">Unlocks upon Mission 02 approval</div>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ============================================================
+            5. ARIA CERTIFICATES & LINKEDIN INTEGRATION
+            ============================================================ */}
+        <section id="certificates" className="mx-auto max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-3xl text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Verifiable Credentials</div>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-white sm:text-5xl">
+              ARIA-Powered Public Certificates & Badges
+            </h2>
+            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+              Every phase (Mission 5) and skill completion (Mission 10) auto-issues a public certificate with unique QR code verification.
+            </p>
           </Reveal>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="clay-card p-6 space-y-4 border-brand/30">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/20 text-brand">
+                  <QrCode className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white">QR Code Verification</div>
+                  <div className="text-xs text-zinc-400">Public verify URL (/verify/[code])</div>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Recruiters and clients can scan your certificate QR code to view your verified deliverables and approval score.
+              </p>
+            </div>
+
+            <div className="clay-card p-6 space-y-4 border-brand/30">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20 text-accent">
+                  <Award className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white">One-Click LinkedIn Export</div>
+                  <div className="text-xs text-zinc-400">Pre-filled LinkedIn licenses form</div>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Add your certificates directly to your LinkedIn Licenses & Certifications profile with one click.
+              </p>
+            </div>
+
+            <div className="clay-card p-6 space-y-4 border-brand/30">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-premium/20 text-premium">
+                  <Hexagon className="h-5 w-5 text-premium" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white">Hexagon & Shield Badges</div>
+                  <div className="text-xs text-zinc-400">Digital achievement badges</div>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Unlock digital badges for Explorer, Builder, Operator, Pro, Elite, Legend, and Ambassador tiers.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================
+            6. PRICING PLANS (INCLUDING FAMILY PLAN)
+            ============================================================ */}
+        <section id="pricing" className="mx-auto max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-3xl text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Pricing Plans</div>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-white sm:text-5xl">
+              Transparent Plans for Students & Families
+            </h2>
+            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+              Start free. Upgrade to Pro for complete mission tracks, or get the Family Plan for all your siblings.
+            </p>
+          </Reveal>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {PLANS.map((plan, i) => (
+              <Reveal key={plan.id} delay={i * 0.08} className="h-full">
+                <div
+                  className={cn(
+                    "clay-card relative flex h-full flex-col justify-between p-6 space-y-5",
+                    plan.highlight && "border-brand border-2 shadow-[0_0_30px_rgba(232,80,2,0.3)]"
+                  )}
+                >
+                  {plan.highlight && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-brand">
+                      Most Popular
+                    </span>
+                  )}
+
+                  <div>
+                    <h3 className="font-display text-xl font-bold text-white">{plan.name}</h3>
+                    <p className="mt-1 text-xs text-zinc-400">{plan.tagline}</p>
+                    <div className="mt-4 flex items-baseline gap-1">
+                      <span className="font-display text-3xl font-black text-white">{fmtInr(plan.priceInr)}</span>
+                      <span className="text-xs text-zinc-400">/{plan.period}</span>
+                    </div>
+                  </div>
+
+                  <ul className="space-y-2.5 border-t border-line/60 pt-4 text-xs text-zinc-300">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 shrink-0 text-brand" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="pt-2">
+                    <Link
+                      href={primaryHref}
+                      className={cn(
+                        "w-full py-2.5 text-xs font-bold",
+                        plan.highlight ? "btn-primary" : "btn-ghost"
+                      )}
+                    >
+                      {plan.priceInr === 0 ? "Start Free" : `Get ${plan.name}`}
+                    </Link>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* ============================================================
+            7. COMPREHENSIVE FAQ SECTION
+            ============================================================ */}
+        <section id="faq" className="mx-auto max-w-4xl scroll-mt-24 px-4 sm:px-6">
+          <Reveal className="text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Student & Parent Guide</div>
+            <h2 className="mt-2 font-display text-3xl font-black text-white sm:text-4xl">
+              Frequently Asked Questions
+            </h2>
+          </Reveal>
+
+          <div className="mt-10 space-y-4">
+            {FAQ_ITEMS.map((item, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-line bg-card/70 p-4 transition hover:border-brand/40"
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="flex w-full items-center justify-between text-left text-sm font-bold text-white"
+                  >
+                    <span>{item.q}</span>
+                    <ChevronDown className={cn("h-4 w-4 shrink-0 text-zinc-400 transition-transform", isOpen && "rotate-180 text-brand")} />
+                  </button>
+                  {isOpen && <p className="mt-3 text-xs leading-relaxed text-zinc-300 pt-2 border-t border-line/40">{item.a}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ============================================================
+            8. FINAL CTA & FOOTER
+            ============================================================ */}
+        <section className="mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="relative overflow-hidden rounded-3xl border border-brand/40 bg-gradient-to-br from-brand/20 via-card to-base p-10 text-center sm:p-14 shadow-2xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand via-brand-bright to-brand-deep shadow-brand">
+              <Hexagon className="h-7 w-7 text-white" strokeWidth={2.5} />
+            </div>
+            <h2 className="mt-6 font-display text-3xl font-black tracking-tight text-white sm:text-4xl">
+              Your Public Portfolio Starts With Mission One.
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-zinc-300">
+              Pick your first skill, ship a real project, and let every approved mission compound into proof.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href={primaryHref} className="btn-primary px-8 py-3 text-sm font-bold">
+                {isAuthenticated ? "Go to Dashboard" : "Create Your Free Account"}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost inline-flex items-center gap-2 px-6 py-3 text-sm text-emerald-400 hover:text-emerald-300"
+              >
+                <MessageCircle className="h-4.5 w-4.5" />
+                WhatsApp Helpline (+91 9342366833)
+              </a>
+            </div>
+          </div>
         </section>
       </main>
 
-      {/* ---------- Floating WhatsApp Widget ---------- */}
+      {/* Floating WhatsApp Widget */}
       <a
         href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-xl shadow-emerald-500/40 transition-all hover:scale-110 hover:bg-emerald-400"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-xl shadow-emerald-500/40 transition hover:scale-110"
       >
         <MessageCircle className="h-7 w-7" />
       </a>
 
-      {/* ---------- footer ---------- */}
-      <footer className="relative z-10 border-t border-line/60 bg-surface/50">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="grid gap-10 md:grid-cols-4">
-            <div className="md:col-span-2">
-              <BrandMark />
-              <p className="mt-4 max-w-sm text-sm text-zinc-400">
-                The Skill Operating System. Learn by executing real missions, get human feedback, and graduate with a
-                portfolio and verifiable certificates — built by students, for students.
-              </p>
-              <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-400">
-                <MessageCircle className="h-4 w-4" />
-                <span>Support & WhatsApp: +91 9342366833</span>
-              </div>
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-line/60 bg-surface/80 py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+            <BrandMark />
+            <div className="text-xs text-zinc-400">
+              © {new Date().getFullYear()} Skill Edge Learning v2. Powered by ARIA Neural Intelligence.
             </div>
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Navigation</div>
-              <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
-                <li>
-                  <a href="#hero" className="transition hover:text-white">
-                    Home
-                  </a>
-                </li>
-                <li>
-                  <a href="#skills" className="transition hover:text-white">
-                    Skills Catalog
-                  </a>
-                </li>
-                <li>
-                  <a href="#manifesto" className="transition hover:text-white">
-                    The Manifesto
-                  </a>
-                </li>
-                <li>
-                  <a href="#ambassador" className="transition hover:text-white">
-                    Ambassador Program
-                  </a>
-                </li>
-                <li>
-                  <a href="#about" className="transition hover:text-white">
-                    About Us
-                  </a>
-                </li>
-              </ul>
+            <div className="flex items-center gap-4 text-xs font-semibold text-zinc-400">
+              <Link href="/skills" className="hover:text-brand">
+                Skills Catalog
+              </Link>
+              <Link href="/pricing" className="hover:text-brand">
+                Pricing
+              </Link>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+                WhatsApp Support
+              </a>
             </div>
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Account & Community</div>
-              <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
-                <li>
-                  <Link href="/login" className="transition hover:text-white">
-                    Sign In
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="transition hover:text-white">
-                    Create account
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard" className="transition hover:text-white">
-                    Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
-                    WhatsApp Community
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-line/60 pt-6 text-xs text-zinc-500 sm:flex-row">
-            <span>© {new Date().getFullYear()} Skill Edge Learning. All rights reserved.</span>
-            <span className="inline-flex items-center gap-1.5">
-              <Hexagon className="h-3.5 w-3.5 text-amber-400" />
-              Earn Neurons. Ship missions. Build proof.
-            </span>
           </div>
         </div>
       </footer>

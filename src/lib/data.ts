@@ -961,7 +961,7 @@ export function seedState(): AppState {
     xp: 5000,
     streakCount: 1,
     lastActiveDay: todayKey(),
-    subscription: { plan: "FOUNDER_LIFETIME", status: "ACTIVE", startedAt: iso(0), expiresAt: null },
+    subscription: { plan: "FAMILY", status: "ACTIVE", startedAt: iso(0), expiresAt: null },
     badges: [],
     createdAt: iso(0),
   };
