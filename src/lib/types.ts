@@ -20,6 +20,17 @@ export interface Subscription {
 
 /* ------------------------------ users ------------------------------ */
 
+export interface FamilyChildProfile {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  xp: number;
+  neurons: number;
+  streakCount: number;
+  completedMissions: string[];
+  createdAt: string;
+}
+
 export interface User {
   id: string; // Clerk user id
   name: string;
@@ -36,6 +47,8 @@ export interface User {
   lastActiveDay: string | null; // YYYY-MM-DD
   subscription: Subscription;
   badges: string[]; // earned badge ids
+  familyProfiles?: FamilyChildProfile[];
+  activeChildId?: string | null;
   createdAt: string;
 }
 

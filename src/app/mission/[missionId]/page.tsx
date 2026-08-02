@@ -44,6 +44,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AssessmentModal } from "@/components/AssessmentModal";
+import { AIAssignmentPreChecker } from "@/components/AIAssignmentPreChecker";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { fireConfetti } from "@/components/confetti";
 import { EmptyState, SectionTitle, Skeleton, SkeletonCard, StatusPill } from "@/components/ui";
@@ -163,11 +164,13 @@ interface LinkRow {
 
 function SubmissionForm({
   mission,
+  completedChecklistIndices = [],
   resubmissionOf,
   onDone,
   onCancel,
 }: {
   mission: Mission;
+  completedChecklistIndices?: number[];
   resubmissionOf?: string;
   onDone: () => void;
   onCancel?: () => void;
@@ -380,6 +383,14 @@ function SubmissionForm({
       )}
 
       {error && <div className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-xs font-semibold text-danger">{error}</div>}
+
+      {/* ARIA AI Pre-Flight Checker */}
+      <AIAssignmentPreChecker
+        note={note}
+        links={links}
+        checklistItems={mission.assignment.checklist}
+        completedChecklistIndices={completedChecklistIndices}
+      />
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         {onCancel && (
@@ -791,6 +802,7 @@ export default function MissionPage() {
               <SubmissionForm
                 key={resubmitFrom ?? "first"}
                 mission={mission}
+                completedChecklistIndices={Object.keys(checked).filter((k) => checked[Number(k)]).map(Number)}
                 resubmissionOf={resubmitFrom ?? undefined}
                 onDone={() => setResubmitFrom(null)}
                 onCancel={resubmitFrom ? () => setResubmitFrom(null) : undefined}

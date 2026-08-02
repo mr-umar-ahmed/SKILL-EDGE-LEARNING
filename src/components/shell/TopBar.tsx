@@ -1,8 +1,10 @@
 "use client";
 
-import { Flame, Hexagon, Menu, Search, Target, Zap } from "lucide-react";
+import { useState } from "react";
+import { Flame, Hexagon, Menu, Search, Target, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { UserAvatar } from "@/components/UserAvatar";
+import { FamilyProfileSwitcher } from "@/components/FamilyProfileSwitcher";
 import { useApp } from "@/lib/store";
 import { fmtNum, levelForXp } from "@/lib/utils";
 import { NotificationsBell } from "./NotificationsBell";
@@ -20,6 +22,7 @@ export function TopBar({
   onOpenMobileDrawer: () => void;
 }) {
   const { currentUser } = useApp();
+  const [familyOpen, setFamilyOpen] = useState(false);
   const badgeLevel = currentUser ? levelForXp(currentUser.xp) : 1;
 
   return (
@@ -52,6 +55,21 @@ export function TopBar({
             <Zap className="h-3.5 w-3.5" strokeWidth={1.75} /> LVL {badgeLevel}
           </div>
 
+          {currentUser?.subscription.plan === "FAMILY" && (
+            <button
+              onClick={() => setFamilyOpen(true)}
+              className="header-chip-btn border-brand/50 text-brand bg-brand/10 font-bold"
+              title="Family Plan Profile Switcher"
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span>
+                {currentUser.activeChildId
+                  ? currentUser.familyProfiles?.find((c) => c.id === currentUser.activeChildId)?.name ?? "Family"
+                  : "Parent"}
+              </span>
+            </button>
+          )}
+
           <SoundToggle />
           <NotificationsBell />
 
@@ -63,6 +81,8 @@ export function TopBar({
             <UserAvatar user={currentUser} size={32} />
           </button>
         </div>
+
+        {familyOpen && <FamilyProfileSwitcher open={familyOpen} onClose={() => setFamilyOpen(false)} />}
 
         {/* Mobile actions */}
         <div className="flex items-center gap-2 lg:hidden">

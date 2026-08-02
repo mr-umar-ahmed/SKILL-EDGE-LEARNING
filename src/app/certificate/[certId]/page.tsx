@@ -246,6 +246,23 @@ export default function CertificatePage() {
           <button onClick={() => window.print()} className="btn-primary">
             <Printer className="h-4 w-4" /> Download / Print
           </button>
+          <button
+            onClick={() => {
+              if (!cert) return;
+              const certName = encodeURIComponent((certType ?? "Skill Completion") + " — " + skillTitle);
+              const orgName = encodeURIComponent("Skill Edge Learning");
+              const issueDate = new Date(cert.issuedAt);
+              const year = issueDate.getFullYear();
+              const month = issueDate.getMonth() + 1;
+              const certUrl = encodeURIComponent(`${window.location.origin}/verify/${cert.verificationCode}`);
+              const certIdParam = encodeURIComponent(cert.verificationCode);
+              const linkedinUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${certName}&organizationName=${orgName}&issueYear=${year}&issueMonth=${month}&certUrl=${certUrl}&certId=${certIdParam}`;
+              window.open(linkedinUrl, "_blank");
+            }}
+            className="btn-ghost border-brand/40 bg-brand/10 text-brand font-bold"
+          >
+            <Share2 className="h-4 w-4 text-brand" /> Add to LinkedIn Profile
+          </button>
           <button onClick={() => copy("verify")} className={cn("btn-ghost", copied === "verify" && "border-success/50 text-success")}>
             {copied === "verify" ? <Check className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
             {copied === "verify" ? "Copied" : "Copy Verify Link"}

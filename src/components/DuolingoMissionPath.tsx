@@ -4,6 +4,7 @@ import React from "react";
 import { Check, Crown, Hexagon, Lock, Play, Star, Trophy, Zap } from "lucide-react";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
+import { playClickSound } from "@/lib/sound";
 import type { Mission, Skill, Submission } from "@/lib/types";
 import { cn, fmtMinutes, fmtNum } from "@/lib/utils";
 
@@ -76,7 +77,7 @@ export function DuolingoMissionPath({ skill, phases }: Props) {
                   >
                     {/* Mission Node Button */}
                     {clickable ? (
-                      <Link href={href} className="relative block">
+                      <Link href={href} onClick={playClickSound} className="relative block">
                         {/* Node Halo Effect */}
                         {approved ? (
                           <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-success bg-success/20 text-white shadow-[0_0_20px_rgba(34,197,94,0.5)] transition group-hover:scale-110">

@@ -186,3 +186,9 @@ export function playCertSound() {
     osc.stop(now + idx * 0.1 + 0.85);
   });
 }
+
+// Duolingo & Game Aliases
+export const playMissionCompleteSound = playVictorySound;
+export const playNeuronGainSound = playCoinSound;
+export const playStreakSound = playXpSound;
+export const playChestRewardSound = playCertSound;

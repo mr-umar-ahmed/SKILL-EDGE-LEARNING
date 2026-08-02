@@ -9,6 +9,7 @@ import type {
   AppState,
   Certificate,
   Coupon,
+  FamilyChildProfile,
   Mission,
   PaymentMethod,
   PaymentRecord,
@@ -228,6 +229,10 @@ interface AppApi {
   adminSetTxnStatus: (txnId: string, status: "APPROVED" | "REJECTED") => void;
   adminAdjustNeurons: (userId: string, delta: number, note: string) => void;
   adminGrantXp: (userId: string, amount: number) => void;
+
+  /* family plan */
+  createFamilyChildProfile: (name: string) => void;
+  switchFamilyChildProfile: (childId: string | null) => void;
 
   /* plans & payments */
   purchasePlanUpi: (planId: PlanId, amountInr: number, utrNumber: string, couponCode?: string) => PaymentRecord;
@@ -815,6 +820,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  /* ----------------------------- family plan ----------------------------- */
+
+  const createFamilyChildProfile = useCallback((name: string) => {
+    if (!name.trim()) return;
+    const newChild: FamilyChildProfile = {
+      id: uid("child"),
+      name: name.trim(),
+      xp: 0,
+      neurons: 100,
+      streakCount: 0,
+      completedMissions: [],
+      createdAt: new Date().toISOString(),
+    };
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) => {
+        if (u.id === s.currentUserId) {
+          const list = u.familyProfiles ?? [];
+          return { ...u, familyProfiles: [...list, newChild] };
+        }
+        return u;
+      }),
+    }));
+  }, []);
+
+  const switchFamilyChildProfile = useCallback((childId: string | null) => {
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) => {
+        if (u.id === s.currentUserId) {
+          return { ...u, activeChildId: childId };
+        }
+        return u;
+      }),
+    }));
+  }, []);
+
   /* ----------------------------- plans & payments ----------------------------- */
 
   const validateCoupon = useCallback(
@@ -1337,6 +1379,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     adminSetTxnStatus,
     adminAdjustNeurons,
     adminGrantXp,
+    createFamilyChildProfile,
+    switchFamilyChildProfile,
     purchasePlanUpi,
     activatePlan,
     adminResolvePayment,
