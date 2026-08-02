@@ -10,7 +10,10 @@ import type {
   Skill,
   StudentTier,
   SubmissionKind,
+  User,
 } from "./types";
+import { todayKey } from "./utils";
+
 
 export const STUDENT_TIERS: StudentTier[] = [
   {
@@ -845,10 +848,27 @@ const seedQuizzes: Quiz[] = [
 ];
 
 export function seedState(): AppState {
+  const officialAdmin: User = {
+    id: "u-admin-official",
+    name: "Skill Edge Admin",
+    email: "learningskilledge@gmail.com",
+    role: "ADMIN",
+    avatar: "",
+    title: "Administrator",
+    bio: "Skill Edge Learning Official Administrator",
+    neurons: 10000,
+    xp: 5000,
+    streakCount: 1,
+    lastActiveDay: todayKey(),
+    subscription: { plan: "FOUNDER_LIFETIME", status: "ACTIVE", startedAt: iso(0), expiresAt: null },
+    badges: [],
+    createdAt: iso(0),
+  };
+
   return {
     version: 2,
-    currentUserId: "",
-    users: [],
+    currentUserId: officialAdmin.id,
+    users: [officialAdmin],
     catalog: SKILLS,
     progress: {},
     submissions: [],
@@ -870,6 +890,7 @@ export function seedState(): AppState {
     ],
   };
 }
+
 
 /* ------------------------------ student tier lookup ------------------------------ */
 

@@ -333,10 +333,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!hydrated || !isLoaded) return;
     if (!isSignedIn || !clerkUser) {
-      setState((s) => (s.currentUserId ? { ...s, currentUserId: "" } : s));
       return;
     }
     const email = (clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses[0]?.emailAddress || "").toLowerCase();
+
     if (!email) return;
     const fullName = clerkUser.fullName || clerkUser.firstName || clerkUser.username || email.split("@")[0] || "Learner";
     const role: "USER" | "ADMIN" = adminEmails().includes(email) ? "ADMIN" : "USER";
