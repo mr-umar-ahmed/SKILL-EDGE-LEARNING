@@ -6,15 +6,23 @@ import {
   BookOpen,
   Briefcase,
   CheckCircle2,
-  ClipboardCheck,
   Clock3,
+  Compass,
+  Flame,
+  Globe,
   Hammer,
   Hexagon,
   Layers,
+  MessageCircle,
   QrCode,
   Rocket,
+  ShieldCheck,
   Sparkles,
+  Star,
+  Terminal,
   UploadCloud,
+  Users2,
+  Wand2,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -29,6 +37,9 @@ import type { PlanDef } from "@/lib/utils";
 const TOTAL_MISSIONS = SKILLS.reduce((n, s) => n + s.missions.length, 0);
 const TOTAL_HOURS = SKILLS.reduce((n, s) => n + s.estimatedHours, 0);
 const CATEGORIES = Array.from(new Set(SKILLS.map((s) => s.category)));
+
+const WHATSAPP_NUMBER = "919342366833";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Skill%20Edge%20Learning%2C%20I%20want%20to%20know%20more%20about%20the%20learning%20OS!`;
 
 const DIFF_COLORS: Record<string, string> = {
   Beginner: "#22c55e",
@@ -59,7 +70,7 @@ const LOOP_STEPS = [
     color: "#8b5cf6",
   },
   {
-    icon: ClipboardCheck,
+    icon: ClipboardCheckHelper,
     title: "Get reviewed",
     text: "A human reviews every submission with feedback, a score and a verdict.",
     color: "#facc15",
@@ -71,6 +82,10 @@ const LOOP_STEPS = [
     color: "#22c55e",
   },
 ];
+
+function ClipboardCheckHelper(props: { className?: string }) {
+  return <CheckCircle2 {...props} />;
+}
 
 const OUTCOME_CARDS: { skillId: string; outcomes: string[] }[] = [
   {
@@ -134,12 +149,12 @@ function Reveal({ children, delay = 0, className }: { children: ReactNode; delay
 function BrandMark() {
   return (
     <span className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-deep shadow-brand">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand via-brand-deep to-orange-500 shadow-brand">
         <Hexagon className="h-5 w-5 text-white" strokeWidth={2.5} />
       </span>
       <span className="flex flex-col leading-none">
-        <span className="font-display text-sm font-bold tracking-tight text-white">Skill Edge Learning</span>
-        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Skill OS</span>
+        <span className="font-display text-sm font-bold tracking-tight text-white">SKILL EDGE</span>
+        <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.25em] text-amber-500">LEARNING</span>
       </span>
     </span>
   );
@@ -157,44 +172,66 @@ export default function LandingPage() {
     <div className="relative min-h-dvh w-full overflow-x-hidden bg-base text-white">
       {/* ---------- ambient background ---------- */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        <div className="absolute -top-48 left-1/2 h-[540px] w-[900px] -translate-x-1/2 rounded-full bg-brand/20 blur-[130px]" />
-        <div className="absolute -left-40 top-64 h-[420px] w-[420px] rounded-full bg-premium/10 blur-[110px]" />
-        <div className="absolute -right-40 top-32 h-[420px] w-[420px] rounded-full bg-accent/10 blur-[110px]" />
+        <div className="absolute -top-48 left-1/2 h-[540px] w-[900px] -translate-x-1/2 rounded-full bg-orange-600/15 blur-[140px]" />
+        <div className="absolute -left-40 top-64 h-[420px] w-[420px] rounded-full bg-brand/10 blur-[120px]" />
+        <div className="absolute -right-40 top-32 h-[420px] w-[420px] rounded-full bg-amber-500/10 blur-[120px]" />
         <div
-          className="absolute inset-x-0 top-0 h-[720px]"
+          className="absolute inset-x-0 top-0 h-[800px]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px)",
-            backgroundSize: "56px 56px",
-            maskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, black, transparent)",
-            WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, black, transparent)",
+              "linear-gradient(rgba(249,115,22,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.05) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+            maskImage: "radial-gradient(ellipse 80% 70% at 50% 0%, black, transparent)",
+            WebkitMaskImage: "radial-gradient(ellipse 80% 70% at 50% 0%, black, transparent)",
           }}
         />
       </div>
 
       {/* ---------- sticky glass navbar ---------- */}
-      <header className="sticky top-0 z-50 border-b border-line/60 bg-base/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-line/60 bg-base/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/" aria-label="Skill Edge Learning home">
             <BrandMark />
           </Link>
 
-          <nav className="hidden items-center gap-7 text-xs font-semibold text-zinc-400 md:flex">
-            <a href="#how" className="transition hover:text-white">
-              How it works
+          <nav className="hidden items-center gap-6 text-xs font-semibold text-zinc-400 md:flex">
+            <a href="#hero" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
+              Home
             </a>
-            <a href="#skills" className="transition hover:text-white">
+            <a href="#skills" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
               Skills
             </a>
-            <a href="#outcomes" className="transition hover:text-white">
-              Outcomes
+            <a href="#manifesto" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
+              Manifesto
             </a>
-            <a href="#pricing" className="transition hover:text-white">
-              Pricing
+            <a href="#ambassador" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
+              Ambassador
+            </a>
+            <a href="#about" className="rounded-full px-3 py-1.5 transition hover:bg-white/5 hover:text-white">
+              About
+            </a>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              Contact
             </a>
           </nav>
 
           <div className="flex items-center gap-2.5">
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost hidden gap-1.5 border-emerald-500/30 text-xs text-emerald-400 hover:border-emerald-500 hover:bg-emerald-500/10 sm:inline-flex"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              WhatsApp: 9342366833
+            </a>
+
             {!hydrated ? (
               <>
                 <div className="skeleton hidden h-9 w-20 sm:block" />
@@ -202,7 +239,7 @@ export default function LandingPage() {
               </>
             ) : isAuthenticated ? (
               <Link href="/dashboard" className="btn-primary px-4 py-2 text-xs sm:text-sm">
-                Open Dashboard
+                Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : (
@@ -221,98 +258,391 @@ export default function LandingPage() {
       </header>
 
       <main className="relative z-10">
-        {/* ---------- hero ---------- */}
-        <section className="mx-auto flex max-w-5xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 sm:pt-28">
-          <div className="chip animate-fade-up border-brand/40 bg-brand/10 text-brand">
-            <Sparkles className="h-3.5 w-3.5" />
-            The Skill Operating System
-          </div>
+        {/* ============================================================
+            HERO SECTION (Image 1 reference design)
+            ============================================================ */}
+        <section id="hero" className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24">
+          <div className="flex flex-col items-center text-center">
+            {/* Top Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-amber-400 animate-fade-up">
+              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              BUILT BY STUDENTS, FOR STUDENTS
+            </div>
 
-          <h1
-            className="mt-6 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white animate-fade-up sm:text-6xl lg:text-7xl"
-            style={{ animationDelay: "0.08s" }}
-          >
-            Don&apos;t watch.
-            <br />
-            <span className="bg-gradient-to-r from-brand via-accent to-premium bg-clip-text text-transparent">
-              Build.
-            </span>
-          </h1>
+            {/* Main Headline */}
+            <h1
+              className="mt-8 max-w-4xl font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-white animate-fade-up sm:text-6xl lg:text-7xl"
+              style={{ animationDelay: "0.08s" }}
+            >
+              The{" "}
+              <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
+                future of learning
+              </span>{" "}
+              starts with you.
+            </h1>
 
-          <p
-            className="mt-6 max-w-2xl text-base text-zinc-400 animate-fade-up sm:text-lg"
-            style={{ animationDelay: "0.16s" }}
-          >
-            Ten-mission skill tracks where every mission ends in real work — reviewed by humans, rewarded with XP and
-            Neurons, and stacked into a portfolio you can actually show.
-          </p>
+            {/* Subtitle */}
+            <p
+              className="mt-6 max-w-2xl text-base leading-relaxed text-zinc-300 animate-fade-up sm:text-lg"
+              style={{ animationDelay: "0.16s" }}
+            >
+              Skill Edge Learning is a student-led learning OS that complements formal education with practical,
+              future-ready skills — built by students, for the world you&apos;ll graduate into.
+            </p>
 
-          <div
-            className="mt-9 flex flex-col items-center gap-3 animate-fade-up sm:flex-row"
-            style={{ animationDelay: "0.24s" }}
-          >
-            {!hydrated ? (
-              <>
-                <div className="skeleton h-12 w-48" />
-                <div className="skeleton h-12 w-40" />
-              </>
-            ) : isAuthenticated ? (
-              <>
-                <Link href="/dashboard" className="btn-primary px-7 py-3 text-sm sm:text-base">
-                  Open Dashboard
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <a href="#skills" className="btn-ghost px-7 py-3 text-sm sm:text-base">
-                  Browse skills
-                </a>
-              </>
-            ) : (
-              <>
-                <Link href="/register" className="btn-primary px-7 py-3 text-sm sm:text-base">
-                  Start building — free
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <a href="#how" className="btn-ghost px-7 py-3 text-sm sm:text-base">
-                  See how it works
-                </a>
-              </>
-            )}
-          </div>
+            {/* Hero CTAs */}
+            <div
+              className="mt-9 flex flex-wrap items-center justify-center gap-4 animate-fade-up"
+              style={{ animationDelay: "0.24s" }}
+            >
+              <Link
+                href={primaryHref}
+                className="group relative inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 px-8 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-orange-500/25 transition-all hover:scale-105 hover:shadow-orange-500/40 sm:text-base"
+              >
+                Join the Movement
+                <ArrowRight className="h-4.5 w-4.5 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <a
+                href="#manifesto"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/80 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-all hover:border-zinc-500 hover:bg-zinc-800 sm:text-base"
+              >
+                Read the Manifesto
+              </a>
+            </div>
 
-          <p className="mt-5 text-xs text-zinc-500 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-            Free plan includes the first 4 missions of every skill. No credit card required.
-          </p>
-        </section>
-
-        {/* ---------- social proof strip ---------- */}
-        <section className="border-y border-line/60 bg-surface/50 backdrop-blur-sm">
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-6 text-center lg:grid-cols-4">
-              {[
-                { icon: Layers, value: `${SKILLS.length}`, label: "Skill tracks" },
-                { icon: Rocket, value: fmtNum(TOTAL_MISSIONS), label: "Hands-on missions" },
-                { icon: Clock3, value: `${fmtNum(TOTAL_HOURS)}+ hrs`, label: "Of guided building" },
-                { icon: QrCode, value: "QR-verified", label: "Certificates" },
-              ].map((s) => (
-                <div key={s.label} className="flex flex-col items-center gap-1">
-                  <s.icon className="h-5 w-5 text-brand" />
-                  <div className="font-display text-xl font-bold text-white sm:text-2xl">{s.value}</div>
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">{s.label}</div>
+            {/* Hero Floating Cards (Left & Right showcase) */}
+            <div className="mt-12 grid w-full max-w-4xl gap-4 sm:grid-cols-2">
+              <div className="clay-card flex items-center justify-between gap-3 p-4 text-left border-orange-500/30 bg-orange-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/20 text-orange-400">
+                    <Wand2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400">SKILL 01</span>
+                    <h4 className="font-display text-sm font-bold text-white">AI Tools Mastery</h4>
+                    <span className="text-[11px] text-zinc-400">6 weeks • Foundational</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
-              {CATEGORIES.map((c) => (
-                <span key={c} className="chip text-[11px]">
-                  {c}
+                <span className="chip border-amber-500/40 bg-amber-500/10 text-[10px] font-semibold text-amber-400">
+                  Coming Soon
                 </span>
-              ))}
+              </div>
+
+              <div className="clay-card flex items-center justify-between gap-3 p-4 text-left border-rose-500/30 bg-rose-950/20">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400">
+                    <Compass className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">SKILL 10</span>
+                    <h4 className="font-display text-sm font-bold text-white">Content & Branding</h4>
+                    <span className="text-[11px] text-zinc-400">Build an audience that builds you.</span>
+                  </div>
+                </div>
+                <span className="chip border-emerald-500/40 bg-emerald-500/10 text-[10px] font-semibold text-emerald-400">
+                  Live
+                </span>
+              </div>
+            </div>
+
+            {/* Bottom tags strip */}
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-up">
+              <span className="chip border-zinc-700 bg-zinc-900/60 px-3.5 py-1.5 text-xs text-zinc-300">
+                12 Future Skills
+              </span>
+              <span className="chip border-zinc-700 bg-zinc-900/60 px-3.5 py-1.5 text-xs text-zinc-300">
+                Built in India 🇮🇳
+              </span>
+              <span className="chip border-zinc-700 bg-zinc-900/60 px-3.5 py-1.5 text-xs text-zinc-300">
+                Student-Led
+              </span>
+              <span className="chip border-amber-500/40 bg-amber-500/10 px-3.5 py-1.5 text-xs text-amber-300">
+                Free Forever at Launch
+              </span>
             </div>
           </div>
         </section>
 
-        {/* ---------- how it works ---------- */}
-        <section id="how" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
+        {/* ============================================================
+            MANIFESTO SECTION (Image 2 reference design)
+            ============================================================ */}
+        <section id="manifesto" className="scroll-mt-20 border-y border-line/60 bg-zinc-950/70 py-24">
+          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
+            <Reveal>
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-amber-400 uppercase">
+                <Sparkles className="h-3.5 w-3.5" />
+                THE MANIFESTO
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <h2 className="mt-8 font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
+                We exist to{" "}
+                <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
+                  redefine
+                </span>{" "}
+                what learning can be.
+              </h2>
+            </Reveal>
+
+            <Reveal delay={0.2}>
+              <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-zinc-300 sm:text-xl">
+                Not another EdTech platform. A movement — built by students, for students, to complement formal
+                education with the skills the future actually rewards.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.3} className="mt-12 flex justify-center">
+              <div className="flex flex-col items-center gap-2 text-xs font-semibold tracking-widest text-zinc-500 uppercase">
+                <span>SCROLL TO EXPLORE</span>
+                <span className="h-6 w-0.5 rounded-full bg-amber-500 animate-bounce" />
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ============================================================
+            SKILLS & FLAGSHIP TRANSFORMATION (Image 3 reference design)
+            ============================================================ */}
+        <section id="skills" className="scroll-mt-20 mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-orange-400 uppercase">
+              <Flame className="h-3.5 w-3.5" />
+              THE CATALOG
+            </div>
+            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-5xl">
+              Skills the market actually pays for
+            </h2>
+            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+              Every track is 10 missions deep — from first principles to a portfolio-grade capstone.
+            </p>
+          </Reveal>
+
+          {/* Flagship Transformation Banner (Image 3 Top Card) */}
+          <Reveal delay={0.1} className="mt-12">
+            <div className="relative overflow-hidden rounded-3xl border border-orange-500/40 bg-gradient-to-r from-orange-950/40 via-card to-zinc-900/80 p-6 sm:p-10 shadow-2xl">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-3xl shadow-lg shadow-orange-500/30">
+                    🤖
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-orange-400">
+                        FLAGSHIP TRANSFORMATION
+                      </span>
+                      <span className="chip border-emerald-500/40 bg-emerald-500/10 text-[10px] font-bold text-emerald-400">
+                        LIVE
+                      </span>
+                    </div>
+                    <h3 className="mt-1 font-display text-2xl font-bold text-white sm:text-3xl">AI Mastery</h3>
+                    <p className="mt-1.5 text-sm text-zinc-300">
+                      Transform from an AI Beginner into an AI-Native Creator.
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-zinc-400">
+                      <span>7 Worlds</span>
+                      <span>•</span>
+                      <span>35 Missions</span>
+                      <span>•</span>
+                      <span className="text-amber-400">4,200 XP</span>
+                      <span>•</span>
+                      <span>12-16 weeks</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href={skillHref("ai-prompt-engineering")}
+                  className="btn-primary shrink-0 self-start px-6 py-3.5 text-sm font-bold shadow-lg shadow-orange-500/20 lg:self-center"
+                >
+                  Start AI Mastery
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Skills Grid */}
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Live Flagship item 1 */}
+            <Reveal delay={0.15}>
+              <div className="clay-card flex h-full flex-col justify-between p-6 border-emerald-500/30">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 text-2xl">
+                      🧠
+                    </div>
+                    <span className="chip border-emerald-500/40 bg-emerald-500/10 text-[10px] font-bold text-emerald-400">
+                      • Live
+                    </span>
+                  </div>
+                  <h4 className="mt-4 font-display text-lg font-bold text-white">AI Mastery Transformation</h4>
+                  <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                    Transform from beginner to AI-native creator. The flagship transformation with 7 worlds, 35
+                    missions, and 7 real-world projects.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between">
+                  <div className="flex gap-2 text-[10px] font-semibold text-zinc-400">
+                    <span className="chip text-[10px]">Foundational</span>
+                    <span>12-16 wks</span>
+                  </div>
+                  <Link href={skillHref("ai-prompt-engineering")} className="text-xs font-bold text-brand hover:underline">
+                    Start Transformation →
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Skill item 2 */}
+            <Reveal delay={0.2}>
+              <div className="clay-card flex h-full flex-col justify-between p-6">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 text-2xl">
+                      🧠
+                    </div>
+                    <span className="chip border-zinc-700 bg-zinc-800/60 text-[10px] font-medium text-zinc-400">
+                      🔒 Coming Soon
+                    </span>
+                  </div>
+                  <h4 className="mt-4 font-display text-lg font-bold text-white">AI Tools Mastery</h4>
+                  <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                    Work at the speed of thought. Master ChatGPT, Claude, Midjourney, and the AI stack that&apos;s reshaping
+                    every industry.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between">
+                  <div className="flex gap-2 text-[10px] font-semibold text-zinc-400">
+                    <span className="chip text-[10px]">Foundational</span>
+                    <span>6 weeks</span>
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-500">Explore Skill →</span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Skill item 3 */}
+            <Reveal delay={0.25}>
+              <div className="clay-card flex h-full flex-col justify-between p-6">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/20 text-2xl">
+                      &lt;/&gt;
+                    </div>
+                    <span className="chip border-zinc-700 bg-zinc-800/60 text-[10px] font-medium text-zinc-400">
+                      🔒 Coming Soon
+                    </span>
+                  </div>
+                  <h4 className="mt-4 font-display text-lg font-bold text-white">Vibe Coding</h4>
+                  <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                    Build apps without fear of code. Code by intent. Use AI assistants, modern frameworks, and no-code
+                    tools to ship real products fast.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between">
+                  <div className="flex gap-2 text-[10px] font-semibold text-zinc-400">
+                    <span className="chip text-[10px]">Intermediate</span>
+                    <span>8 weeks</span>
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-500">Explore Skill →</span>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+
+          <Reveal className="mt-12 text-center">
+            <Link href={isAuthenticated ? "/skills" : "/register"} className="btn-ghost px-7 py-3 text-sm">
+              View All {SKILLS.length} Skills Catalog
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Reveal>
+        </section>
+
+        {/* ============================================================
+            AMBASSADOR PROGRAM (Image 4 reference design)
+            ============================================================ */}
+        <section id="ambassador" className="scroll-mt-20 border-t border-line/60 bg-zinc-950/80 py-24">
+          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
+            <Reveal>
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-amber-400 uppercase">
+                <Users2 className="h-3.5 w-3.5" />
+                AMBASSADOR PROGRAM
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <h2 className="mt-8 font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
+                Become a{" "}
+                <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
+                  Founding Member
+                </span>{" "}
+                of Skill Edge Learning
+              </h2>
+            </Reveal>
+
+            <Reveal delay={0.2}>
+              <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-300">
+                Help grow the community and shape the future of the platform. Be there from day one — and leave your
+                mark on how a generation of students learns.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.3} className="mt-8">
+              <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/90 px-5 py-2.5 text-xs text-zinc-400">
+                <Clock3 className="h-4 w-4 text-amber-400" />
+                Detailed program information will be announced officially during launch
+              </div>
+            </Reveal>
+
+            {/* Direct WhatsApp connection CTA */}
+            <Reveal delay={0.4} className="mt-10">
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition hover:bg-emerald-500 hover:scale-105"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Connect with Founders on WhatsApp (+91 9342366833)
+              </a>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ============================================================
+            ABOUT US SECTION (Image 5 reference design)
+            ============================================================ */}
+        <section id="about" className="scroll-mt-20 border-t border-line/60 bg-base py-24">
+          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
+            <Reveal>
+              <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-brand uppercase">
+                <Globe className="h-3.5 w-3.5" />
+                ABOUT US
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <h2 className="mt-8 font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
+                We&apos;re building the learning OS we{" "}
+                <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
+                  wish we had.
+                </span>
+              </h2>
+            </Reveal>
+
+            <Reveal delay={0.2}>
+              <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-300">
+                Skill Edge Learning exists to bridge the gap between what school teaches and what the world now
+                rewards — built by students, for students, in India, for the world.
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ---------- how it works loop ---------- */}
+        <section id="how" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8 border-t border-line/60">
           <Reveal className="mx-auto max-w-2xl text-center">
             <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">The mission loop</div>
             <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -344,111 +674,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ---------- skills showcase ---------- */}
-        <section id="skills" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-accent">The catalog</div>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Skills the market actually pays for
-            </h2>
-            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
-              Every track is 10 missions deep — from first principles to a portfolio-grade capstone.
-            </p>
-          </Reveal>
-
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {SKILLS.slice(0, 8).map((skill, i) => (
-              <Reveal key={skill.id} delay={(i % 4) * 0.06} className="h-full">
-                <Link href={skillHref(skill.id)} className="card-glow group flex h-full flex-col gap-3 p-5">
-                  <div className="flex items-start justify-between gap-2">
-                    <span
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                      style={{ background: `${skill.color}1f`, color: skill.color }}
-                    >
-                      <SkillIcon name={skill.iconName} className="h-5 w-5" />
-                    </span>
-                    <span className="chip !text-[10px]">{skill.category}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-display text-base font-bold leading-snug text-white transition group-hover:text-brand">
-                      {skill.title}
-                    </h3>
-                    <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-zinc-400">{skill.description}</p>
-                  </div>
-                  <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-[11px] font-semibold text-zinc-400">
-                    <span style={{ color: DIFF_COLORS[skill.difficulty] ?? "#9ca3af" }}>{skill.difficulty}</span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {skill.estimatedHours}h
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Layers className="h-3.5 w-3.5" />
-                      {skill.missions.length} missions
-                    </span>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal className="mt-10 text-center">
-            <Link href={isAuthenticated ? "/skills" : "/register"} className="btn-ghost px-6 py-2.5 text-sm">
-              View all {SKILLS.length} skills
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Reveal>
-        </section>
-
-        {/* ---------- outcomes ---------- */}
-        <section id="outcomes" className="border-y border-line/60 bg-surface/40">
-          <div className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <div className="text-xs font-bold uppercase tracking-[0.2em] text-success">Proof of work</div>
-              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Finish a skill. Walk away with proof.
-              </h2>
-              <p className="mt-3 text-sm text-zinc-400 sm:text-base">
-                Not a completion percentage — a stack of reviewed, real-world deliverables.
-              </p>
-            </Reveal>
-
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {OUTCOME_CARDS.map((card, i) => {
-                const skill = SKILLS.find((s) => s.id === card.skillId);
-                if (!skill) return null;
-                return (
-                  <Reveal key={card.skillId} delay={i * 0.08} className="h-full">
-                    <div className="clay-card flex h-full flex-col gap-4 p-6">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                          style={{ background: `${skill.color}1f`, color: skill.color }}
-                        >
-                          <SkillIcon name={skill.iconName} className="h-5 w-5" />
-                        </span>
-                        <div>
-                          <h3 className="font-display text-sm font-bold text-white">{skill.title}</h3>
-                          <div className="text-[11px] font-semibold text-zinc-500">By mission 10, you have:</div>
-                        </div>
-                      </div>
-                      <ul className="space-y-2.5">
-                        {card.outcomes.map((o) => (
-                          <li key={o} className="flex items-start gap-2.5 text-sm text-zinc-300">
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                            {o}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </Reveal>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
         {/* ---------- pricing preview ---------- */}
-        <section id="pricing" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
+        <section id="pricing" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8 border-t border-line/60">
           <Reveal className="mx-auto max-w-2xl text-center">
             <div className="text-xs font-bold uppercase tracking-[0.2em] text-premium">Pricing</div>
             <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -509,22 +736,18 @@ export default function LandingPage() {
               </Reveal>
             ))}
           </div>
-
-          <Reveal className="mt-8 text-center">
-            <Link href="/pricing" className="text-sm font-semibold text-brand transition hover:text-accent">
-              Compare all plans and features
-              <ArrowRight className="ml-1 inline h-4 w-4" />
-            </Link>
-          </Reveal>
         </section>
 
         {/* ---------- final CTA ---------- */}
-        <section className="mx-auto max-w-5xl px-4 pb-24 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-5xl px-4 pb-24 pt-12 sm:px-6 lg:px-8">
           <Reveal>
-            <div className="relative overflow-hidden rounded-card border border-brand/30 bg-gradient-to-br from-brand/15 via-card to-premium/10 p-10 text-center sm:p-14">
-              <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[480px] -translate-x-1/2 rounded-full bg-brand/25 blur-[100px]" aria-hidden />
+            <div className="relative overflow-hidden rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-950/30 via-card to-zinc-900/80 p-10 text-center sm:p-14">
+              <div
+                className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[480px] -translate-x-1/2 rounded-full bg-orange-500/20 blur-[100px]"
+                aria-hidden
+              />
               <div className="relative">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-deep shadow-brand">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg shadow-orange-500/30">
                   <Hexagon className="h-7 w-7 text-white" strokeWidth={2.5} />
                 </div>
                 <h2 className="mt-6 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -538,17 +761,32 @@ export default function LandingPage() {
                     {isAuthenticated ? "Open Dashboard" : "Create your free account"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-                  {!isAuthenticated && (
-                    <Link href="/login" className="btn-ghost px-8 py-3 text-sm sm:text-base">
-                      Sign In
-                    </Link>
-                  )}
+                  <a
+                    href={WHATSAPP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost inline-flex items-center gap-2 px-6 py-3 text-sm text-emerald-400 sm:text-base hover:text-emerald-300"
+                  >
+                    <MessageCircle className="h-4.5 w-4.5" />
+                    Chat on WhatsApp (9342366833)
+                  </a>
                 </div>
               </div>
             </div>
           </Reveal>
         </section>
       </main>
+
+      {/* ---------- Floating WhatsApp Widget ---------- */}
+      <a
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-xl shadow-emerald-500/40 transition-all hover:scale-110 hover:bg-emerald-400"
+      >
+        <MessageCircle className="h-7 w-7" />
+      </a>
 
       {/* ---------- footer ---------- */}
       <footer className="relative z-10 border-t border-line/60 bg-surface/50">
@@ -558,36 +796,45 @@ export default function LandingPage() {
               <BrandMark />
               <p className="mt-4 max-w-sm text-sm text-zinc-400">
                 The Skill Operating System. Learn by executing real missions, get human feedback, and graduate with a
-                portfolio and verifiable certificates — not just watch time.
+                portfolio and verifiable certificates — built by students, for students.
               </p>
+              <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-400">
+                <MessageCircle className="h-4 w-4" />
+                <span>Support & WhatsApp: +91 9342366833</span>
+              </div>
             </div>
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Product</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Navigation</div>
               <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
                 <li>
-                  <a href="#how" className="transition hover:text-white">
-                    How it works
+                  <a href="#hero" className="transition hover:text-white">
+                    Home
                   </a>
                 </li>
                 <li>
                   <a href="#skills" className="transition hover:text-white">
-                    Skills catalog
+                    Skills Catalog
                   </a>
                 </li>
                 <li>
-                  <a href="#outcomes" className="transition hover:text-white">
-                    Outcomes
+                  <a href="#manifesto" className="transition hover:text-white">
+                    The Manifesto
                   </a>
                 </li>
                 <li>
-                  <Link href="/pricing" className="transition hover:text-white">
-                    Pricing
-                  </Link>
+                  <a href="#ambassador" className="transition hover:text-white">
+                    Ambassador Program
+                  </a>
+                </li>
+                <li>
+                  <a href="#about" className="transition hover:text-white">
+                    About Us
+                  </a>
                 </li>
               </ul>
             </div>
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Account</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Account & Community</div>
               <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
                 <li>
                   <Link href="/login" className="transition hover:text-white">
@@ -605,9 +852,9 @@ export default function LandingPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/leaderboard" className="transition hover:text-white">
-                    Leaderboard
-                  </Link>
+                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+                    WhatsApp Community
+                  </a>
                 </li>
               </ul>
             </div>
@@ -615,7 +862,7 @@ export default function LandingPage() {
           <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-line/60 pt-6 text-xs text-zinc-500 sm:flex-row">
             <span>© {new Date().getFullYear()} Skill Edge Learning. All rights reserved.</span>
             <span className="inline-flex items-center gap-1.5">
-              <Hexagon className="h-3.5 w-3.5 text-accent" />
+              <Hexagon className="h-3.5 w-3.5 text-amber-400" />
               Earn Neurons. Ship missions. Build proof.
             </span>
           </div>
