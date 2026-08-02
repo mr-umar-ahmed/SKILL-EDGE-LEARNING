@@ -194,7 +194,7 @@ export default function PaymentPage() {
               <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
                 Scan & pay with any UPI app
               </div>
-              <UpiQr seed={`skilledge@upi|${amountInr}`} />
+              <UpiQr amountInr={amountInr} seed={`skilledge@upi|${amountInr}`} />
               <div className="font-mono text-sm text-white font-bold">
                 skilledge@upi · <span className="text-amber-300">₹{fmtNum(amountInr)}</span>
               </div>

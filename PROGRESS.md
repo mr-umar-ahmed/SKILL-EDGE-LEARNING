@@ -88,6 +88,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-02: Phase 33 7-Tier Student System & Complete Certificate Architecture created and pushed to GitHub (`feat(student-tier-system-and-curriculum)`).
 - 2026-08-02: Phase 34 Production Component Modularization & Master Build Release created and pushed to GitHub (`feat(production-component-modularization-and-release)`).
 - 2026-08-02: Phase 35 Vercel Dependency Fix (`@clerk/nextjs` Next.js 14 compatibility & `.npmrc` legacy-peer-deps) created and pushed to GitHub (`fix(vercel-clerk-peer-dep)`).
+- 2026-08-02: Phase 36 Custom UPI Scanner Support & Enhanced Payment Scanner UI created and pushed to GitHub (`feat(custom-upi-scanner-ui)`).
 
 ## Backlog / Next iteration
 
