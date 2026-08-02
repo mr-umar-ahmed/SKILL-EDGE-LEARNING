@@ -87,10 +87,7 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-02: Phase 32 Hydration Mismatch Fix & Clerk User Profile Sync created and pushed to GitHub (`fix(hydration-error-and-clerk-user-sync)`).
 - 2026-08-02: Phase 33 7-Tier Student System & Complete Certificate Architecture created and pushed to GitHub (`feat(student-tier-system-and-curriculum)`).
 - 2026-08-02: Phase 34 Production Component Modularization & Master Build Release created and pushed to GitHub (`feat(production-component-modularization-and-release)`).
-
-## Backlog / Next iteration
-
-- Real auth & Supabase integration
+- 2026-08-02: Phase 35 Vercel Dependency Fix (`@clerk/nextjs` Next.js 14 compatibility & `.npmrc` legacy-peer-deps) created and pushed to GitHub (`fix(vercel-clerk-peer-dep)`).
 
 ## Backlog / Next iteration
 
