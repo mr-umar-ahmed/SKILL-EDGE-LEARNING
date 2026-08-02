@@ -3,9 +3,7 @@
 import { SignIn } from "@clerk/nextjs";
 import { Briefcase, ClipboardCheck, Hammer, Hexagon, QrCode } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useApp } from "@/lib/store";
+
 
 
 const PITCH = [
@@ -112,11 +110,8 @@ export default function LoginPage() {
           <span className="font-display text-lg font-bold tracking-tight text-white">Skill Edge Learning</span>
         </Link>
 
-        <div className="relative z-10 flex w-full flex-col items-center gap-6 animate-scale-in max-w-md">
+        <div className="relative z-10 flex w-full justify-center animate-scale-in">
           <SignIn routing="path" path="/login" signUpUrl="/register" fallbackRedirectUrl="/dashboard" />
-
-          {/* ---------- Direct Credentials / Admin Login Card ---------- */}
-          <AdminDirectLoginCard />
         </div>
 
         <p className="relative z-10 text-center text-sm text-zinc-400">
@@ -130,61 +125,5 @@ export default function LoginPage() {
   );
 }
 
-function AdminDirectLoginCard() {
-  const { loginWithCredentials } = useApp();
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    const res = loginWithCredentials(email, password);
-    if (!res.ok) {
-      setError(res.reason || "Login failed.");
-      return;
-    }
-    const cleanEmail = email.trim().toLowerCase();
-    const isAdmin = cleanEmail.includes("learningskilledge") || cleanEmail.includes("admin");
-    router.push(isAdmin ? "/admin" : "/dashboard");
-  };
-
-  return (
-    <div className="w-full clay-card p-5 space-y-3.5 border-line/60">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Official Admin Sign In</span>
-        <span className="chip text-[10px] text-amber-400 border-amber-500/30 bg-amber-500/10">Production</span>
-      </div>
-
-      <form onSubmit={handleLogin} className="space-y-3">
-        {error && <p className="text-xs text-rose-400 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">{error}</p>}
-        <div>
-          <label className="text-[11px] font-semibold text-zinc-400 block mb-1">Admin Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="learningskilledge@gmail.com"
-            className="input-dark text-xs"
-          />
-        </div>
-        <div>
-          <label className="text-[11px] font-semibold text-zinc-400 block mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="SelAdmin#2026!"
-            className="input-dark text-xs"
-          />
-        </div>
-        <button type="submit" className="btn-primary w-full py-2.5 text-xs font-semibold">
-          Sign In to Admin OS
-        </button>
-      </form>
-    </div>
-  );
-}
 
 

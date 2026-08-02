@@ -225,8 +225,15 @@ export function fmtMinutes(min: number) {
 /** admin allowlist — env-driven with sane defaults */
 export function adminEmails(): string[] {
   const env = process.env.NEXT_PUBLIC_ADMIN_EMAILS || "";
-  const defaults = ["learningskilledge@gmail.com", "skilledgelearning@gmail.com", "mylearning069@gmail.com", "admin@gmail.com"];
+  const defaults = [
+    "skilledgeadmin@gmail.com",
+    "learningskilledge@gmail.com",
+    "skilledgelearning@gmail.com",
+    "mylearning069@gmail.com",
+    "admin@gmail.com",
+  ];
   return Array.from(new Set([...defaults, ...env.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)]));
 }
+
 
 
