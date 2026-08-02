@@ -267,11 +267,15 @@ interface AppApi {
   updateProfile: (patch: Partial<Pick<User, "avatar" | "avatarUrl" | "bio" | "title" | "avatarFrame" | "name">>) => void;
   claimDailyMission: (missionId: string, neuronReward: number, xpReward: number) => void;
 
+  /* credentials auth fallback */
+  loginWithCredentials: (emailInput: string, passInput: string) => { ok: boolean; reason?: string };
+
   /* data management */
   importDatabase: (jsonStr: string) => { ok: boolean; reason?: string };
   exportDatabase: () => string;
   resetAllData: () => void;
 }
+
 
 const AppContext = createContext<AppApi | null>(null);
 
@@ -287,10 +291,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(rawV2) as AppState;
         if (parsed?.version === 2) {
           // catalog may gain new fields over releases — merge defensively
-          setState({ ...seedState(), ...parsed, catalog: parsed.catalog?.length ? parsed.catalog : SKILLS });
+          const cleanUsers = (parsed.users || []).filter((u) => !V1_DEMO_IDS.has(u.id));
+          setState({
+            ...seedState(),
+            ...parsed,
+            users: cleanUsers,
+            catalog: parsed.catalog?.length ? parsed.catalog : SKILLS,
+          });
           setHydrated(true);
           return;
         }
+
       }
       const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
       if (rawV1) {
@@ -1213,6 +1224,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const loginWithCredentials = useCallback((emailInput: string, passInput: string) => {
+    const email = emailInput.trim().toLowerCase();
+    if (!email) return { ok: false, reason: "Please enter your email." };
+
+    const isAdminEmail = adminEmails().includes(email);
+    if (isAdminEmail && passInput && email === "admin@gmail.com" && passInput !== "seladmin@123") {
+      return { ok: false, reason: "Invalid password for admin@gmail.com. Use seladmin@123" };
+    }
+
+    const role: "USER" | "ADMIN" = isAdminEmail ? "ADMIN" : "USER";
+    const nowIso = new Date().toISOString();
+
+    setState((s) => {
+      const existing = s.users.find((u) => u.email.toLowerCase() === email);
+      if (existing) {
+        return {
+          ...s,
+          users: s.users.map((u) => (u.id === existing.id ? { ...u, role } : u)),
+          currentUserId: existing.id,
+        };
+      }
+      const newUser: User = {
+        id: `u-${Date.now()}`,
+        name: email === "admin@gmail.com" ? "System Admin" : email.split("@")[0],
+        email,
+        role,
+        avatar: "",
+        title: role === "ADMIN" ? "Administrator" : "Builder in Training",
+        neurons: role === "ADMIN" ? 1000 : 100,
+        xp: role === "ADMIN" ? 500 : 0,
+        streakCount: 1,
+        lastActiveDay: todayKey(),
+        subscription: { plan: role === "ADMIN" ? "FOUNDER_LIFETIME" : "FREE", status: "ACTIVE", startedAt: nowIso, expiresAt: null },
+        badges: [],
+        createdAt: nowIso,
+      };
+      return {
+        ...s,
+        users: [...s.users, newUser],
+        currentUserId: newUser.id,
+      };
+    });
+
+    return { ok: true };
+  }, []);
+
   /* ------------------------------ data management ------------------------------ */
 
   const importDatabase = useCallback((jsonStr: string) => {
@@ -1248,6 +1305,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     isAdmin,
     isAuthenticated: Boolean(currentUser),
     isPro,
+    loginWithCredentials,
+
     progressFor,
     myProgress,
     missionById,
