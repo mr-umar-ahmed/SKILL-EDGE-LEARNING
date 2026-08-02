@@ -96,13 +96,38 @@ export interface QuizEntry {
   prizeWonCoins?: number;
 }
 
+export interface StudentTier {
+  tierNumber: number;
+  name: string;
+  color: string;
+  hexColor: string;
+  icon: string;
+  requirements: string[];
+  rewards: string[];
+  minXp: number;
+  minSkillsCompleted: number;
+  minStreak: number;
+}
+
+export type CertificateType =
+  | "Phase Completion"
+  | "Skill Completion"
+  | "Skill Excellence"
+  | "Master Practitioner"
+  | "Ambassador"
+  | "Special";
+
 export interface Certificate {
   id: string;
   userId: string;
   skillId: string;
   levelTier: number; // 5 | 8 | 10
+  title?: string;
+  certType?: CertificateType;
+  phaseName?: string;
   verificationCode: string;
   issuedAt: string;
+  status?: "Active" | "Revoked";
 }
 
 export interface AppNotification {

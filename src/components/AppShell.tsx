@@ -33,7 +33,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
-import { cn, fmtNum, levelForXp, timeAgo } from "@/lib/utils";
+import { cn, fmtNum, levelForXp, studentTierForXp, timeAgo } from "@/lib/utils";
 import { getAudioMuted, playClickSound, setAudioMuted } from "@/lib/sound";
 import { DailyMissionsModal } from "./DailyMissionsModal";
 import { SearchModal } from "./SearchModal";
@@ -721,6 +721,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
               <div className="header-chip-btn font-mono text-violet-500">
                 <Zap className="h-3.5 w-3.5" strokeWidth={1.75} /> LVL {badgeLevel}
+              </div>
+              <div className="header-chip-btn font-mono text-cyan-400 font-bold flex items-center gap-1 border border-cyan-500/30 bg-cyan-500/10">
+                <span>{studentTierForXp(currentUser?.xp ?? 0).icon}</span>
+                <span>{studentTierForXp(currentUser?.xp ?? 0).name}</span>
               </div>
 
               <ThemeToggle />

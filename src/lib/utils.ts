@@ -16,12 +16,30 @@ export function fmtNum(n: number) {
 /** XP thresholds for level badges 1-10 */
 export const XP_THRESHOLDS = [0, 250, 600, 1050, 1600, 2250, 3000, 3900, 4900, 6000];
 
+export const STUDENT_TIER_THRESHOLDS = [
+  { tierNumber: 1, name: "Starter", icon: "🌱", color: "#9ca3af", minXp: 0 },
+  { tierNumber: 2, name: "Explorer", icon: "🧭", color: "#3b82f6", minXp: 1000 },
+  { tierNumber: 3, name: "Builder", icon: "🔨", color: "#a855f7", minXp: 3000 },
+  { tierNumber: 4, name: "Operator", icon: "🚀", color: "#f97316", minXp: 6000 },
+  { tierNumber: 5, name: "Pro", icon: "👑", color: "#eab308", minXp: 10000 },
+  { tierNumber: 6, name: "Elite", icon: "💎", color: "#d97706", minXp: 15000 },
+  { tierNumber: 7, name: "Master Practitioner", icon: "🏆", color: "#e2e8f0", minXp: 25000 },
+];
+
 export function levelForXp(xp: number) {
   let lvl = 1;
   for (let i = 0; i < XP_THRESHOLDS.length; i++) {
     if (xp >= XP_THRESHOLDS[i]) lvl = i + 1;
   }
   return lvl;
+}
+
+export function studentTierForXp(xp: number) {
+  let tier = STUDENT_TIER_THRESHOLDS[0];
+  for (const t of STUDENT_TIER_THRESHOLDS) {
+    if (xp >= t.minXp) tier = t;
+  }
+  return tier;
 }
 
 /** progress (0-1) toward the next level badge */

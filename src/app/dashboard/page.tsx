@@ -17,9 +17,9 @@ import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { SkillIcon } from "@/components/SkillIcon";
 import { ProgressRing, SectionTitle, StatCard } from "@/components/ui";
-import { QUOTES, getSkill } from "@/lib/data";
+import { QUOTES, STUDENT_TIERS, getSkill } from "@/lib/data";
 import { useApp } from "@/lib/store";
-import { XP_THRESHOLDS, fmtDateTime, fmtNum, levelForXp, msUntil, timeAgo, xpProgress } from "@/lib/utils";
+import { XP_THRESHOLDS, fmtDateTime, fmtNum, levelForXp, msUntil, studentTierForXp, timeAgo, xpProgress } from "@/lib/utils";
 
 function dayOfYear() {
   const now = new Date();
@@ -124,6 +124,42 @@ export default function DashboardPage() {
             icon={<Award className="h-4 w-4" strokeWidth={1.75} />}
             accent="#06b6d4"
           />
+        </div>
+
+        {/* Student Tier System Progression Card */}
+        <div className="clay-card p-6 space-y-4">
+          <SectionTitle>Student Tier System Progression</SectionTitle>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {STUDENT_TIERS.map((t) => {
+              const activeTier = studentTierForXp(currentUser.xp);
+              const isUnlocked = currentUser.xp >= t.minXp;
+              const isCurrent = activeTier.tierNumber === t.tierNumber;
+
+              return (
+                <div
+                  key={t.tierNumber}
+                  className={`p-3.5 rounded-2xl border text-center transition-all ${
+                    isCurrent
+                      ? "neo-box bg-amber-500/20 border-amber-400 scale-105 shadow-xl"
+                      : isUnlocked
+                      ? "bg-white/5 border-white/20 text-white"
+                      : "bg-white/[0.02] border-white/5 opacity-50"
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{t.icon}</div>
+                  <div className="font-bold text-xs text-white">{t.name}</div>
+                  <div className="text-[10px] font-mono text-zinc-400 mt-1">
+                    {t.minXp === 0 ? "0 XP" : `${fmtNum(t.minXp)} XP`}
+                  </div>
+                  {isCurrent && (
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-amber-500 text-black text-[9px] font-bold font-mono uppercase">
+                      ACTIVE TIER
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Certificates Strip */}
