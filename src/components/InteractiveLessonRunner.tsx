@@ -91,11 +91,14 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
         },
       ];
 
+  const MIN_TEXT_LENGTH = 10;
+
   const [stepIndex, setStepIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<any>(null);
   const [matchSelectedLeft, setMatchSelectedLeft] = useState<string | null>(null);
   const [completedMatches, setCompletedMatches] = useState<Record<string, string>>({});
   const [fillBlankSelected, setFillBlankSelected] = useState<string | null>(null);
+  const [discoveryInput, setDiscoveryInput] = useState("");
   const [userReflection, setUserReflection] = useState("");
   const [checked, setChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -108,8 +111,11 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
 
   // Check if current step's activity is answered/complete
   const hasAnsweredCurrentStep = () => {
+    if (currentStep.type === "DISCOVERY") {
+      return discoveryInput.trim().length >= MIN_TEXT_LENGTH;
+    }
     if (currentStep.type === "REFLECTION") {
-      return userReflection.trim().length >= 3;
+      return userReflection.trim().length >= MIN_TEXT_LENGTH;
     }
     if (currentStep.type === "MINI_MISSION" && currentStep.miniMission) {
       const mm = currentStep.miniMission;
@@ -127,9 +133,19 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
   const handleNextStep = () => {
     setValidationError(null);
 
-    // Validate reflection step
+    // Validate active text inputs
+    if (currentStep.type === "DISCOVERY" && !hasAnsweredCurrentStep()) {
+      setValidationError(`Please type at least ${MIN_TEXT_LENGTH} characters explaining what you learned before continuing.`);
+      return;
+    }
+
     if (currentStep.type === "REFLECTION" && !hasAnsweredCurrentStep()) {
-      setValidationError("Please type a quick reflection before continuing.");
+      setValidationError(`Please type at least ${MIN_TEXT_LENGTH} characters for your reflection before continuing.`);
+      return;
+    }
+
+    if (currentStep.type === "MINI_MISSION" && !isCorrect) {
+      setValidationError("Please complete and verify the mini-mission activity correctly before continuing.");
       return;
     }
 
@@ -140,6 +156,8 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
     setMatchSelectedLeft(null);
     setCompletedMatches({});
     setFillBlankSelected(null);
+    setDiscoveryInput("");
+    setUserReflection("");
 
     if (stepIndex < steps.length - 1) {
       setStepIndex((i) => i + 1);
@@ -260,8 +278,28 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
                 <span>Discovery</span>
               </div>
               <h3 className="font-display text-lg font-bold text-white">The Concept Revealed:</h3>
-              <div className="rounded-2xl border border-line bg-surface p-5 text-sm leading-relaxed text-zinc-200">
+              <div className="rounded-2xl border border-line bg-surface p-4 text-sm leading-relaxed text-zinc-200">
                 {currentStep.discoveryText}
+              </div>
+
+              {/* Active Recall Text Field */}
+              <div className="space-y-2 pt-2 border-t border-line/60">
+                <div className="flex items-center justify-between text-xs font-bold text-white">
+                  <span>Explain what this discovery means in your own words:</span>
+                  <span className={cn("text-[10px]", discoveryInput.trim().length >= MIN_TEXT_LENGTH ? "text-success font-bold" : "text-zinc-500")}>
+                    {discoveryInput.trim().length}/{MIN_TEXT_LENGTH} min chars
+                  </span>
+                </div>
+                <textarea
+                  rows={2}
+                  value={discoveryInput}
+                  onChange={(e) => {
+                    setDiscoveryInput(e.target.value);
+                    setValidationError(null);
+                  }}
+                  placeholder="Type your explanation in 1-2 sentences..."
+                  className="input-dark text-xs"
+                />
               </div>
             </div>
           )}
@@ -366,13 +404,24 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
                 <span>Reflection & Active Recall</span>
               </div>
               <h3 className="font-display text-base font-bold text-white">{currentStep.reflectionQuestion}</h3>
-              <textarea
-                rows={3}
-                value={userReflection}
-                onChange={(e) => setUserReflection(e.target.value)}
-                placeholder="Type your reflection in your own words..."
-                className="input-dark text-xs"
-              />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-zinc-400">
+                  <span>Your Reflection:</span>
+                  <span className={cn("text-[10px]", userReflection.trim().length >= MIN_TEXT_LENGTH ? "text-success font-bold" : "text-zinc-500")}>
+                    {userReflection.trim().length}/{MIN_TEXT_LENGTH} min chars
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  value={userReflection}
+                  onChange={(e) => {
+                    setUserReflection(e.target.value);
+                    setValidationError(null);
+                  }}
+                  placeholder="Type your response in your own words..."
+                  className="input-dark text-xs"
+                />
+              </div>
             </div>
           )}
 
@@ -435,7 +484,7 @@ export function InteractiveLessonRunner({ skill, mission, open, onClose }: Props
               onClick={handleNextStep}
               className={cn(
                 "btn-primary w-full py-3 text-sm font-bold",
-                currentStep.type === "REFLECTION" && !hasAnsweredCurrentStep() && "opacity-60 cursor-not-allowed"
+                (currentStep.type === "REFLECTION" || currentStep.type === "DISCOVERY") && !hasAnsweredCurrentStep() && "opacity-60"
               )}
             >
               {stepIndex < steps.length - 1 ? "Continue" : "Complete Mission"}
