@@ -1,436 +1,626 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
-  AlertCircle,
   ArrowRight,
   BookOpen,
+  Briefcase,
   CheckCircle2,
-  ChevronRight,
-  CircleX,
-  Code2,
-  Coins,
-  Cpu,
-  Flame,
-  Globe,
-  GraduationCap,
-  Heart,
-  HelpCircle,
+  ClipboardCheck,
+  Clock3,
+  Hammer,
+  Hexagon,
   Layers,
-  Lightbulb,
-  MessageCircle,
-  MessageSquare,
-  Phone,
+  QrCode,
   Rocket,
-  ShieldCheck,
   Sparkles,
-  Swords,
-  Terminal,
-  Trophy,
-  UserPlus,
-  Users,
-  Zap,
+  UploadCloud,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { SkillIcon } from "@/components/SkillIcon";
+import { SKILLS } from "@/lib/data";
 import { useApp } from "@/lib/store";
-import NeuralVortexBg from "@/components/NeuralVortexBg";
+import { PLANS, cn, fmtInr, fmtNum } from "@/lib/utils";
+import type { PlanDef } from "@/lib/utils";
+
+/* ------------------------------ derived stats ------------------------------ */
+
+const TOTAL_MISSIONS = SKILLS.reduce((n, s) => n + s.missions.length, 0);
+const TOTAL_HOURS = SKILLS.reduce((n, s) => n + s.estimatedHours, 0);
+const CATEGORIES = Array.from(new Set(SKILLS.map((s) => s.category)));
+
+const DIFF_COLORS: Record<string, string> = {
+  Beginner: "#22c55e",
+  Intermediate: "#facc15",
+  Advanced: "#f97316",
+  Expert: "#ef4444",
+};
+
+/* ------------------------------ static content ------------------------------ */
+
+const LOOP_STEPS = [
+  {
+    icon: BookOpen,
+    title: "Learn",
+    text: "Curated videos, guides and templates — just enough theory to start acting.",
+    color: "#3b82f6",
+  },
+  {
+    icon: Hammer,
+    title: "Do the assignment",
+    text: "Every mission has a real brief with deliverables and an execution checklist.",
+    color: "#06b6d4",
+  },
+  {
+    icon: UploadCloud,
+    title: "Submit your work",
+    text: "Ship it as links, files or a write-up — GitHub, Figma, Drive, whatever fits.",
+    color: "#8b5cf6",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Get reviewed",
+    text: "A human reviews every submission with feedback, a score and a verdict.",
+    color: "#facc15",
+  },
+  {
+    icon: Briefcase,
+    title: "Portfolio grows",
+    text: "Approved work lands in your portfolio — plus XP, Neurons and badges.",
+    color: "#22c55e",
+  },
+];
+
+const OUTCOME_CARDS: { skillId: string; outcomes: string[] }[] = [
+  {
+    skillId: "entrepreneurship",
+    outcomes: [
+      "5 real customer interviews, logged",
+      "A validated problem and lean canvas",
+      "A landing page with a live waitlist",
+      "A pitch deck and a shipped MVP",
+    ],
+  },
+  {
+    skillId: "vibe-coding",
+    outcomes: [
+      "A Next.js app deployed on Vercel",
+      "Reusable components with real state",
+      "API-driven pages with loading states",
+      "5 seeded bugs fixed with AI pairing",
+    ],
+  },
+  {
+    skillId: "content-creation",
+    outcomes: [
+      "3 published threads and 5 posts",
+      "A 30-day multi-platform calendar",
+      "A lead magnet with email capture",
+      "Your documented content flywheel",
+    ],
+  },
+];
+
+function periodLabel(p: PlanDef) {
+  switch (p.period) {
+    case "forever":
+      return "forever";
+    case "month":
+      return "/ month";
+    case "year":
+      return "/ year";
+    case "lifetime":
+      return "one-time";
+  }
+}
+
+/* ------------------------------ tiny helpers ------------------------------ */
+
+function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, delay, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function BrandMark() {
+  return (
+    <span className="flex items-center gap-2.5">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-deep shadow-brand">
+        <Hexagon className="h-5 w-5 text-white" strokeWidth={2.5} />
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className="font-display text-sm font-bold tracking-tight text-white">Skill Edge Learning</span>
+        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Skill OS</span>
+      </span>
+    </span>
+  );
+}
+
+/* --------------------------------- page --------------------------------- */
 
 export default function LandingPage() {
-  const { skills, isAuthenticated } = useApp();
+  const { hydrated, isAuthenticated } = useApp();
 
-  const WHATSAPP_NUMBER = "919342366833";
-  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Skill%20Edge%20Learning%2C%20I%20want%20to%20know%20more%20about%20the%20platform!`;
+  const primaryHref = isAuthenticated ? "/dashboard" : "/register";
+  const skillHref = (skillId: string) => (isAuthenticated ? `/learn/${skillId}` : "/register");
 
   return (
-    <div className="relative min-h-screen w-full bg-[#030303] text-[#F5F5F7] antialiased selection:bg-orange-500/30 selection:text-white overflow-x-hidden">
-      {/* 1. WebGL NeuralVortex Shader Background */}
-      <NeuralVortexBg />
+    <div className="relative min-h-dvh w-full overflow-x-hidden bg-base text-white">
+      {/* ---------- ambient background ---------- */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="absolute -top-48 left-1/2 h-[540px] w-[900px] -translate-x-1/2 rounded-full bg-brand/20 blur-[130px]" />
+        <div className="absolute -left-40 top-64 h-[420px] w-[420px] rounded-full bg-premium/10 blur-[110px]" />
+        <div className="absolute -right-40 top-32 h-[420px] w-[420px] rounded-full bg-accent/10 blur-[110px]" />
+        <div
+          className="absolute inset-x-0 top-0 h-[720px]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, black, transparent)",
+            WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 50% 0%, black, transparent)",
+          }}
+        />
+      </div>
 
-      {/* 2. Top Header Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-black shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <Lightbulb className="h-5 w-5 stroke-[2.5]" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-mono text-xs sm:text-sm font-black tracking-widest text-white uppercase leading-none">
-                SKILL EDGE
-              </span>
-              <span className="text-[9px] font-mono tracking-widest text-zinc-400 uppercase leading-tight">
-                LEARNING OS
-              </span>
-            </div>
+      {/* ---------- sticky glass navbar ---------- */}
+      <header className="sticky top-0 z-50 border-b border-line/60 bg-base/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          <Link href="/" aria-label="Skill Edge Learning home">
+            <BrandMark />
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-xs font-mono tracking-wide text-zinc-400">
-            <a href="#home" className="hover:text-white transition-colors">
-              Home
+          <nav className="hidden items-center gap-7 text-xs font-semibold text-zinc-400 md:flex">
+            <a href="#how" className="transition hover:text-white">
+              How it works
             </a>
-            <a href="#skills" className="hover:text-white transition-colors">
+            <a href="#skills" className="transition hover:text-white">
               Skills
             </a>
-            <a href="#manifesto" className="hover:text-white transition-colors">
-              Manifesto
+            <a href="#outcomes" className="transition hover:text-white">
+              Outcomes
             </a>
-            <a href="#ambassador" className="hover:text-white transition-colors">
-              Ambassador
-            </a>
-            <a href="#about" className="hover:text-white transition-colors">
-              About
-            </a>
-            <a href="#contact" className="hover:text-white transition-colors">
-              Contact
+            <a href="#pricing" className="transition hover:text-white">
+              Pricing
             </a>
           </nav>
 
-          {/* Header Action CTAs */}
           <div className="flex items-center gap-2.5">
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs font-mono hover:bg-emerald-500/20 transition"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              <span>Let&apos;s Talk</span>
-            </a>
-
-            {isAuthenticated ? (
-              <Link href="/dashboard" className="btn-primary !py-2 !px-4 text-xs font-mono shadow-lg">
-                Terminal <ChevronRight className="h-3.5 w-3.5" />
+            {!hydrated ? (
+              <>
+                <div className="skeleton hidden h-9 w-20 sm:block" />
+                <div className="skeleton h-9 w-28" />
+              </>
+            ) : isAuthenticated ? (
+              <Link href="/dashboard" className="btn-primary px-4 py-2 text-xs sm:text-sm">
+                Open Dashboard
+                <ArrowRight className="h-4 w-4" />
               </Link>
             ) : (
-              <Link href="/login" className="btn-primary !py-2 !px-4 text-xs font-mono shadow-lg">
-                Launch App <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
+              <>
+                <Link href="/login" className="btn-ghost hidden px-4 py-2 text-xs sm:inline-flex sm:text-sm">
+                  Sign In
+                </Link>
+                <Link href="/register" className="btn-primary px-4 py-2 text-xs sm:text-sm">
+                  Get Started
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
             )}
           </div>
         </div>
       </header>
 
-      {/* 3. Main Hero & Sections */}
-      <main className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* HERO SECTION */}
-        <section id="home" className="relative pt-32 pb-20 md:pt-40 md:pb-28 flex flex-col items-center text-center">
-          {/* Hero Subtitle Pill */}
-          <div className="relative z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 backdrop-blur-xl text-xs font-mono text-orange-400 tracking-wider uppercase mb-8 shadow-2xl">
-            <span className="h-2 w-2 rounded-full bg-orange-400 animate-ping" />
-            ✨ BUILT BY STUDENTS, FOR STUDENTS
+      <main className="relative z-10">
+        {/* ---------- hero ---------- */}
+        <section className="mx-auto flex max-w-5xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 sm:pt-28">
+          <div className="chip animate-fade-up border-brand/40 bg-brand/10 text-brand">
+            <Sparkles className="h-3.5 w-3.5" />
+            The Skill Operating System
           </div>
 
-          {/* Floating Skill Pill Left (Desktop) */}
-          <div className="hidden lg:flex absolute top-40 left-4 z-20 neo-box p-3 border border-orange-500/30 text-left max-w-xs rounded-2xl bg-black/60 backdrop-blur-xl animate-bounce-slow">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400 font-mono text-xs font-bold border border-orange-500/40">
-                🧠
-              </div>
-              <div>
-                <div className="text-[10px] font-mono text-orange-400 uppercase tracking-wider font-bold">SKILL 01</div>
-                <div className="text-xs font-bold text-white">AI Tools Mastery</div>
-                <div className="text-[10px] text-zinc-400 font-mono">6 weeks • Foundational</div>
-              </div>
+          <h1
+            className="mt-6 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white animate-fade-up sm:text-6xl lg:text-7xl"
+            style={{ animationDelay: "0.08s" }}
+          >
+            Don&apos;t watch.
+            <br />
+            <span className="bg-gradient-to-r from-brand via-accent to-premium bg-clip-text text-transparent">
+              Build.
+            </span>
+          </h1>
+
+          <p
+            className="mt-6 max-w-2xl text-base text-zinc-400 animate-fade-up sm:text-lg"
+            style={{ animationDelay: "0.16s" }}
+          >
+            Ten-mission skill tracks where every mission ends in real work — reviewed by humans, rewarded with XP and
+            Neurons, and stacked into a portfolio you can actually show.
+          </p>
+
+          <div
+            className="mt-9 flex flex-col items-center gap-3 animate-fade-up sm:flex-row"
+            style={{ animationDelay: "0.24s" }}
+          >
+            {!hydrated ? (
+              <>
+                <div className="skeleton h-12 w-48" />
+                <div className="skeleton h-12 w-40" />
+              </>
+            ) : isAuthenticated ? (
+              <>
+                <Link href="/dashboard" className="btn-primary px-7 py-3 text-sm sm:text-base">
+                  Open Dashboard
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a href="#skills" className="btn-ghost px-7 py-3 text-sm sm:text-base">
+                  Browse skills
+                </a>
+              </>
+            ) : (
+              <>
+                <Link href="/register" className="btn-primary px-7 py-3 text-sm sm:text-base">
+                  Start building — free
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a href="#how" className="btn-ghost px-7 py-3 text-sm sm:text-base">
+                  See how it works
+                </a>
+              </>
+            )}
+          </div>
+
+          <p className="mt-5 text-xs text-zinc-500 animate-fade-up" style={{ animationDelay: "0.3s" }}>
+            Free plan includes the first 4 missions of every skill. No credit card required.
+          </p>
+        </section>
+
+        {/* ---------- social proof strip ---------- */}
+        <section className="border-y border-line/60 bg-surface/50 backdrop-blur-sm">
+          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 gap-6 text-center lg:grid-cols-4">
+              {[
+                { icon: Layers, value: `${SKILLS.length}`, label: "Skill tracks" },
+                { icon: Rocket, value: fmtNum(TOTAL_MISSIONS), label: "Hands-on missions" },
+                { icon: Clock3, value: `${fmtNum(TOTAL_HOURS)}+ hrs`, label: "Of guided building" },
+                { icon: QrCode, value: "QR-verified", label: "Certificates" },
+              ].map((s) => (
+                <div key={s.label} className="flex flex-col items-center gap-1">
+                  <s.icon className="h-5 w-5 text-brand" />
+                  <div className="font-display text-xl font-bold text-white sm:text-2xl">{s.value}</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">{s.label}</div>
+                </div>
+              ))}
             </div>
-          </div>
-
-          {/* Floating Skill Pill Right (Desktop) */}
-          <div className="hidden lg:flex absolute top-44 right-4 z-20 neo-box p-3 border border-rose-500/30 text-left max-w-xs rounded-2xl bg-black/60 backdrop-blur-xl animate-bounce-slow">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400 font-mono text-xs font-bold border border-rose-500/40">
-                🎨
-              </div>
-              <div>
-                <div className="text-[10px] font-mono text-rose-400 uppercase tracking-wider font-bold">SKILL 10</div>
-                <div className="text-xs font-bold text-white">Content & Branding</div>
-                <div className="text-[10px] text-zinc-400 font-mono">Build an audience that builds you.</div>
-              </div>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
+              {CATEGORIES.map((c) => (
+                <span key={c} className="chip text-[11px]">
+                  {c}
+                </span>
+              ))}
             </div>
-          </div>
-
-          {/* Hero Main Headline */}
-          <div className="relative max-w-4xl z-10">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] text-white">
-              The{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400">
-                future
-              </span>{" "}
-              of learning starts with{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
-                you.
-              </span>
-            </h1>
-            <p className="mt-6 text-sm sm:text-base md:text-lg text-zinc-400 max-w-2xl mx-auto font-light leading-relaxed">
-              Skill Edge Learning is a student-led learning OS that complements formal education with practical,
-              future-ready skills — built by students, for the world you&apos;ll graduate into.
-            </p>
-          </div>
-
-          {/* Hero Action Buttons */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 z-10 w-full">
-            <Link
-              href={isAuthenticated ? "/dashboard" : "/register"}
-              className="btn-primary py-4 px-8 text-sm font-bold shadow-xl shadow-orange-500/20 flex items-center gap-2 rounded-2xl w-full sm:w-auto justify-center"
-            >
-              <span>Join the Movement</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-
-            <a
-              href="#manifesto"
-              className="btn-ghost py-4 px-8 text-sm font-bold border border-white/10 rounded-2xl hover:bg-white/10 text-white w-full sm:w-auto justify-center"
-            >
-              Read the Manifesto
-            </a>
-          </div>
-
-          {/* Hero Bottom Tags Strip */}
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-zinc-400">
-            <span className="chip border-white/10 bg-white/5 py-1.5 px-3">12 Future Skills</span>
-            <span className="chip border-white/10 bg-white/5 py-1.5 px-3">Built in India 🇮🇳</span>
-            <span className="chip border-white/10 bg-white/5 py-1.5 px-3">Student-Led</span>
-            <span className="chip border-white/10 bg-white/5 py-1.5 px-3">Free Forever at Launch</span>
           </div>
         </section>
 
-        {/* SECTION: MANIFESTO */}
-        <section id="manifesto" className="py-20 border-t border-white/10 relative">
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-[11px] font-mono text-orange-400 uppercase tracking-widest">
-              <Sparkles className="h-3.5 w-3.5" /> THE MANIFESTO
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-              We exist to{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">
-                redefine
-              </span>{" "}
-              what learning can be.
+        {/* ---------- how it works ---------- */}
+        <section id="how" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-brand">The mission loop</div>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              One loop. Repeated until you&apos;re dangerous.
             </h2>
-            <p className="text-sm sm:text-base text-zinc-400 font-light leading-relaxed">
-              Not another EdTech platform. A movement — built by students, for students, to complement formal education with
-              the skills the future actually rewards.
+            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+              No passive completion bars. A mission only counts when your work is submitted, reviewed and approved.
             </p>
-          </div>
+          </Reveal>
 
-          {/* System Conflict Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-5 space-y-4">
-              <span className="font-mono text-xs font-semibold text-rose-400 uppercase tracking-widest flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" /> {/* // System Conflict */}
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
-                TODAY&apos;S EDUCATION CREATES TEST-TAKERS.
-              </h3>
-              <p className="text-zinc-400 font-light text-xs sm:text-sm leading-relaxed">
-                The future belongs to builders, yet teenagers are forced through an industrial system optimized for routine
-                memory tasks.
-              </p>
-            </div>
-
-            <div className="lg:col-span-7 space-y-4">
-              <div className="p-6 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div className="flex-1">
-                  <span className="font-mono text-3xl font-bold text-rose-400">15 Years</span>
-                  <p className="text-xs font-mono text-zinc-400 mt-1">Spent consuming static theory</p>
-                </div>
-                <div className="border-t sm:border-t-0 sm:border-l border-white/10 pt-6 sm:pt-0 sm:pl-8 flex-1">
-                  <span className="font-mono text-3xl font-bold text-emerald-400">0 Years</span>
-                  <p className="text-xs font-mono text-zinc-400 mt-1">Spent practicing high-leverage tools</p>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl">
-                <h4 className="font-mono text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">
-                  {/* // Missing School Tracks */}
-                </h4>
-                <div className="flex flex-wrap gap-2 text-xs font-mono text-zinc-300">
-                  {[
-                    "AI Tools",
-                    "Entrepreneurship",
-                    "Vibe Coding",
-                    "Sales & Negotiation",
-                    "Freelancing",
-                    "Financial Literacy",
-                    "Content Creation",
-                  ].map((track) => (
-                    <span
-                      key={track}
-                      className="px-3 py-1.5 bg-white/5 rounded-xl border border-white/10 flex items-center gap-1.5"
-                    >
-                      <CircleX className="h-3.5 w-3.5 text-rose-400" /> {track}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION: SKILLS & FLAGSHIP */}
-        <section id="skills" className="py-20 border-t border-white/10">
-          <div className="space-y-3 mb-12 text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-[11px] font-mono text-orange-400 uppercase tracking-widest">
-              <Zap className="h-3.5 w-3.5" /> 12 FUTURE SKILLS
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-white">Master the 12 Foundational Disciplines</h2>
-          </div>
-
-          {/* Flagship Transformation Hero Card */}
-          <div className="neo-box p-6 sm:p-8 rounded-3xl border border-orange-500/40 bg-gradient-to-r from-orange-950/30 via-black to-black mb-10 relative overflow-hidden">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-              <div className="flex items-start gap-4">
-                <div className="h-16 w-16 rounded-2xl bg-orange-500/20 border border-orange-400/40 flex items-center justify-center text-3xl shrink-0">
-                  🤖
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="chip border-orange-400/40 text-[9px] font-mono text-orange-400 uppercase">
-                      FLAGSHIP TRANSFORMATION
-                    </span>
-                    <span className="chip border-emerald-400/40 text-[9px] font-mono text-emerald-400 uppercase">
-                      • Live
-                    </span>
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white">AI Mastery Transformation</h3>
-                  <p className="text-xs sm:text-sm text-zinc-300 max-w-xl">
-                    Transform from an AI Beginner into an AI-Native Creator. 7 Worlds · 35 Missions · 4,200 XP · 12-16 weeks.
-                  </p>
-                </div>
-              </div>
-
-              <Link
-                href={isAuthenticated ? "/learn/ai-prompt-engineering" : "/login"}
-                className="btn-primary py-3.5 px-6 text-xs font-mono font-bold shadow-lg shrink-0 rounded-2xl"
-              >
-                Start AI Mastery →
-              </Link>
-            </div>
-          </div>
-
-          {/* Skill Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {skills.map((skill) => (
-              <div
-                key={skill.id}
-                className="clay-card p-5 space-y-4 hover:border-orange-500/40 transition-all flex flex-col justify-between"
-              >
-                <div className="space-y-3">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {LOOP_STEPS.map((step, i) => (
+              <Reveal key={step.title} delay={i * 0.07} className="h-full">
+                <div className="clay-card relative flex h-full flex-col gap-3 p-5">
                   <div className="flex items-center justify-between">
-                    <span className="text-3xl">{skill.imageUrl ? "🚀" : "🧠"}</span>
-                    <span className="chip border-white/10 text-[9px] font-mono text-zinc-400">
-                      Foundational
+                    <span
+                      className="flex h-10 w-10 items-center justify-center rounded-xl"
+                      style={{ background: `${step.color}1f`, color: step.color }}
+                    >
+                      <step.icon className="h-5 w-5" />
                     </span>
+                    <span className="font-mono text-xs font-bold text-zinc-600">0{i + 1}</span>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-white text-base">{skill.title}</h4>
-                    <p className="text-xs text-zinc-400 mt-1 line-clamp-2">{skill.description}</p>
-                  </div>
+                  <h3 className="font-display text-sm font-bold text-white">{step.title}</h3>
+                  <p className="text-xs leading-relaxed text-zinc-400">{step.text}</p>
                 </div>
-
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-zinc-500">10 Levels Available</span>
-                  <Link
-                    href={isAuthenticated ? `/learn/${skill.id}` : "/login"}
-                    className="text-xs font-bold text-orange-400 hover:text-white flex items-center gap-1"
-                  >
-                    <span>Explore Skill</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </section>
 
-        {/* SECTION: AMBASSADOR PROGRAM */}
-        <section id="ambassador" className="py-20 border-t border-white/10 relative">
-          <div className="clay-card p-8 sm:p-12 text-center space-y-6 max-w-4xl mx-auto rounded-3xl border border-orange-500/30">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-[11px] font-mono text-orange-400 uppercase tracking-widest">
-              <Users className="h-3.5 w-3.5" /> AMBASSADOR PROGRAM
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-              Become a{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">
-                Founding Member
-              </span>{" "}
-              of Skill Edge Learning
+        {/* ---------- skills showcase ---------- */}
+        <section id="skills" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-accent">The catalog</div>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Skills the market actually pays for
             </h2>
-            <p className="text-sm sm:text-base text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed">
-              Help grow the community and shape the future of the platform. Be there from day one — and leave your mark on
-              how a generation of students learns.
+            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+              Every track is 10 missions deep — from first principles to a portfolio-grade capstone.
             </p>
-            <div className="chip border-white/20 bg-white/5 py-1.5 px-4 font-mono text-xs text-amber-300 mx-auto w-fit">
-              🕒 Detailed program information will be announced officially during launch
+          </Reveal>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {SKILLS.slice(0, 8).map((skill, i) => (
+              <Reveal key={skill.id} delay={(i % 4) * 0.06} className="h-full">
+                <Link href={skillHref(skill.id)} className="card-glow group flex h-full flex-col gap-3 p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                      style={{ background: `${skill.color}1f`, color: skill.color }}
+                    >
+                      <SkillIcon name={skill.iconName} className="h-5 w-5" />
+                    </span>
+                    <span className="chip !text-[10px]">{skill.category}</span>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-base font-bold leading-snug text-white transition group-hover:text-brand">
+                      {skill.title}
+                    </h3>
+                    <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-zinc-400">{skill.description}</p>
+                  </div>
+                  <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-[11px] font-semibold text-zinc-400">
+                    <span style={{ color: DIFF_COLORS[skill.difficulty] ?? "#9ca3af" }}>{skill.difficulty}</span>
+                    <span className="inline-flex items-center gap-1">
+                      <Clock3 className="h-3.5 w-3.5" />
+                      {skill.estimatedHours}h
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Layers className="h-3.5 w-3.5" />
+                      {skill.missions.length} missions
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal className="mt-10 text-center">
+            <Link href={isAuthenticated ? "/skills" : "/register"} className="btn-ghost px-6 py-2.5 text-sm">
+              View all {SKILLS.length} skills
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Reveal>
+        </section>
+
+        {/* ---------- outcomes ---------- */}
+        <section id="outcomes" className="border-y border-line/60 bg-surface/40">
+          <div className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-success">Proof of work</div>
+              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Finish a skill. Walk away with proof.
+              </h2>
+              <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+                Not a completion percentage — a stack of reviewed, real-world deliverables.
+              </p>
+            </Reveal>
+
+            <div className="mt-12 grid gap-5 md:grid-cols-3">
+              {OUTCOME_CARDS.map((card, i) => {
+                const skill = SKILLS.find((s) => s.id === card.skillId);
+                if (!skill) return null;
+                return (
+                  <Reveal key={card.skillId} delay={i * 0.08} className="h-full">
+                    <div className="clay-card flex h-full flex-col gap-4 p-6">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                          style={{ background: `${skill.color}1f`, color: skill.color }}
+                        >
+                          <SkillIcon name={skill.iconName} className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <h3 className="font-display text-sm font-bold text-white">{skill.title}</h3>
+                          <div className="text-[11px] font-semibold text-zinc-500">By mission 10, you have:</div>
+                        </div>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {card.outcomes.map((o) => (
+                          <li key={o} className="flex items-start gap-2.5 text-sm text-zinc-300">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                            {o}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* SECTION: ABOUT US */}
-        <section id="about" className="py-20 border-t border-white/10">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-[11px] font-mono text-orange-400 uppercase tracking-widest">
-              <Heart className="h-3.5 w-3.5" /> ABOUT US
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-              We&apos;re building the learning OS we{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400">
-                wish we had.
-              </span>
+        {/* ---------- pricing preview ---------- */}
+        <section id="pricing" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 lg:px-8">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-premium">Pricing</div>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Start free. Upgrade when you&apos;re hooked.
             </h2>
-            <p className="text-sm sm:text-base text-zinc-400 font-light leading-relaxed">
-              Skill Edge Learning exists to bridge the gap between what school teaches and what the world now rewards — built
-              by students, for students, in India, for the world.
+            <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+              The first 4 missions of every skill are free, forever. Pro unlocks the full depth of every track.
             </p>
+          </Reveal>
+
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {PLANS.map((plan, i) => (
+              <Reveal key={plan.id} delay={i * 0.06} className="h-full">
+                <div
+                  className={cn(
+                    "clay-card relative flex h-full flex-col gap-4 p-6",
+                    plan.highlight && "border-brand/60 ring-1 ring-brand/40"
+                  )}
+                >
+                  {plan.highlight && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand to-brand-deep px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-brand">
+                      Most popular
+                    </span>
+                  )}
+                  <div>
+                    <h3 className="font-display text-base font-bold text-white">{plan.name}</h3>
+                    <p className="mt-0.5 text-xs text-zinc-500">{plan.tagline}</p>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-display text-3xl font-bold text-white">{fmtInr(plan.priceInr)}</span>
+                    <span className="text-xs text-zinc-500">{periodLabel(plan)}</span>
+                  </div>
+                  <ul className="space-y-2">
+                    {plan.features.slice(0, 4).map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-xs text-zinc-300">
+                        <CheckCircle2
+                          className={cn(
+                            "mt-0.5 h-3.5 w-3.5 shrink-0",
+                            plan.id === "FOUNDER_LIFETIME" ? "text-premium" : "text-success"
+                          )}
+                        />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-2">
+                    <Link
+                      href="/pricing"
+                      className={cn(
+                        "w-full py-2.5 text-xs",
+                        plan.id === "FOUNDER_LIFETIME" ? "btn-premium" : plan.highlight ? "btn-primary" : "btn-ghost"
+                      )}
+                    >
+                      {plan.priceInr === 0 ? "Start free" : `Get ${plan.name}`}
+                    </Link>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
           </div>
+
+          <Reveal className="mt-8 text-center">
+            <Link href="/pricing" className="text-sm font-semibold text-brand transition hover:text-accent">
+              Compare all plans and features
+              <ArrowRight className="ml-1 inline h-4 w-4" />
+            </Link>
+          </Reveal>
         </section>
 
-        {/* SECTION: CONTACT / LET'S TALK & WHATSAPP INTEGRATION */}
-        <section id="contact" className="py-20 border-t border-white/10">
-          <div className="neo-box p-8 sm:p-12 rounded-3xl border border-emerald-500/40 bg-gradient-to-br from-emerald-950/20 via-black to-black max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-[11px] font-mono text-emerald-400 uppercase tracking-widest">
-              <MessageCircle className="h-3.5 w-3.5" /> LET&apos;S TALK
+        {/* ---------- final CTA ---------- */}
+        <section className="mx-auto max-w-5xl px-4 pb-24 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="relative overflow-hidden rounded-card border border-brand/30 bg-gradient-to-br from-brand/15 via-card to-premium/10 p-10 text-center sm:p-14">
+              <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[480px] -translate-x-1/2 rounded-full bg-brand/25 blur-[100px]" aria-hidden />
+              <div className="relative">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-deep shadow-brand">
+                  <Hexagon className="h-7 w-7 text-white" strokeWidth={2.5} />
+                </div>
+                <h2 className="mt-6 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                  Your portfolio starts with mission one.
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl text-sm text-zinc-400 sm:text-base">
+                  Pick a skill, ship your first project this week, and let every approved mission compound into proof.
+                </p>
+                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                  <Link href={primaryHref} className="btn-primary px-8 py-3 text-sm sm:text-base">
+                    {isAuthenticated ? "Open Dashboard" : "Create your free account"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  {!isAuthenticated && (
+                    <Link href="/login" className="btn-ghost px-8 py-3 text-sm sm:text-base">
+                      Sign In
+                    </Link>
+                  )}
+                </div>
+              </div>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-              Have questions or want to partner with us?
-            </h2>
-            <p className="text-sm sm:text-base text-zinc-300 font-light max-w-xl mx-auto leading-relaxed">
-              Reach out to our team directly on WhatsApp for instantaneous assistance, program inquiries, or partnership opportunities.
-            </p>
-
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href={WHATSAPP_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary !bg-gradient-to-r !from-emerald-500 !to-teal-600 !text-white py-4 px-8 text-sm font-mono font-bold shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2.5 rounded-2xl w-full sm:w-auto"
-              >
-                <MessageCircle className="h-5 w-5 fill-white text-emerald-600" />
-                <span>Chat on WhatsApp (+91 9342366833)</span>
-              </a>
-
-              <a
-                href="tel:9342366833"
-                className="btn-ghost py-4 px-6 text-sm font-mono font-bold border border-white/10 rounded-2xl hover:bg-white/10 text-white flex items-center justify-center gap-2 w-full sm:w-auto"
-              >
-                <Phone className="h-4 w-4 text-emerald-400" />
-                <span>Call +91 9342366833</span>
-              </a>
-            </div>
-          </div>
+          </Reveal>
         </section>
       </main>
 
-      {/* Floating Bottom-Left WhatsApp Chat Button */}
-      <a
-        href={WHATSAPP_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        title="Chat with Skill Edge OS on WhatsApp"
-        className="fixed bottom-6 left-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-full bg-emerald-500 text-black font-bold font-mono text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all border border-emerald-400"
-      >
-        <MessageCircle className="h-5 w-5 fill-black text-emerald-500" />
-        <span className="hidden sm:inline">WhatsApp (+91 9342366833)</span>
-      </a>
+      {/* ---------- footer ---------- */}
+      <footer className="relative z-10 border-t border-line/60 bg-surface/50">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid gap-10 md:grid-cols-4">
+            <div className="md:col-span-2">
+              <BrandMark />
+              <p className="mt-4 max-w-sm text-sm text-zinc-400">
+                The Skill Operating System. Learn by executing real missions, get human feedback, and graduate with a
+                portfolio and verifiable certificates — not just watch time.
+              </p>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Product</div>
+              <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
+                <li>
+                  <a href="#how" className="transition hover:text-white">
+                    How it works
+                  </a>
+                </li>
+                <li>
+                  <a href="#skills" className="transition hover:text-white">
+                    Skills catalog
+                  </a>
+                </li>
+                <li>
+                  <a href="#outcomes" className="transition hover:text-white">
+                    Outcomes
+                  </a>
+                </li>
+                <li>
+                  <Link href="/pricing" className="transition hover:text-white">
+                    Pricing
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Account</div>
+              <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
+                <li>
+                  <Link href="/login" className="transition hover:text-white">
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register" className="transition hover:text-white">
+                    Create account
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="transition hover:text-white">
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/leaderboard" className="transition hover:text-white">
+                    Leaderboard
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-line/60 pt-6 text-xs text-zinc-500 sm:flex-row">
+            <span>© {new Date().getFullYear()} Skill Edge Learning. All rights reserved.</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Hexagon className="h-3.5 w-3.5 text-accent" />
+              Earn Neurons. Ship missions. Build proof.
+            </span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

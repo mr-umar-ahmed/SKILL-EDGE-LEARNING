@@ -1,220 +1,289 @@
 "use client";
 
-import { ArrowLeft, Check, Crown, Layers, Lock, Play, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  Clock3,
+  Compass,
+  Crown,
+  Hexagon,
+  Layers,
+  Lock,
+  Zap,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { notFound, useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { SkillIcon } from "@/components/SkillIcon";
-import { Modal, ProgressRing } from "@/components/ui";
-import { fireConfetti } from "@/components/confetti";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { EmptyState, ProgressBar, Skeleton, SkeletonCard, StatusPill } from "@/components/ui";
 import { useApp } from "@/lib/store";
-import { cn, fmtCoins, fmtNum } from "@/lib/utils";
+import type { Mission, Skill, Submission } from "@/lib/types";
+import { cn, fmtMinutes, fmtNum } from "@/lib/utils";
 
-export default function SkillMapPage() {
-  const params = useParams<{ skillId: string }>();
-  const { skills, myProgress, isLevelUnlocked, currentUser, unlockPremium } = useApp();
-  const [premiumOpen, setPremiumOpen] = useState(false);
-  const skill = skills.find((s) => s.id === params.skillId);
-  if (!skill) notFound();
+const DIFFICULTY_COLORS: Record<string, string> = {
+  Beginner: "text-success border-success/40 bg-success/10",
+  Intermediate: "text-warning border-warning/40 bg-warning/10",
+  Advanced: "text-accent border-accent/40 bg-accent/10",
+  Expert: "text-premium border-premium/40 bg-premium/10",
+};
 
-  const done = skill.levels.filter((l) => myProgress.completed[l.id]).length;
-  const premiumUnlocked = !!myProgress.premiumUnlocks[skill.id];
-
-  const handleUnlock = () => {
-    if (unlockPremium(skill.id)) {
-      fireConfetti();
-      setPremiumOpen(false);
-    }
-  };
-
-  return (
-    <AppShell>
-      <div className="mx-auto max-w-2xl">
-        <Link href="/dashboard" className="mb-4 inline-flex items-center gap-1.5 font-mono text-xs text-zinc-400 hover:text-white">
-          <ArrowLeft className="h-4 w-4" /> Skill Map
-        </Link>
-
-        {/* Skill Header Card with Realistic Cover Banner */}
-        <div className="clay-card relative mb-8 overflow-hidden p-0">
-          <div className="relative h-44 w-full overflow-hidden">
-            <img
-              src={skill.imageUrl}
-              alt={skill.title}
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-black/20" />
-            <div className="absolute bottom-4 left-5 right-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-              <div className="flex items-center gap-4">
-                <ProgressRing progress={done / 10} size={64} stroke={6} color={skill.color}>
-                  <SkillIcon name={skill.iconName} className="h-6 w-6" style={{ color: skill.color }} />
-                </ProgressRing>
-                <div>
-                  <span className="chip border-white/20 bg-black/50 font-mono text-[10px] text-zinc-300 backdrop-blur-md">
-                    {skill.category}
-                  </span>
-                  <h1 className="font-mono text-xl font-bold text-white drop-shadow-md sm:text-2xl mt-1">
-                    {skill.title}
-                  </h1>
-                  <div className="mt-0.5 font-mono text-xs font-semibold" style={{ color: skill.color }}>
-                    {done}/10 Tiers Cleared {premiumUnlocked && "· 👑 Premium Unlocked"}
-                  </div>
-                </div>
-              </div>
-
-              <Link
-                href={`/learn/${skill.id}/practice`}
-                className="btn-ghost flex items-center gap-2 border-white/20 bg-black/60 font-mono text-xs text-amber-300 backdrop-blur-md hover:border-amber-400/50"
-              >
-                <Layers className="h-4 w-4 text-amber-400" /> Practice Deck
-              </Link>
-            </div>
-          </div>
-          <div className="p-4">
-            <p className="text-xs text-zinc-300 leading-relaxed">{skill.description}</p>
-          </div>
-        </div>
-
-        {/* Level Winding Progression Path */}
-        <div className="relative">
-          <div className="absolute bottom-6 left-1/2 top-6 w-px -translate-x-1/2 bg-gradient-to-b from-amber-400/30 via-white/10 to-amber-400/30" />
-          <div className="space-y-4">
-            {skill.levels.map((level, i) => {
-              const completed = myProgress.completed[level.id];
-              const unlocked = isLevelUnlocked(skill, level.levelNumber);
-              const isPremiumGate = level.levelNumber === 7 && !premiumUnlocked;
-              const side = i % 2 === 0 ? "sm:mr-auto sm:ml-0" : "sm:ml-auto sm:mr-0";
-              return (
-                <div key={level.id}>
-                  {isPremiumGate && (
-                    <button
-                      onClick={() => setPremiumOpen(true)}
-                      className="clay-card relative z-10 mx-auto mb-4 flex w-full max-w-md items-center gap-3 border-amber-400/40 p-4 text-left transition hover:scale-105"
-                    >
-                      <Crown className="h-8 w-8 shrink-0 text-amber-400" />
-                      <div className="flex-1">
-                        <div className="font-mono text-sm font-bold text-amber-300">Premium Tiers 7–10</div>
-                        <div className="text-xs text-zinc-400">
-                          Unlock Specialist → Sovereign Master for {fmtCoins(skill.premiumCost)}
-                        </div>
-                      </div>
-                      <span className="btn-gold !px-3 !py-1.5 text-xs">Unlock</span>
-                    </button>
-                  )}
-                  <LevelNode
-                    skillId={skill.id}
-                    level={level}
-                    color={skill.color}
-                    completed={!!completed}
-                    score={completed?.score}
-                    unlocked={unlocked}
-                    className={side}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Premium Unlock Modal */}
-      <Modal open={premiumOpen} onClose={() => setPremiumOpen(false)} title="👑 Unlock Premium Tiers">
-        <p className="text-sm text-zinc-300">
-          Tiers 7–10 of <span className="font-semibold text-white">{skill.title}</span> contain Specialist,
-          Strategist, Vanguard and Sovereign Master missions — the levels that separate hobbyists from professionals.
-        </p>
-        <div className="glass mt-4 flex items-center justify-between p-4">
-          <span className="text-xs text-zinc-400">One-time unlock cost</span>
-          <span className="font-mono text-xl font-bold text-amber-300">{fmtCoins(skill.premiumCost)}</span>
-        </div>
-        <div className="mt-2 flex items-center justify-between px-1 text-xs text-zinc-500">
-          <span>Your balance</span>
-          <span className="font-mono">{fmtCoins(currentUser.edgeCoins)}</span>
-        </div>
-        {currentUser.edgeCoins < skill.premiumCost ? (
-          <div className="mt-4 space-y-3">
-            <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 p-3 text-sm text-rose-300">
-              You need {fmtCoins(skill.premiumCost - currentUser.edgeCoins)} more. Top up via UPI or win them in
-              tournaments!
-            </div>
-            <Link href="/payment" className="btn-gold w-full">
-              Buy EdgeCoins
-            </Link>
-          </div>
-        ) : (
-          <button onClick={handleUnlock} className="btn-gold mt-4 w-full">
-            <Crown className="h-4 w-4" /> Unlock for {fmtCoins(skill.premiumCost)}
-          </button>
-        )}
-      </Modal>
-    </AppShell>
-  );
+function latestSubmission(subs: Submission[]): Submission | null {
+  if (subs.length === 0) return null;
+  return [...subs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 }
 
-function LevelNode({
-  skillId,
-  level,
-  color,
-  completed,
-  score,
-  unlocked,
-  className,
-}: {
-  skillId: string;
-  level: { id: string; levelNumber: number; title: string; tier: string; coinReward: number; xpReward: number; isPremium: boolean };
-  color: string;
-  completed: boolean;
-  score?: number;
-  unlocked: boolean;
-  className?: string;
-}) {
-  const inner = (
+function MissionRow({ skill, mission }: { skill: Skill; mission: Mission }) {
+  const { missionUnlocked, myProgress, submissionsForMission } = useApp();
+  const unlock = missionUnlocked(skill, mission.order);
+  const approved = Boolean(myProgress.completed[mission.id]);
+  const latest = latestSubmission(submissionsForMission(mission.id));
+
+  const isProLock = !unlock.unlocked && unlock.reason === "NEEDS_PRO";
+  const clickable = unlock.unlocked || approved || isProLock;
+  const href = isProLock && !approved ? "/pricing" : `/mission/${mission.id}`;
+
+  const ring = approved ? (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-success bg-success/15 text-success shadow-[0_0_14px_rgba(34,197,94,0.35)]">
+      <Check className="h-5 w-5" strokeWidth={3} />
+    </div>
+  ) : !unlock.unlocked ? (
     <div
       className={cn(
-        "neo-box relative z-10 flex w-full max-w-md items-center gap-4 p-4 transition-all duration-300",
-        unlocked && "hover:scale-105 cursor-pointer",
-        !unlocked && "opacity-60 cursor-not-allowed"
+        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2",
+        isProLock ? "border-premium/60 bg-premium/10 text-premium" : "border-line bg-surface text-zinc-500"
       )}
     >
-      <div
-        className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl font-mono text-lg font-black transition-all",
-          completed ? "text-zinc-950" : "text-white"
-        )}
-        style={{
-          background: completed ? color : unlocked ? `${color}30` : "rgba(255,255,255,0.06)",
-          boxShadow: completed ? `0 0 16px ${color}90` : undefined,
-        }}
-      >
-        {completed ? <Check className="h-6 w-6" /> : unlocked ? level.levelNumber : <Lock className="h-5 w-5 text-zinc-500" />}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-wider" style={{ color }}>
-            Tier {level.levelNumber} · {level.tier}
-          </span>
-          {level.isPremium && <Crown className="h-3.5 w-3.5 text-amber-400" />}
-        </div>
-        <div className="truncate text-sm font-bold text-white">{level.title}</div>
-        <div className="mt-0.5 flex items-center gap-2 text-[11px] text-zinc-400">
-          <span className="font-mono text-amber-300">+ↁ{level.coinReward}</span>
-          <span className="font-mono text-violet-300">+{fmtNum(level.xpReward)} XP</span>
-          {completed && (
-            <span className="ml-auto flex items-center gap-0.5 font-mono font-bold text-emerald-400">
-              <Star className="h-3 w-3 fill-emerald-400" /> {score}%
-            </span>
-          )}
-        </div>
-      </div>
-      {unlocked && !completed && <Play className="h-4 w-4 shrink-0 text-amber-400" />}
+      {isProLock ? <Crown className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+    </div>
+  ) : (
+    <div
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-display text-sm font-bold text-white"
+      style={{ borderColor: skill.color, background: `${skill.color}1f`, boxShadow: `0 0 14px ${skill.color}40` }}
+    >
+      {mission.order}
     </div>
   );
 
-  return unlocked ? (
-    <Link href={`/learn/${skillId}/level-${level.levelNumber}`} className={cn("block", className)}>
-      {inner}
-    </Link>
+  const statusEl = approved ? (
+    <StatusPill status="APPROVED" />
+  ) : latest ? (
+    <StatusPill status={latest.status} />
+  ) : !unlock.unlocked ? (
+    <span className="chip text-[11px]">
+      {isProLock ? (
+        <>
+          <Crown className="h-3 w-3 text-premium" /> <span className="text-premium">Pro</span>
+        </>
+      ) : (
+        <>
+          <Lock className="h-3 w-3" /> {unlock.reason === "ADMIN_LOCKED" ? "Locked by admin" : "Locked"}
+        </>
+      )}
+    </span>
   ) : (
-    <div className={cn("block cursor-not-allowed", className)}>{inner}</div>
+    <span className="chip border-brand/40 bg-brand/10 text-[11px] text-brand">Available</span>
+  );
+
+  const body = (
+    <div
+      className={cn(
+        "flex flex-1 items-start gap-3 rounded-card border border-line bg-card p-4 transition-all",
+        clickable && "group-hover:border-brand/50 group-hover:bg-hover",
+        !unlock.unlocked && !approved && !isProLock && "opacity-60"
+      )}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+            Mission {mission.order}
+          </span>
+          <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold", DIFFICULTY_COLORS[mission.difficulty])}>
+            {mission.difficulty}
+          </span>
+          {mission.isPremium && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-premium/40 bg-premium/10 px-2 py-0.5 text-[10px] font-bold text-premium">
+              <Crown className="h-3 w-3" /> Pro
+            </span>
+          )}
+        </div>
+        <h3 className="mt-1 font-display text-sm font-bold text-white sm:text-base">{mission.title}</h3>
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-zinc-400">{mission.objective}</p>
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-semibold text-zinc-400">
+          <span className="inline-flex items-center gap-1">
+            <Clock3 className="h-3.5 w-3.5" /> {fmtMinutes(mission.estimatedMinutes)}
+          </span>
+          <span className="inline-flex items-center gap-1 text-warning">
+            <Zap className="h-3.5 w-3.5" /> +{fmtNum(mission.xpReward)} XP
+          </span>
+          <span className="inline-flex items-center gap-1 text-accent">
+            <Hexagon className="h-3.5 w-3.5 fill-accent/20" /> +{mission.neuronReward}
+          </span>
+        </div>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        {statusEl}
+        {clickable && (
+          <ChevronRight className="h-4 w-4 text-zinc-500 transition-transform group-hover:translate-x-0.5 group-hover:text-brand" />
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="relative flex gap-3 sm:gap-4">
+      {/* timeline rail */}
+      <div className="flex flex-col items-center">
+        {ring}
+        <div className="w-px flex-1 bg-line" />
+      </div>
+      {clickable ? (
+        <Link href={href} className="group mb-4 flex min-w-0 flex-1">
+          {body}
+        </Link>
+      ) : (
+        <div className="mb-4 flex min-w-0 flex-1">{body}</div>
+      )}
+    </div>
+  );
+}
+
+export default function SkillMapPage() {
+  const params = useParams<{ skillId: string }>();
+  const { hydrated, catalog, myProgress } = useApp();
+  const skill = catalog.find((s) => s.id === params.skillId);
+
+  if (!hydrated) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-3xl space-y-5">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-52 w-full" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!skill) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-2xl pt-10">
+          <EmptyState
+            icon={<Compass className="h-8 w-8" />}
+            title="Skill not found"
+            text="This skill doesn't exist or isn't published yet. Browse the catalog to find your next mission."
+            action={
+              <Link href="/skills" className="btn-primary">
+                Browse skills
+              </Link>
+            }
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
+  const total = skill.missions.length;
+  const done = skill.missions.filter((m) => myProgress.completed[m.id]).length;
+  const progress = total ? done / total : 0;
+
+  /* group missions by tier/phase, preserving mission order */
+  const phases: { tier: string; missions: Mission[] }[] = [];
+  for (const m of [...skill.missions].sort((a, b) => a.order - b.order)) {
+    const last = phases[phases.length - 1];
+    if (last && last.tier === m.tier) last.missions.push(m);
+    else phases.push({ tier: m.tier, missions: [m] });
+  }
+
+  return (
+    <AppShell>
+      <div className="mx-auto max-w-3xl">
+        <Link
+          href="/skills"
+          className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-400 transition hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" /> All skills
+        </Link>
+
+        {/* hero */}
+        <div className="clay-card relative mb-8 overflow-hidden animate-fade-up">
+          <div className="relative h-44 w-full overflow-hidden sm:h-52">
+            <Image
+              src={skill.thumbnailUrl}
+              alt={skill.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+            <div
+              className="absolute bottom-4 left-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 shadow-lg backdrop-blur-md"
+              style={{ background: `${skill.color}26` }}
+            >
+              <SkillIcon name={skill.iconName} className="h-6 w-6" style={{ color: skill.color }} />
+            </div>
+          </div>
+          <div className="p-5 sm:p-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{skill.category}</span>
+              <span className={cn("rounded-full border px-2.5 py-0.5 text-[10px] font-bold", DIFFICULTY_COLORS[skill.difficulty])}>
+                {skill.difficulty}
+              </span>
+            </div>
+            <h1 className="mt-1.5 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              {skill.title}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">{skill.description}</p>
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-zinc-400">
+              <span className="inline-flex items-center gap-1.5">
+                <Clock3 className="h-4 w-4" /> ~{skill.estimatedHours} hours
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Layers className="h-4 w-4" /> {total} missions
+              </span>
+            </div>
+
+            <div className="mt-4 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-zinc-400">
+                  {done} of {total} missions approved
+                </span>
+                <span style={{ color: skill.color }}>{Math.round(progress * 100)}%</span>
+              </div>
+              <ProgressBar progress={progress} />
+            </div>
+          </div>
+        </div>
+
+        {/* mission timeline grouped by phase */}
+        <div className="animate-fade-up">
+          {phases.map((phase) => (
+            <div key={phase.tier} className="mb-2">
+              <div className="mb-4 flex items-center gap-3">
+                <span
+                  className="rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-widest"
+                  style={{ borderColor: `${skill.color}55`, background: `${skill.color}14`, color: skill.color }}
+                >
+                  {phase.tier}
+                </span>
+                <div className="h-px flex-1 bg-line" />
+              </div>
+              {phase.missions.map((m) => (
+                <MissionRow key={m.id} skill={skill} mission={m} />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <AdSlot className="mt-8" />
+      </div>
+    </AppShell>
   );
 }

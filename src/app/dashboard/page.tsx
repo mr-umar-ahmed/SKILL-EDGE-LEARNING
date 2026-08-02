@@ -1,360 +1,461 @@
 "use client";
 
 import {
-  Award,
+  Activity,
   ChevronRight,
-  Coins,
+  Clock3,
   Flame,
-  Layers,
   Lock,
+  Megaphone,
+  PlayCircle,
   Quote,
   Sparkles,
-  Swords,
+  Target,
+  Trophy,
   Zap,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { AdSlot, UpgradeBanner } from "@/components/ads/AdSlot";
 import { AppShell } from "@/components/AppShell";
 import { SkillIcon } from "@/components/SkillIcon";
-import { ProgressRing, SectionTitle, StatCard } from "@/components/ui";
-import { QUOTES, STUDENT_TIERS, getSkill } from "@/lib/data";
+import {
+  AnimatedNumber,
+  NeuronBadge,
+  PageHeader,
+  ProgressBar,
+  ProgressRing,
+  SectionTitle,
+  Skeleton,
+  SkeletonCard,
+  StatCard,
+  StatusPill,
+} from "@/components/ui";
+import { QUOTES, STUDENT_TIERS, findMission, studentTierForXp } from "@/lib/data";
 import { useApp } from "@/lib/store";
-import { XP_THRESHOLDS, fmtDateTime, fmtNum, levelForXp, msUntil, studentTierForXp, timeAgo, xpProgress } from "@/lib/utils";
+import type { Mission, Skill } from "@/lib/types";
+import { fmtMinutes, fmtNum, levelForXp, timeAgo } from "@/lib/utils";
 
-function dayOfYear() {
-  const now = new Date();
-  return Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+interface HeroPick {
+  skill: Skill;
+  mission: Mission;
+  needsPro: boolean;
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-5">
+      <Skeleton className="h-10 w-64" />
+      <Skeleton className="h-14 w-full" />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 w-full" />
+        ))}
+      </div>
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="space-y-5 lg:col-span-2">
+          <Skeleton className="h-56 w-full" />
+          <SkeletonCard />
+        </div>
+        <div className="space-y-5">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
-  const { state, currentUser, skills, myProgress, isLevelUnlocked } = useApp();
-  const quote = QUOTES[dayOfYear() % QUOTES.length];
-  const badgeLevel = levelForXp(currentUser.xp);
-  const nextXp = badgeLevel < 10 ? XP_THRESHOLDS[badgeLevel] : null;
-  const myCerts = state.certificates.filter((c) => c.userId === currentUser.id);
-  const myTxns = state.transactions.filter((t) => t.userId === currentUser.id).slice(0, 6);
-  const upcoming = state.quizzes
-    .filter((q) => q.isActive && !q.winnersDeclared)
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-    .slice(0, 3);
+  const { hydrated, currentUser, catalog, myProgress, mySubmissions, missionUnlocked, state } = useApp();
+
+  if (!hydrated || !currentUser) {
+    return (
+      <AppShell>
+        <DashboardSkeleton />
+      </AppShell>
+    );
+  }
+
+  const user = currentUser;
+  const firstName = user.name.split(/\s+/)[0] || user.name;
+
+  /* daily quote — rotated by day of year */
+  const now = new Date();
+  const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+  const quote = QUOTES[dayOfYear % QUOTES.length];
+
+  /* per-skill progress */
+  const completed = myProgress.completed;
+  const skillProgress = catalog.map((skill) => {
+    const done = skill.missions.filter((m) => completed[m.id]).length;
+    const total = skill.missions.length;
+    return { skill, done, total, pct: total ? done / total : 0 };
+  });
+  const continueLearning = skillProgress.filter((s) => s.done > 0 && s.done < s.total);
+
+  /* leaderboard rank by XP */
+  const rank = [...state.users].sort((a, b) => b.xp - a.xp).findIndex((u) => u.id === user.id) + 1;
+
+  /* submissions awaiting a verdict */
+  const pendingReviews = mySubmissions.filter(
+    (s) => s.status === "PENDING" || s.status === "UNDER_REVIEW" || s.status === "NEEDS_IMPROVEMENT"
+  );
+  const awaitingIds = new Set(
+    mySubmissions.filter((s) => s.status === "PENDING" || s.status === "UNDER_REVIEW").map((s) => s.missionId)
+  );
+
+  /* today's mission — first unlocked-but-uncompleted mission, in-progress skills first */
+  const orderedSkills = [...skillProgress].sort(
+    (a, b) => Number(!(a.done > 0 && a.done < a.total)) - Number(!(b.done > 0 && b.done < b.total))
+  );
+  let hero: HeroPick | null = null;
+  let proPick: HeroPick | null = null;
+  for (const sp of orderedSkills) {
+    const next = sp.skill.missions.find((m) => !completed[m.id]);
+    if (!next || awaitingIds.has(next.id)) continue;
+    const unlock = missionUnlocked(sp.skill, next.order);
+    if (unlock.unlocked) {
+      hero = { skill: sp.skill, mission: next, needsPro: false };
+      break;
+    }
+    if (unlock.reason === "NEEDS_PRO" && !proPick) proPick = { skill: sp.skill, mission: next, needsPro: true };
+  }
+  const todays = hero ?? proPick;
+
+  /* activity + announcements */
+  const myTxns = state.transactions.filter((t) => t.userId === user.id).slice(0, 6);
+  const announcements = state.announcements.slice(0, 3);
+
+  /* student tier */
+  const tier = studentTierForXp(user.xp);
+  const nextTier = STUDENT_TIERS.find((t) => t.tierNumber === tier.tierNumber + 1) ?? null;
+  const tierPct = nextTier ? Math.min(1, (user.xp - tier.minXp) / Math.max(1, nextTier.minXp - tier.minXp)) : 1;
 
   return (
     <AppShell>
-      <div className="space-y-8">
-        {/* Bento Row 1: Hero & XP Level */}
-        <div className="bento-grid">
-          {/* Bento Card 1: Claymorphic Welcome Hero (Span 2) */}
-          <div className="clay-card bento-span-2 relative overflow-hidden p-6 sm:p-8">
-            <div className="relative z-10 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="chip border-amber-400/40 bg-amber-500/10 text-amber-300 font-mono text-xs">
-                    🔥 {currentUser.streakCount} Day Cyber Streak
-                  </span>
-                  <span className="chip border-cyan-400/40 bg-cyan-500/10 text-cyan-300 font-mono text-xs">
-                    {currentUser.title || "Learner"}
-                  </span>
+      <PageHeader
+        title={`Welcome back, ${firstName}`}
+        subtitle="Your skill operating system is live. Ship something today."
+      />
+
+      {/* daily quote */}
+      <div className="glass mb-5 flex items-start gap-3 p-4 animate-fade-up">
+        <Quote className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <p className="text-sm text-zinc-300">
+          {quote.text} <span className="text-xs font-semibold text-zinc-500">— {quote.author}</span>
+        </p>
+      </div>
+
+      {/* stat row */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 animate-fade-up">
+        <StatCard
+          label="Total XP"
+          value={<AnimatedNumber value={user.xp} />}
+          sub={`Level ${levelForXp(user.xp)}`}
+          icon={<Zap className="h-4 w-4" />}
+          accent="#3b82f6"
+        />
+        <StatCard
+          label="Neurons"
+          value={<NeuronBadge amount={user.neurons} size={18} className="text-xl" />}
+          sub="Wallet balance"
+          icon={<Sparkles className="h-4 w-4" />}
+          accent="#06b6d4"
+        />
+        <StatCard
+          label="Streak"
+          value={
+            <>
+              <AnimatedNumber value={user.streakCount} /> days
+            </>
+          }
+          sub="Keep it alive daily"
+          icon={<Flame className="h-4 w-4" />}
+          accent="#f97316"
+        />
+        <StatCard
+          label="Rank"
+          value={rank > 0 ? `#${rank}` : "—"}
+          sub={`of ${fmtNum(state.users.length)} learners`}
+          icon={<Trophy className="h-4 w-4" />}
+          accent="#facc15"
+        />
+      </div>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-3">
+        {/* ------------------------------ main column ------------------------------ */}
+        <div className="min-w-0 space-y-6 lg:col-span-2">
+          {/* today's mission hero */}
+          <section className="animate-fade-up">
+            <SectionTitle>Today&apos;s Mission</SectionTitle>
+            {todays ? (
+              <div className="card-glow relative overflow-hidden p-5 sm:p-6">
+                <div
+                  className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full opacity-20 blur-3xl"
+                  style={{ background: todays.needsPro ? "#8b5cf6" : todays.skill.color }}
+                />
+                <div className="relative">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="chip">
+                      <SkillIcon
+                        name={todays.skill.iconName}
+                        className="h-3.5 w-3.5"
+                        style={{ color: todays.skill.color }}
+                      />
+                      {todays.skill.title}
+                    </span>
+                    <span className="chip">
+                      Mission {todays.mission.order} of {todays.skill.missions.length}
+                    </span>
+                    {todays.needsPro && (
+                      <span className="chip border-premium/40 bg-premium/10 text-premium">
+                        <Lock className="h-3 w-3" /> Pro
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="mt-3 font-display text-xl font-bold text-white sm:text-2xl">
+                    {todays.mission.title}
+                  </h3>
+                  <p className="mt-1.5 max-w-xl text-sm text-zinc-400">{todays.mission.objective}</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-zinc-400">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock3 className="h-3.5 w-3.5" /> {fmtMinutes(todays.mission.estimatedMinutes)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-brand">
+                      <Zap className="h-3.5 w-3.5" /> +{todays.mission.xpReward} XP
+                    </span>
+                    <NeuronBadge amount={todays.mission.neuronReward} className="text-xs" />
+                    <span className="chip px-2.5 py-0.5">{todays.mission.difficulty}</span>
+                  </div>
+                  <div className="mt-5">
+                    {todays.needsPro ? (
+                      <Link href="/pricing" className="btn-premium">
+                        <Sparkles className="h-4 w-4" /> Unlock with Pro
+                      </Link>
+                    ) : (
+                      <Link href={`/mission/${todays.mission.id}`} className="btn-primary">
+                        <PlayCircle className="h-4 w-4" /> Start Mission
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
-                <h1 className="font-mono text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                  Welcome back, <span className="text-amber-400">{currentUser.name.split(" ")[0]}</span> {currentUser.avatar}
-                </h1>
-                <p className="mt-1 text-xs text-zinc-400">
-                  Master 12 trending real-world skills through 10-tier level progression.
+              </div>
+            ) : (
+              <div className="glass flex flex-col items-center gap-2 p-8 text-center">
+                <Target className="h-6 w-6 text-brand" />
+                <div className="font-display text-base font-semibold text-white">All caught up</div>
+                <p className="max-w-sm text-sm text-zinc-500">
+                  {awaitingIds.size > 0
+                    ? "Your latest work is under review — feedback (and rewards) land soon."
+                    : "You've completed every available mission. New skills are on the way."}
                 </p>
               </div>
+            )}
+          </section>
 
-              <div className="glass mt-4 flex items-start gap-3 p-4">
-                <Quote className="h-5 w-5 shrink-0 text-amber-400" strokeWidth={1.75} />
-                <div>
-                  <p className="text-xs italic text-zinc-200">&ldquo;{quote.text}&rdquo;</p>
-                  <p className="mt-1 font-mono text-[10px] text-zinc-400">— {quote.author}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bento Card 2: Claymorphic XP Ring & Level Progress */}
-          <div className="clay-card flex flex-col items-center justify-center p-6 text-center">
-            <ProgressRing progress={xpProgress(currentUser.xp)} size={100} stroke={8} color="#eab308">
-              <div className="text-center">
-                <div className="font-mono text-3xl font-black text-white">{badgeLevel}</div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Level</div>
-              </div>
-            </ProgressRing>
-            <div className="mt-3">
-              <div className="font-mono font-bold text-white text-base">{fmtNum(currentUser.xp)} XP</div>
-              <div className="mt-0.5 text-xs text-zinc-400">
-                {nextXp ? `${fmtNum(nextXp - currentUser.xp)} XP to LVL ${badgeLevel + 1}` : "Max level reached!"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bento Row 2: 4 Metric Cards */}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard
-            label="EdgeCoins"
-            value={<span className="text-amber-300">ↁ{fmtNum(currentUser.edgeCoins)}</span>}
-            sub="≈ ₹0.50 per coin"
-            icon={<Coins className="h-4 w-4" strokeWidth={1.75} />}
-            accent="#eab308"
-          />
-          <StatCard
-            label="Active Streak"
-            value={
-              <span className="flex items-center gap-1.5 text-orange-400">
-                {currentUser.streakCount} <Flame className="h-5 w-5 fill-orange-400/20" strokeWidth={1.75} />
-              </span>
-            }
-            sub="days in a row"
-            icon={<Flame className="h-4 w-4" strokeWidth={1.75} />}
-            accent="#f97316"
-          />
-          <StatCard
-            label="Total XP"
-            value={fmtNum(currentUser.xp)}
-            sub={`Level ${badgeLevel} of 10`}
-            icon={<Zap className="h-4 w-4" strokeWidth={1.75} />}
-            accent="#8b5cf6"
-          />
-          <StatCard
-            label="Certificates"
-            value={myCerts.length}
-            sub="verified credentials"
-            icon={<Award className="h-4 w-4" strokeWidth={1.75} />}
-            accent="#06b6d4"
-          />
-        </div>
-
-        {/* Student Tier System Progression Card */}
-        <div className="clay-card p-6 space-y-4">
-          <SectionTitle>Student Tier System Progression</SectionTitle>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            {STUDENT_TIERS.map((t) => {
-              const activeTier = studentTierForXp(currentUser.xp);
-              const isUnlocked = currentUser.xp >= t.minXp;
-              const isCurrent = activeTier.tierNumber === t.tierNumber;
-
-              return (
-                <div
-                  key={t.tierNumber}
-                  className={`p-3.5 rounded-2xl border text-center transition-all ${
-                    isCurrent
-                      ? "neo-box bg-amber-500/20 border-amber-400 scale-105 shadow-xl"
-                      : isUnlocked
-                      ? "bg-white/5 border-white/20 text-white"
-                      : "bg-white/[0.02] border-white/5 opacity-50"
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{t.icon}</div>
-                  <div className="font-bold text-xs text-white">{t.name}</div>
-                  <div className="text-[10px] font-mono text-zinc-400 mt-1">
-                    {t.minXp === 0 ? "0 XP" : `${fmtNum(t.minXp)} XP`}
-                  </div>
-                  {isCurrent && (
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-amber-500 text-black text-[9px] font-bold font-mono uppercase">
-                      ACTIVE TIER
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Certificates Strip */}
-        {myCerts.length > 0 && (
-          <div>
-            <SectionTitle>Your Certified Credentials</SectionTitle>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {myCerts.map((c) => {
-                const skill = getSkill(c.skillId);
-                return (
-                  <Link
-                    key={c.id}
-                    href={`/certificate/${c.id}`}
-                    className="clay-card flex min-w-60 items-center gap-3 p-3.5 transition hover:scale-105"
-                  >
-                    <Award className="h-8 w-8 shrink-0 text-amber-400" strokeWidth={1.75} />
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-bold text-white">{skill?.title}</div>
-                      <div className="font-mono text-[11px] text-zinc-400">Tier {c.levelTier} · Hash: {c.verificationCode}</div>
-                    </div>
+          {/* continue learning */}
+          {continueLearning.length > 0 && (
+            <section className="animate-fade-up">
+              <SectionTitle
+                action={
+                  <Link href="/skills" className="text-xs font-semibold text-brand hover:underline">
+                    All skills
                   </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Master Bento Grid: Skill Showcase with Realistic Images */}
-        <div>
-          <SectionTitle
-            action={
-              <span className="font-mono text-xs text-zinc-400">
-                {Object.keys(myProgress.completed).length} / 120 levels cleared
-              </span>
-            }
-          >
-            🎯 12 Real-World Skills Hub
-          </SectionTitle>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {skills.map((skill) => {
-              const done = skill.levels.filter((l) => myProgress.completed[l.id]).length;
-              const nextLevel = skill.levels.find((l) => !myProgress.completed[l.id]);
-              const nextUnlocked = nextLevel ? isLevelUnlocked(skill, nextLevel.levelNumber) : false;
-
-              return (
-                <div
-                  key={skill.id}
-                  className="clay-card group relative flex flex-col justify-between overflow-hidden p-0 transition-all duration-300 hover:scale-[1.02]"
-                >
-                  {/* Skill Realistic Media Cover Banner */}
-                  <div className="relative h-36 w-full overflow-hidden">
-                    <img
-                      src={skill.imageUrl}
-                      alt={skill.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-
-                    <div className="absolute left-3 top-3">
-                      <span className="chip border-white/20 bg-black/60 font-mono text-[10px] text-white backdrop-blur-md">
-                        {skill.category}
-                      </span>
-                    </div>
-
-                    <div className="absolute right-3 top-3">
-                      <ProgressRing progress={done / 10} size={36} stroke={4} color={skill.color}>
-                        <span className="font-mono text-[10px] font-bold text-white">{done}</span>
-                      </ProgressRing>
-                    </div>
-
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <h3 className="font-bold text-white text-base leading-tight drop-shadow-md">
-                        {skill.title}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Body Content */}
-                  <div className="flex-1 p-4 flex flex-col justify-between space-y-3">
-                    <p className="text-xs text-zinc-400 line-clamp-2">{skill.description}</p>
-
-                    {/* Progress Nodes Dots */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between font-mono text-[11px]">
-                        <span className="text-zinc-400">Progression</span>
-                        <span className="font-bold" style={{ color: skill.color }}>{done}/10 Tiers</span>
-                      </div>
-                      <div className="flex gap-1">
-                        {skill.levels.map((l) => (
-                          <div
-                            key={l.id}
-                            className="h-1.5 flex-1 rounded-full transition-all"
-                            style={{
-                              background: myProgress.completed[l.id] ? skill.color : "rgba(255,255,255,0.12)",
-                              boxShadow: myProgress.completed[l.id] ? `0 0 6px ${skill.color}` : undefined,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Action CTAs */}
-                    <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                      <Link
-                        href={`/learn/${skill.id}`}
-                        className="btn-primary flex-1 !py-1.5 text-xs font-bold"
-                      >
-                        Explore Map <ChevronRight className="h-3.5 w-3.5" />
-                      </Link>
-                      <Link
-                        href={`/learn/${skill.id}/practice`}
-                        className="neo-button p-2 text-zinc-300 hover:text-amber-400"
-                        title="Rapid Practice Flashcards"
-                      >
-                        <Layers className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Bento Row 4: Recent Activity & Tournaments Rail */}
-        <div className="grid gap-4 lg:grid-cols-2">
-          {/* Recent Activity */}
-          <div className="clay-card p-6">
-            <SectionTitle>Recent Activity & Transactions</SectionTitle>
-            <div className="divide-y divide-white/[0.05]">
-              {myTxns.length === 0 && <div className="p-6 text-center text-xs text-zinc-500">No activity yet — clear your first skill level!</div>}
-              {myTxns.map((t) => (
-                <div key={t.id} className="flex items-center justify-between py-2.5 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`font-mono font-bold ${t.amountCoins >= 0 ? "text-amber-300" : "text-rose-400"}`}
+                }
+              >
+                Continue Learning
+              </SectionTitle>
+              <div className="space-y-3">
+                {continueLearning.slice(0, 4).map(({ skill, done, total, pct }) => (
+                  <Link
+                    key={skill.id}
+                    href={`/learn/${skill.id}`}
+                    className="clay-card group flex items-center gap-4 p-4"
+                  >
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                      style={{ background: `${skill.color}1f`, color: skill.color }}
                     >
-                      {t.amountCoins >= 0 ? "+" : ""}
-                      {t.amountCoins}ↁ
-                    </span>
-                    <span className="truncate text-zinc-300 max-w-48 sm:max-w-64">{t.note}</span>
-                  </div>
-                  <span suppressHydrationWarning className="shrink-0 font-mono text-[10px] text-zinc-500">{timeAgo(t.createdAt)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+                      <SkillIcon name={skill.iconName} className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="truncate text-sm font-semibold text-white">{skill.title}</span>
+                        <span className="shrink-0 text-xs font-semibold text-zinc-400">
+                          {done}/{total} missions
+                        </span>
+                      </div>
+                      <ProgressBar progress={pct} className="mt-2" height={6} />
+                    </div>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-zinc-500 transition group-hover:translate-x-0.5 group-hover:text-brand" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
-          {/* Tournaments Rail */}
-          <div className="clay-card p-6">
+          {/* skills overview */}
+          <section className="animate-fade-up">
             <SectionTitle
               action={
-                <Link href="/quizzes" className="text-xs font-semibold text-amber-400 hover:text-amber-300">
-                  View all →
+                <Link href="/skills" className="text-xs font-semibold text-brand hover:underline">
+                  Explore catalog
                 </Link>
               }
             >
-              Live & Upcoming Tournaments
+              Skills Overview
             </SectionTitle>
-            <div className="space-y-3">
-              {upcoming.map((q) => {
-                const live = msUntil(q.startTime) <= 0;
-                return (
-                  <Link
-                    key={q.id}
-                    href={`/quiz/${q.id}`}
-                    className="glass flex items-center justify-between p-3.5 transition hover:border-amber-400/40"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Swords className="h-8 w-8 shrink-0 rounded-xl bg-amber-500/10 p-1.5 text-amber-400" strokeWidth={1.5} />
-                      <div>
-                        <div className="truncate font-bold text-white text-xs">{q.title}</div>
-                        <div suppressHydrationWarning className="text-[10px] text-zinc-400">
-                          {live ? "LIVE NOW" : fmtDateTime(q.startTime)} · Prize ↁ{q.prizePoolCoins}
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {skillProgress.map(({ skill, done, total, pct }, i) => (
+                <Link
+                  key={skill.id}
+                  href={`/learn/${skill.id}`}
+                  className="clay-card flex items-center gap-3.5 p-4 animate-fade-up"
+                  style={{ animationDelay: `${i * 40}ms` }}
+                >
+                  <ProgressRing progress={pct} size={52} stroke={5} color={skill.color}>
+                    <SkillIcon name={skill.iconName} className="h-5 w-5" style={{ color: skill.color }} />
+                  </ProgressRing>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-white">{skill.title}</div>
+                    <div className="mt-0.5 text-[11px] text-zinc-500">
+                      {done > 0 ? `${done}/${total} complete` : skill.category}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* pending reviews */}
+          <section className="animate-fade-up">
+            <SectionTitle>Pending Reviews</SectionTitle>
+            {pendingReviews.length > 0 ? (
+              <div className="clay-card divide-y divide-line/60">
+                {pendingReviews.slice(0, 5).map((sub) => {
+                  const found = findMission(state.catalog, sub.missionId);
+                  return (
+                    <Link
+                      key={sub.id}
+                      href={`/mission/${sub.missionId}`}
+                      className="flex items-center justify-between gap-3 p-4 transition hover:bg-hover/40"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-white">
+                          {found?.mission.title ?? sub.missionId}
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-zinc-500">
+                          {found?.skill.title ?? "Mission"} · {timeAgo(sub.createdAt)}
+                        </div>
+                      </div>
+                      <StatusPill status={sub.status} />
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="glass p-5 text-sm text-zinc-500">
+                Nothing in review — ship your next mission and it&apos;ll show up here.
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* ------------------------------ side column ------------------------------ */}
+        <div className="min-w-0 space-y-6">
+          {/* student tier */}
+          <section className="animate-fade-up">
+            <SectionTitle>Student Tier</SectionTitle>
+            <div className="clay-card p-5">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                  style={{ background: `${tier.hexColor}1f`, color: tier.hexColor }}
+                >
+                  <SkillIcon name={tier.iconName} className="h-6 w-6" />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-display text-base font-bold text-white">{tier.name}</div>
+                  <div className="text-[11px] text-zinc-500">
+                    Tier {tier.tierNumber} of {STUDENT_TIERS.length}
+                  </div>
+                </div>
+              </div>
+              <ProgressBar progress={tierPct} className="mt-4" height={8} />
+              <div className="mt-2 text-[11px] font-semibold text-zinc-400">
+                {nextTier
+                  ? `${fmtNum(Math.max(0, nextTier.minXp - user.xp))} XP to ${nextTier.name}`
+                  : "Top tier reached — legendary."}
+              </div>
+            </div>
+          </section>
+
+          {/* announcements */}
+          <section className="animate-fade-up">
+            <SectionTitle>Announcements</SectionTitle>
+            <div className="clay-card p-5">
+              {announcements.length > 0 ? (
+                <div className="space-y-4">
+                  {announcements.map((a) => (
+                    <div key={a.id} className="flex gap-3">
+                      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand/15 text-brand">
+                        <Megaphone className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-white">{a.title}</div>
+                        <p className="mt-0.5 line-clamp-2 text-xs text-zinc-400">{a.body}</p>
+                        <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+                          {timeAgo(a.createdAt)}
                         </div>
                       </div>
                     </div>
-
-                    {live ? (
-                      <span className="chip animate-pulse border-rose-500/40 text-rose-400 font-mono text-[10px]">
-                        ● LIVE
-                      </span>
-                    ) : (
-                      <span className="chip font-mono text-[10px] text-amber-300">
-                        {q.entryFeeCoins > 0 ? `ↁ${q.entryFeeCoins} entry` : "FREE"}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-500">No announcements right now.</p>
+              )}
             </div>
-          </div>
+          </section>
+
+          {/* recent activity */}
+          <section className="animate-fade-up">
+            <SectionTitle>Recent Activity</SectionTitle>
+            <div className="clay-card p-5">
+              {myTxns.length > 0 ? (
+                <div className="space-y-3.5">
+                  {myTxns.map((t) => (
+                    <div key={t.id} className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-2.5">
+                        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-hover text-zinc-400">
+                          <Activity className="h-3 w-3" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="truncate text-xs font-medium text-zinc-300">{t.note}</div>
+                          <div className="text-[10px] text-zinc-600">{timeAgo(t.createdAt)}</div>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 text-xs font-bold ${t.amountNeurons >= 0 ? "text-success" : "text-danger"}`}
+                      >
+                        {t.amountNeurons >= 0 ? "+" : ""}
+                        {fmtNum(t.amountNeurons)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-500">No activity yet — your first mission changes that.</p>
+              )}
+            </div>
+          </section>
         </div>
       </div>
+
+      {/* below the fold — free users only */}
+      <UpgradeBanner className="mt-8" />
+
+      <AdSlot className="mt-8" />
     </AppShell>
   );
 }

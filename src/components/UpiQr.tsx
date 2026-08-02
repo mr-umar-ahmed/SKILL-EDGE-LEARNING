@@ -1,7 +1,8 @@
 "use client";
 
-import { Check, Copy, QrCode, Sparkles } from "lucide-react";
+import { Check, Copy, IndianRupee, ScanLine } from "lucide-react";
 import { useState } from "react";
+import { fmtNum } from "@/lib/utils";
 
 interface UpiQrProps {
   seed?: string;
@@ -10,6 +11,11 @@ interface UpiQrProps {
   amountInr?: number;
 }
 
+/**
+ * UPI scanner card — shows the owner's QR image from /public (scanner.png etc.),
+ * falling back to a deterministic SVG matrix. Includes the amount to pay,
+ * a copyable UPI ID and the accepted-app badges.
+ */
 export function UpiQr({
   seed = "skilledge@upi",
   size = 210,
@@ -19,7 +25,7 @@ export function UpiQr({
   const [imgSrcIndex, setImgSrcIndex] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Candidate image paths in public folder
+  // Candidate image paths in the public folder
   const candidateImages = [
     "/scanner.png",
     "/scanner.jpg",
@@ -42,7 +48,7 @@ export function UpiQr({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Deterministic SVG QR Matrix Generator Fallback
+  // Deterministic SVG QR matrix fallback
   const N = 21;
   const cells: boolean[] = [];
   let h = 2166136261;
@@ -64,31 +70,34 @@ export function UpiQr({
     (col < 8 && row < 8) || (col > N - 9 && row < 8) || (col < 8 && row > N - 9);
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-xs mx-auto">
-      {/* High-Tech Cyber Glass Container */}
-      <div className="relative group p-4 rounded-3xl neo-box border border-amber-400/40 bg-gradient-to-b from-black/80 via-black to-zinc-950 shadow-2xl overflow-hidden w-full flex flex-col items-center">
-        {/* Animated Laser Scanner Line Beam */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#06b6d4] opacity-80 animate-pulse pointer-events-none" />
+    <div className="mx-auto flex w-full max-w-xs flex-col items-center gap-3">
+      {/* Scanner card */}
+      <div className="relative flex w-full flex-col items-center overflow-hidden rounded-card border border-line bg-gradient-to-b from-card via-surface to-base p-4 shadow-card">
+        {/* Animated laser scanline */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 animate-pulse bg-gradient-to-r from-transparent via-accent to-transparent opacity-80 shadow-[0_0_15px_#06b6d4]" />
 
-        {/* Outer Corner Frame Brackets */}
-        <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-amber-400 rounded-tl-lg" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-400 rounded-tr-lg" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-400 rounded-bl-lg" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-amber-400 rounded-br-lg" />
+        {/* Corner frame brackets */}
+        <div className="absolute left-2 top-2 h-3 w-3 rounded-tl-lg border-l-2 border-t-2 border-brand" />
+        <div className="absolute right-2 top-2 h-3 w-3 rounded-tr-lg border-r-2 border-t-2 border-brand" />
+        <div className="absolute bottom-2 left-2 h-3 w-3 rounded-bl-lg border-b-2 border-l-2 border-brand" />
+        <div className="absolute bottom-2 right-2 h-3 w-3 rounded-br-lg border-b-2 border-r-2 border-brand" />
 
-        {/* QR Code / Scanner Image Box */}
-        <div className="relative rounded-2xl bg-white p-3 shadow-inner border border-white/20 flex items-center justify-center min-h-[190px] w-[190px]">
+        <div className="mb-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+          <ScanLine className="h-3.5 w-3.5 text-accent" />
+          Scan to pay via UPI
+        </div>
+
+        {/* QR image / fallback */}
+        <div className="relative flex min-h-[190px] w-[190px] items-center justify-center rounded-2xl border border-white/20 bg-white p-3 shadow-inner">
           {!isFallbackSvg ? (
-            /* User Scanner Image from /public/scanner.png */
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={currentImgSrc}
-              alt="Official UPI QR Scanner"
+              alt="Official UPI QR code"
               onError={handleImageError}
-              className="w-full h-full object-contain rounded-xl max-h-[170px]"
+              className="h-full max-h-[170px] w-full rounded-xl object-contain"
             />
           ) : (
-            /* High-Tech SVG Fallback Matrix */
             <svg width={size - 24} height={size - 24} viewBox={`0 0 ${size} ${size}`} className="rounded-lg bg-white">
               <rect width={size} height={size} fill="#fff" rx={8} />
               {cells.map((on, i) => {
@@ -104,33 +113,43 @@ export function UpiQr({
           )}
         </div>
 
-        {/* Accepted Payment App Badges */}
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-mono text-zinc-400">
-          <span className="chip border-emerald-500/30 bg-emerald-500/10 text-emerald-400 py-0.5 px-2">GPay</span>
-          <span className="chip border-purple-500/30 bg-purple-500/10 text-purple-400 py-0.5 px-2">PhonePe</span>
-          <span className="chip border-cyan-500/30 bg-cyan-500/10 text-cyan-400 py-0.5 px-2">Paytm</span>
-          <span className="chip border-orange-500/30 bg-orange-500/10 text-orange-400 py-0.5 px-2">BHIM</span>
+        {/* Amount to pay */}
+        {typeof amountInr === "number" && amountInr > 0 && (
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5">
+            <IndianRupee className="h-3.5 w-3.5 text-accent" strokeWidth={2.5} />
+            <span className="font-mono text-sm font-bold text-white">{fmtNum(amountInr)}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">to pay</span>
+          </div>
+        )}
+
+        {/* Accepted payment app badges */}
+        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px]">
+          <span className="chip border-success/30 bg-success/10 px-2 py-0.5 text-success">GPay</span>
+          <span className="chip border-premium/30 bg-premium/10 px-2 py-0.5 text-premium">PhonePe</span>
+          <span className="chip border-accent/30 bg-accent/10 px-2 py-0.5 text-accent">Paytm</span>
+          <span className="chip border-brand/30 bg-brand/10 px-2 py-0.5 text-brand">BHIM</span>
         </div>
       </div>
 
-      {/* Copyable UPI ID Box */}
-      <div className="w-full flex items-center justify-between rounded-xl neo-box p-2.5 border border-white/10 bg-black/40">
+      {/* Copyable UPI ID */}
+      <div className="flex w-full items-center justify-between rounded-xl border border-line bg-base p-2.5">
         <div className="min-w-0 flex-1 pl-1">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">UPI ID</div>
-          <div className="text-xs font-mono font-bold text-amber-300 truncate">{upiId}</div>
+          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500">UPI ID</div>
+          <div className="truncate font-mono text-xs font-bold text-accent">{upiId}</div>
         </div>
         <button
           onClick={handleCopyUpi}
-          className="btn-ghost !p-2 text-xs font-mono text-zinc-300 hover:text-white shrink-0 ml-2"
+          className="btn-ghost ml-2 shrink-0 !p-2 font-mono text-xs text-zinc-300 hover:text-white"
           title="Copy UPI ID"
+          type="button"
         >
           {copied ? (
-            <span className="flex items-center gap-1 text-emerald-400 font-bold">
-              <Check className="h-3.5 w-3.5" /> Copied!
+            <span className="flex items-center gap-1 font-bold text-success">
+              <Check className="h-3.5 w-3.5" /> Copied
             </span>
           ) : (
             <span className="flex items-center gap-1">
-              <Copy className="h-3.5 w-3.5 text-amber-400" /> Copy
+              <Copy className="h-3.5 w-3.5 text-brand" /> Copy
             </span>
           )}
         </button>

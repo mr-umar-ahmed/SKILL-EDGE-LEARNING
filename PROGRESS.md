@@ -90,8 +90,18 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-02: Phase 35 Vercel Dependency Fix (`@clerk/nextjs` Next.js 14 compatibility & `.npmrc` legacy-peer-deps) created and pushed to GitHub (`fix(vercel-clerk-peer-dep)`).
 - 2026-08-02: Phase 36 Custom UPI Scanner Support & Enhanced Payment Scanner UI created and pushed to GitHub (`feat(custom-upi-scanner-ui)`).
 - 2026-08-02: Phase 37 Vercel Prerendering Fix (`<ClerkProvider publishableKey={...}>` fallback prop for static page generation) created and pushed to GitHub (`fix(vercel-prerender-clerk-key)`).
+- 2026-08-02: Phase 38 v2 Skill Operating System Transformation: Design System & Data Schema (Neurons, Missions, Submissions, Portfolio, Subscriptions) ✅
+- 2026-08-02: Phase 39 Learning Engine v2: 12 Skills × 10 Practical Missions with Deliverables, Checklists, Reflections, and Submissions ✅
+- 2026-08-02: Phase 40 Admin Panel v2: Comprehensive Review Queue, Analytics, Skills & Missions CRUD, Payments, Users, Announcements ✅
+- 2026-08-02: Phase 41 Student Portfolio System: Portfolio Builder, Showcase & Public Shareable URL (`/p/[userId]`) ✅
+- 2026-08-02: Phase 42 QR Verified Certificates: Canvas PDF/PNG Exporter, Phase & Skill Certs, Verification Portal (`/verify/[code]`) ✅
+- 2026-08-02: Phase 43 Monetization & Gateway Routes: Pricing Tier Matrix, Subscription Management, Razorpay & Stripe API Scaffolding ✅
+- 2026-08-02: Phase 44 AdSense Integration: Free Plan Conditional Ad Loading & Gated `/ads.txt` Route ✅
+- 2026-08-02: Phase 45 Master Build Verification: 20/20 Routes Static/Dynamic Production Build Green ✅
 
 ## Backlog / Next iteration
 
-- Real auth & Supabase integration
+- Supabase/Postgres backend migration (ready for client store action swap)
+- AI project review assistant
+
 
