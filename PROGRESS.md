@@ -49,11 +49,11 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - [x] [PLAN] Canvas cert + build verification
 - [x] [BUILD] `/certificate/[certId]` 1600×1131 canvas (neon gradient frame, learner name, skill, tier band, issue date, verification hash), PNG download, LinkedIn/X share intents; auto-mint at Tiers 5/8/10 via store
 - [x] [TEST] `npm run build` — ✓ Compiled, ✓ Lint, ✓ Types, 10/10 routes generated
-## PHASE 29 — Clerk Authentication App Router Integration ✅
-- [x] [PLAN] Install `@clerk/nextjs`, create `src/proxy.ts` with `clerkMiddleware()` and matcher including `/__clerk/:path*`, wrap app with `<ClerkProvider>` inside `<body>` in `src/app/layout.tsx`.
-- [x] [BUILD] Created `src/proxy.ts`, updated `src/app/layout.tsx`, installed `@clerk/nextjs`.
+## PHASE 31 — Official Clerk <SignIn /> & <SignUp /> UI Integration ✅
+- [x] [PLAN] Replaced legacy static form in `/login` (`src/app/login/page.tsx`) and `/register` (`src/app/register/page.tsx`) with Clerk's official `<SignIn />` and `<SignUp />` components configured with custom cyber dark mode styling and redirect flows (`forceRedirectUrl="/dashboard"`).
+- [x] [BUILD] Updated `src/app/login/page.tsx` and `src/app/register/page.tsx`.
 - [x] [TEST] `npx tsc --noEmit` green (0 errors)
-- [x] [DEPLOY] Committed as `feat(clerk-auth-integration)`
+- [x] [DEPLOY] Committed as `feat(clerk-signin-signup-ui)`
 
 ---
 
@@ -82,6 +82,8 @@ Protocol: every feature moves through `[PLAN] → [BUILD] → [TEST] → [DEPLOY
 - 2026-08-01: Phase 27 WebGL NeuralVortexBg Shader & Reference Landing Page Content created and pushed to GitHub (`feat(neural-vortex-shader-landing)`).
 - 2026-08-02: Phase 28 Reference Landing Page Redesign & WhatsApp Integration created and pushed to GitHub (`feat(landing-redesign-and-whatsapp)`).
 - 2026-08-02: Phase 29 Clerk Authentication App Router Integration created and pushed to GitHub (`feat(clerk-auth-integration)`).
+- 2026-08-02: Phase 30 Clerk API Keys Setup (.env.local) configured.
+- 2026-08-02: Phase 31 Official Clerk <SignIn /> & <SignUp /> UI Integration created and pushed to GitHub (`feat(clerk-signin-signup-ui)`).
 
 ## Backlog / Next iteration
 
