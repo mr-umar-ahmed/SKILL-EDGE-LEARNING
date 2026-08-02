@@ -1229,8 +1229,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!email) return { ok: false, reason: "Please enter your email." };
 
     const isAdminEmail = adminEmails().includes(email);
-    if (isAdminEmail && passInput && email === "admin@gmail.com" && passInput !== "seladmin@123") {
-      return { ok: false, reason: "Invalid password for admin@gmail.com. Use seladmin@123" };
+    if (isAdminEmail && passInput) {
+      const validPasswords = ["SelAdmin#2026!", "learningskilledge@123", "seladmin@123"];
+      if (!validPasswords.includes(passInput)) {
+        return { ok: false, reason: "Invalid admin password." };
+      }
     }
 
     const role: "USER" | "ADMIN" = isAdminEmail ? "ADMIN" : "USER";
@@ -1247,7 +1250,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       const newUser: User = {
         id: `u-${Date.now()}`,
-        name: email === "admin@gmail.com" ? "System Admin" : email.split("@")[0],
+        name: email.includes("learningskilledge") || email.includes("admin") ? "Skill Edge Admin" : email.split("@")[0],
         email,
         role,
         avatar: "",

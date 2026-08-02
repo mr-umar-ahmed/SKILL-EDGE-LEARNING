@@ -145,26 +145,27 @@ function AdminDirectLoginCard() {
       setError(res.reason || "Login failed.");
       return;
     }
-    const isAdmin = email.trim().toLowerCase() === "admin@gmail.com" || email.includes("admin");
+    const cleanEmail = email.trim().toLowerCase();
+    const isAdmin = cleanEmail.includes("learningskilledge") || cleanEmail.includes("admin");
     router.push(isAdmin ? "/admin" : "/dashboard");
   };
 
   return (
     <div className="w-full clay-card p-5 space-y-3.5 border-line/60">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Direct Admin Sign In</span>
-        <span className="chip text-[10px] text-amber-400 border-amber-500/30 bg-amber-500/10">Credentials</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Official Admin Sign In</span>
+        <span className="chip text-[10px] text-amber-400 border-amber-500/30 bg-amber-500/10">Production</span>
       </div>
 
       <form onSubmit={handleLogin} className="space-y-3">
         {error && <p className="text-xs text-rose-400 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">{error}</p>}
         <div>
-          <label className="text-[11px] font-semibold text-zinc-400 block mb-1">Email</label>
+          <label className="text-[11px] font-semibold text-zinc-400 block mb-1">Admin Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@gmail.com"
+            placeholder="learningskilledge@gmail.com"
             className="input-dark text-xs"
           />
         </div>
@@ -174,18 +175,16 @@ function AdminDirectLoginCard() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="seladmin@123"
+            placeholder="SelAdmin#2026!"
             className="input-dark text-xs"
           />
         </div>
         <button type="submit" className="btn-primary w-full py-2.5 text-xs font-semibold">
-          Sign In as Admin
+          Sign In to Admin OS
         </button>
       </form>
-      <p className="text-[11px] text-zinc-500 text-center">
-        Quick Admin Access: <code className="text-amber-400">admin@gmail.com</code> / <code className="text-amber-400">seladmin@123</code>
-      </p>
     </div>
   );
 }
+
 
