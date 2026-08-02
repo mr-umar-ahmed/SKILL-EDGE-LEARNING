@@ -1,30 +1,115 @@
+import type { PlanId, Subscription } from "./types";
+
 export function cn(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export const COIN = "ↁ";
-export const INR_TO_COINS = 2; // 10 INR = 20 EdgeCoins
+/* ------------------------------ neurons ------------------------------ */
 
-export function fmtCoins(n: number) {
-  return `${COIN}${n.toLocaleString("en-IN")}`;
+export const NEURON = "⬢"; // hexagon glyph — pair with the Lucide Hexagon icon in UI
+export const INR_TO_NEURONS = 2; // 10 INR = 20 Neurons
+
+export function fmtNeurons(n: number) {
+  return `${NEURON} ${n.toLocaleString("en-IN")}`;
 }
+
+/** @deprecated v1 aliases — use NEURON / fmtNeurons */
+export const COIN = NEURON;
+export const INR_TO_COINS = INR_TO_NEURONS;
+export const fmtCoins = fmtNeurons;
 
 export function fmtNum(n: number) {
   return n.toLocaleString("en-IN");
 }
 
+export function fmtInr(n: number) {
+  return `₹${n.toLocaleString("en-IN")}`;
+}
+
+/* ------------------------------- plans ------------------------------- */
+
+export interface PlanDef {
+  id: PlanId;
+  name: string;
+  priceInr: number; // 0 for free
+  period: "forever" | "month" | "year" | "lifetime";
+  tagline: string;
+  features: string[];
+  highlight?: boolean;
+}
+
+export const PLANS: PlanDef[] = [
+  {
+    id: "FREE",
+    name: "Free",
+    priceInr: 0,
+    period: "forever",
+    tagline: "Start building today",
+    features: [
+      "First 4 missions of every skill",
+      "Project submissions & feedback",
+      "Basic certificates",
+      "Community access",
+      "Ad-supported",
+    ],
+  },
+  {
+    id: "PRO_MONTHLY",
+    name: "Pro Monthly",
+    priceInr: 499,
+    period: "month",
+    tagline: "The full Skill OS",
+    features: [
+      "All skills, all missions",
+      "Priority project reviews",
+      "Full portfolio & share link",
+      "All certificates + QR verification",
+      "Weekly challenges & tournaments",
+      "Completely ad-free",
+    ],
+    highlight: true,
+  },
+  {
+    id: "PRO_YEARLY",
+    name: "Pro Yearly",
+    priceInr: 4999,
+    period: "year",
+    tagline: "2 months free",
+    features: ["Everything in Pro Monthly", "₹417/month effective", "Yearly progress report", "Completely ad-free"],
+  },
+  {
+    id: "FOUNDER_LIFETIME",
+    name: "Founder Lifetime",
+    priceInr: 2999,
+    period: "lifetime",
+    tagline: "Launch price — list ₹4,999",
+    features: [
+      "Lifetime access to everything",
+      "Founder badge on profile & portfolio",
+      "All future skills included",
+      "Priority access to new features",
+      "Exclusive founder community",
+      "Completely ad-free",
+    ],
+  },
+];
+
+export function planDef(id: PlanId): PlanDef {
+  return PLANS.find((p) => p.id === id) ?? PLANS[0];
+}
+
+export function isPaidPlan(sub: Subscription | undefined | null): boolean {
+  if (!sub) return false;
+  if (sub.plan === "FREE") return false;
+  if (sub.status !== "ACTIVE") return false;
+  if (sub.expiresAt && new Date(sub.expiresAt).getTime() < Date.now()) return false;
+  return true;
+}
+
+/* ---------------------------- xp & tiers ---------------------------- */
+
 /** XP thresholds for level badges 1-10 */
 export const XP_THRESHOLDS = [0, 250, 600, 1050, 1600, 2250, 3000, 3900, 4900, 6000];
-
-export const STUDENT_TIER_THRESHOLDS = [
-  { tierNumber: 1, name: "Starter", icon: "🌱", color: "#9ca3af", minXp: 0 },
-  { tierNumber: 2, name: "Explorer", icon: "🧭", color: "#3b82f6", minXp: 1000 },
-  { tierNumber: 3, name: "Builder", icon: "🔨", color: "#a855f7", minXp: 3000 },
-  { tierNumber: 4, name: "Operator", icon: "🚀", color: "#f97316", minXp: 6000 },
-  { tierNumber: 5, name: "Pro", icon: "👑", color: "#eab308", minXp: 10000 },
-  { tierNumber: 6, name: "Elite", icon: "💎", color: "#d97706", minXp: 15000 },
-  { tierNumber: 7, name: "Master Practitioner", icon: "🏆", color: "#e2e8f0", minXp: 25000 },
-];
 
 export function levelForXp(xp: number) {
   let lvl = 1;
@@ -32,14 +117,6 @@ export function levelForXp(xp: number) {
     if (xp >= XP_THRESHOLDS[i]) lvl = i + 1;
   }
   return lvl;
-}
-
-export function studentTierForXp(xp: number) {
-  let tier = STUDENT_TIER_THRESHOLDS[0];
-  for (const t of STUDENT_TIER_THRESHOLDS) {
-    if (xp >= t.minXp) tier = t;
-  }
-  return tier;
 }
 
 /** progress (0-1) toward the next level badge */
@@ -50,6 +127,8 @@ export function xpProgress(xp: number) {
   const next = XP_THRESHOLDS[lvl];
   return Math.min(1, (xp - cur) / (next - cur));
 }
+
+/* ------------------------------- ids ------------------------------- */
 
 let counter = 0;
 export function uid(prefix = "id") {
@@ -71,6 +150,8 @@ export function verificationHash(input: string) {
   const hex = (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).toUpperCase();
   return `SE-${hex.padStart(13, "0")}`;
 }
+
+/* ------------------------------- dates ------------------------------- */
 
 export function todayKey(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -124,4 +205,26 @@ export function countdownParts(ms: number) {
   const m = Math.floor((clamped % 3600000) / 60000);
   const s = Math.floor((clamped % 60000) / 1000);
   return { d, h, m, s };
+}
+
+/* --------------------------- misc formatting --------------------------- */
+
+export function fmtBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function fmtMinutes(min: number) {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+/** admin allowlist — env-driven with sane defaults */
+export function adminEmails(): string[] {
+  const env = process.env.NEXT_PUBLIC_ADMIN_EMAILS || "";
+  const defaults = ["skilledgelearning@gmail.com", "mylearning069@gmail.com"];
+  return Array.from(new Set([...defaults, ...env.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)]));
 }

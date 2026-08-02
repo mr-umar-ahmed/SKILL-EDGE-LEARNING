@@ -1,4 +1,16 @@
-import type { AppState, Level, Question, Quiz, Skill, StudentTier, User } from "./types";
+import type {
+  AppState,
+  Assignment,
+  BadgeDef,
+  Difficulty,
+  LearningResource,
+  Mission,
+  Question,
+  Quiz,
+  Skill,
+  StudentTier,
+  SubmissionKind,
+} from "./types";
 
 export const STUDENT_TIERS: StudentTier[] = [
   {
@@ -6,7 +18,7 @@ export const STUDENT_TIERS: StudentTier[] = [
     name: "Starter",
     color: "Light Gray",
     hexColor: "#9ca3af",
-    icon: "🌱",
+    iconName: "Sprout",
     requirements: ["Create account", "Complete profile", "Start first mission"],
     rewards: ["Access to beginner skills", "Daily XP", "Starter Badge", "Community Access"],
     minXp: 0,
@@ -18,7 +30,7 @@ export const STUDENT_TIERS: StudentTier[] = [
     name: "Explorer",
     color: "Blue",
     hexColor: "#3b82f6",
-    icon: "🧭",
+    iconName: "Compass",
     requirements: ["Earn 1,000 XP", "Complete 1 Skill", "Maintain a 7-Day Streak"],
     rewards: ["Explorer Badge", "Skill Certificate", "Portfolio Access", "Weekly Challenges"],
     minXp: 1000,
@@ -30,7 +42,7 @@ export const STUDENT_TIERS: StudentTier[] = [
     name: "Builder",
     color: "Purple",
     hexColor: "#a855f7",
-    icon: "🔨",
+    iconName: "Hammer",
     requirements: ["Earn 3,000 XP", "Complete 3 Skills", "Submit 10 Projects"],
     rewards: ["Builder Badge", "Advanced Projects", "Exclusive Resources", "Priority Community Access"],
     minXp: 3000,
@@ -42,7 +54,7 @@ export const STUDENT_TIERS: StudentTier[] = [
     name: "Operator",
     color: "Orange",
     hexColor: "#f97316",
-    icon: "🚀",
+    iconName: "Rocket",
     requirements: ["Earn 6,000 XP", "Complete 5 Skills", "Complete 2 Capstone Projects"],
     rewards: ["Operator Badge", "AI Mentor Access", "Premium Challenges", "Featured Portfolio"],
     minXp: 6000,
@@ -54,7 +66,7 @@ export const STUDENT_TIERS: StudentTier[] = [
     name: "Pro",
     color: "Gold",
     hexColor: "#eab308",
-    icon: "👑",
+    iconName: "Crown",
     requirements: ["Earn 10,000 XP", "Complete 8 Skills", "Build Professional Portfolio", "Earn at least one Excellence Certificate"],
     rewards: ["Pro Badge", "Verified Portfolio", "Priority Certificate Verification", "Career Opportunities", "Internship Recommendations"],
     minXp: 10000,
@@ -66,7 +78,7 @@ export const STUDENT_TIERS: StudentTier[] = [
     name: "Elite",
     color: "Black + Gold",
     hexColor: "#d97706",
-    icon: "💎",
+    iconName: "Gem",
     requirements: ["Earn 15,000 XP", "Complete All 12 Skills", "Complete Every Capstone Project", "Build Complete Portfolio"],
     rewards: ["Elite Badge", "Elite Certificate", "Featured Student Profile", "Exclusive Community", "Founder Recognition"],
     minXp: 15000,
@@ -78,7 +90,7 @@ export const STUDENT_TIERS: StudentTier[] = [
     name: "Master Practitioner",
     color: "Platinum + Gold",
     hexColor: "#e2e8f0",
-    icon: "🏆",
+    iconName: "Trophy",
     requirements: ["Complete Every Skill", "Maintain 90%+ Overall Score", "Earn Excellence in Multiple Skills", "Build an Industry-Ready Portfolio"],
     rewards: ["Master Practitioner Certificate", "Platinum Badge", "Hall of Fame Profile", "Mentor Access", "Premium Career Opportunities"],
     minXp: 25000,
@@ -101,7 +113,7 @@ export const XP_REWARDS = {
 
 export const TIERS = STUDENT_TIERS.map((t) => t.name);
 
-export const CERT_TIERS = [5, 8, 10];
+export const CERT_TIERS = [5, 10];
 
 /* ---------------------------------- quotes --------------------------------- */
 
@@ -487,16 +499,167 @@ const SEEDS: SkillSeed[] = [
   },
 ];
 
-/* ------------------------------ level builder ------------------------------ */
 
-function buildLevels(seed: SkillSeed): Level[] {
-  return seed.levels.map(([title, mission], i) => {
+/* --------------------------- per-skill submission config --------------------------- */
+
+interface SkillSubmitCfg {
+  kinds: SubmissionKind[];
+  proof: string[]; // what proof of work looks like for this skill
+}
+
+const SUBMIT_CFG: Record<string, SkillSubmitCfg> = {
+  "ai-prompt-engineering": {
+    kinds: ["TEXT", "URL", "GOOGLE_DRIVE", "GITHUB", "NOTION", "FILE"],
+    proof: ["Shared chat/conversation links", "Prompt document with outputs", "Screenshots of results", "Workflow export file"],
+  },
+  "vibe-coding": {
+    kinds: ["GITHUB", "URL", "TEXT", "FILE"],
+    proof: ["GitHub repository link", "Live deployed URL", "Screen recording of the app working"],
+  },
+  entrepreneurship: {
+    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "NOTION", "CANVA", "FILE"],
+    proof: ["Interview notes document", "Lean canvas / pitch deck link", "Landing page URL", "Waitlist screenshot"],
+  },
+  "financial-literacy": {
+    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "FILE"],
+    proof: ["Spreadsheet link (Google Sheets)", "Budget/model screenshots", "Written analysis"],
+  },
+  freelancing: {
+    kinds: ["TEXT", "URL", "GOOGLE_DRIVE", "NOTION", "FILE"],
+    proof: ["Profile/proposal links", "Outreach tracking sheet", "Portfolio pieces", "Client conversation screenshots (redacted)"],
+  },
+  "content-creation": {
+    kinds: ["URL", "YOUTUBE", "TEXT", "GOOGLE_DRIVE", "NOTION"],
+    proof: ["Published post/thread links", "Analytics screenshots", "Content calendar link"],
+  },
+  "video-editing": {
+    kinds: ["YOUTUBE", "GOOGLE_DRIVE", "URL", "FILE"],
+    proof: ["Exported video link (Drive/YouTube)", "Before/after clips", "Project file screenshot"],
+  },
+  "sales-negotiation": {
+    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "FILE"],
+    proof: ["Written scripts and frameworks", "Role-play recording link", "Deal/negotiation prep document"],
+  },
+  communication: {
+    kinds: ["TEXT", "GOOGLE_DRIVE", "URL", "YOUTUBE", "FILE"],
+    proof: ["Before/after rewrites", "Recorded talk link", "One-page brief document"],
+  },
+  "public-speaking": {
+    kinds: ["YOUTUBE", "GOOGLE_DRIVE", "URL", "TEXT"],
+    proof: ["Recording of your talk (video link)", "Slide deck link", "Self-review notes"],
+  },
+  productivity: {
+    kinds: ["TEXT", "NOTION", "URL", "GOOGLE_DRIVE", "FILE"],
+    proof: ["Notion/Obsidian dashboard link", "Time audit screenshots", "System documentation"],
+  },
+  "project-management": {
+    kinds: ["TEXT", "NOTION", "URL", "GOOGLE_DRIVE", "FILE"],
+    proof: ["Board/charter link", "Sprint plan document", "Status report", "Retro notes"],
+  },
+};
+
+const DEFAULT_CFG: SkillSubmitCfg = {
+  kinds: ["TEXT", "URL", "GOOGLE_DRIVE", "FILE"],
+  proof: ["Links to your work", "Screenshots", "A short write-up"],
+};
+
+/** Extra curated starter resources attached to mission 1 of each skill */
+const STARTER_RESOURCES: Record<string, LearningResource[]> = {
+  "ai-prompt-engineering": [
+    { id: "res-ai-guide", type: "ARTICLE", title: "Prompt Engineering Guide", url: "https://www.promptingguide.ai/", minutes: 25 },
+  ],
+  "vibe-coding": [
+    { id: "res-vc-nextjs", type: "ARTICLE", title: "Next.js Learn Course", url: "https://nextjs.org/learn", minutes: 40 },
+  ],
+  entrepreneurship: [
+    { id: "res-ent-ycstartup", type: "ARTICLE", title: "YC Startup School", url: "https://www.startupschool.org/", minutes: 30 },
+    { id: "res-ent-leancanvas", type: "TEMPLATE", title: "Lean Canvas Template", url: "https://www.canva.com/templates/?query=lean-canvas", minutes: 10 },
+  ],
+  "financial-literacy": [
+    { id: "res-fin-zerodha", type: "ARTICLE", title: "Zerodha Varsity — Personal Finance", url: "https://zerodha.com/varsity/module/personalfinance/", minutes: 45 },
+  ],
+  freelancing: [
+    { id: "res-fr-upwork", type: "ARTICLE", title: "Upwork Freelancer Guide", url: "https://www.upwork.com/resources/how-to-get-started-freelancing", minutes: 20 },
+  ],
+  "content-creation": [
+    { id: "res-cc-hooks", type: "TEMPLATE", title: "Viral Hook Templates", url: "https://www.notion.so/templates/category/social-media", minutes: 15 },
+  ],
+  "video-editing": [
+    { id: "res-ve-capcut", type: "ARTICLE", title: "CapCut Official Tutorials", url: "https://www.capcut.com/resource", minutes: 20 },
+  ],
+  "sales-negotiation": [
+    { id: "res-sn-spin", type: "ARTICLE", title: "SPIN Selling Summary", url: "https://blog.hubspot.com/sales/spin-selling", minutes: 15 },
+  ],
+  communication: [
+    { id: "res-com-pyramid", type: "ARTICLE", title: "The Minto Pyramid Principle", url: "https://untools.co/minto-pyramid/", minutes: 10 },
+  ],
+  "public-speaking": [
+    { id: "res-ps-ted", type: "ARTICLE", title: "TED's Secret to Great Public Speaking", url: "https://www.ted.com/talks/chris_anderson_ted_s_secret_to_great_public_speaking", minutes: 8 },
+  ],
+  productivity: [
+    { id: "res-pr-para", type: "ARTICLE", title: "The PARA Method", url: "https://fortelabs.com/blog/para/", minutes: 15 },
+  ],
+  "project-management": [
+    { id: "res-pm-agile", type: "ARTICLE", title: "Agile Manifesto & Principles", url: "https://agilemanifesto.org/", minutes: 10 },
+  ],
+};
+
+/* ------------------------------ mission builder ------------------------------ */
+
+const MISSION_PHASES = [
+  "Foundation",
+  "Foundation",
+  "Foundation",
+  "Practice",
+  "Practice",
+  "Practice",
+  "Advanced",
+  "Advanced",
+  "Pro",
+  "Capstone",
+];
+
+function difficultyFor(n: number): Difficulty {
+  if (n <= 3) return "Beginner";
+  if (n <= 6) return "Intermediate";
+  if (n <= 9) return "Advanced";
+  return "Expert";
+}
+
+function buildAssignment(seed: SkillSeed, n: number, brief: string): Assignment {
+  const cfg = SUBMIT_CFG[seed.id] ?? DEFAULT_CFG;
+  const isCapstone = n === 10;
+  return {
+    brief,
+    deliverables: [
+      isCapstone ? "The finished capstone project, publicly shareable" : "The completed practical task described above",
+      ...cfg.proof.slice(0, isCapstone ? cfg.proof.length : 2),
+      "A 3-5 line write-up: what you built, what broke, what you learned",
+    ],
+    checklist: [
+      "Go through every learning resource in this mission",
+      `Do the work: ${brief.length > 90 ? brief.slice(0, 90).trimEnd() + "…" : brief}`,
+      `Collect proof of work (${cfg.proof[0].toLowerCase()})`,
+      "Answer the reflection questions honestly",
+      "Submit for review — resubmissions are encouraged, not penalized",
+    ],
+    allowedSubmissionTypes: cfg.kinds,
+  };
+}
+
+const REFLECTIONS_BASE = [
+  "What was the hardest part of this mission, and how did you push through it?",
+  "If you repeated this mission tomorrow, what would you do differently?",
+  "How will you apply what you built here to a real project, client, or audience this week?",
+];
+
+function buildMissions(seed: SkillSeed): Mission[] {
+  return seed.levels.map(([title, brief], i) => {
     const n = i + 1;
-    // rotate the 6-question bank so each level's 5-question quiz feels different
+    // rotate the 6-question bank so each mission's 5-question knowledge check differs
     const qs: Question[] = [];
     for (let k = 0; k < 5; k++) {
       const [prompt, correct, ...wrong] = seed.bank[(i + k) % seed.bank.length];
-      // deterministic option shuffle keyed by level+question index
       const opts = [correct, ...wrong];
       const rot = (i + k) % opts.length;
       const rotated = [...opts.slice(rot), ...opts.slice(0, rot)];
@@ -507,69 +670,127 @@ function buildLevels(seed: SkillSeed): Level[] {
         answerIndex: rotated.indexOf(correct),
       });
     }
+
+    const resources: LearningResource[] = [
+      {
+        id: `${seed.id}-l${n}-video`,
+        type: "VIDEO",
+        title: `${title} — video lesson`,
+        url: seed.videoIds[i % seed.videoIds.length],
+        minutes: 15,
+      },
+      ...(n === 1 ? STARTER_RESOURCES[seed.id] ?? [] : []),
+    ];
+
     return {
       id: `${seed.id}-level-${n}`,
       skillId: seed.id,
-      levelNumber: n,
+      order: n,
       title,
-      tier: TIERS[i],
-      description: mission,
-      activityContent: [
-        `Mission: ${mission}`,
-        "Capture proof of work — a screenshot, link, recording or short write-up of what you produced.",
-        "Reflect in 3 lines: what worked, what broke, and the one thing you will try differently next time.",
-      ],
-      youtubeVideoId: seed.videoIds[i % seed.videoIds.length],
-      minPassScore: 80,
-      coinReward: n <= 6 ? 10 + n * 5 : n * 8,
+      tier: MISSION_PHASES[i],
+      objective: brief,
+      expectedOutcome:
+        n === 10
+          ? "A portfolio-grade capstone project you can show to employers, clients or investors."
+          : "A real, reviewable piece of work added to your portfolio once approved.",
+      description: brief,
+      difficulty: difficultyFor(n),
+      estimatedMinutes: 30 + n * 15,
+      prerequisites: n > 1 ? [`${seed.id}-level-${n - 1}`] : [],
+      resources,
+      assignment: buildAssignment(seed, n, brief),
+      reflectionQuestions: REFLECTIONS_BASE,
+      quiz: qs,
       xpReward: n * 50,
-      isPremium: n >= 7,
-      questions: qs,
+      neuronReward: n <= 6 ? 10 + n * 5 : n * 8,
+      isPremium: n >= 5,
+      isLocked: false,
     };
   });
 }
 
 const SKILL_IMAGES: Record<string, string> = {
-  "ai-prompt-engineering": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+  "ai-prompt-engineering": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80",
   "vibe-coding": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
-  "personal-branding": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
-  "digital-marketing": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-  "personal-finance": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
-  "freelancing": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
-  "ui-ux-design": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=800&q=80",
+  entrepreneurship: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=800&q=80",
+  "financial-literacy": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
+  freelancing: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
+  "content-creation": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80",
   "video-editing": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80",
-  "sales-negotiation": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80",
-  "communication": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80",
-  "public-speaking": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
-  "productivity": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80",
+  "sales-negotiation": "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=800&q=80",
+  communication: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80",
+  "public-speaking": "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=800&q=80",
+  productivity: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80",
+  "project-management": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
 };
 
-export const SKILLS: Skill[] = SEEDS.map((seed) => ({
-  id: seed.id,
-  title: seed.title,
-  category: seed.category,
-  iconName: seed.iconName,
-  description: seed.description,
-  color: seed.color,
-  imageUrl: SEEDS && SKILL_IMAGES[seed.id] ? SKILL_IMAGES[seed.id] : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-  premiumCost: 200,
-  levels: buildLevels(seed),
-}));
+const SKILL_DIFFICULTY: Record<string, Difficulty> = {
+  "ai-prompt-engineering": "Beginner",
+  "vibe-coding": "Intermediate",
+  entrepreneurship: "Intermediate",
+  "financial-literacy": "Beginner",
+  freelancing: "Beginner",
+  "content-creation": "Beginner",
+  "video-editing": "Beginner",
+  "sales-negotiation": "Intermediate",
+  communication: "Beginner",
+  "public-speaking": "Beginner",
+  productivity: "Beginner",
+  "project-management": "Intermediate",
+};
 
-export function getSkill(skillId: string) {
-  return SKILLS.find((s) => s.id === skillId);
+export const SKILLS: Skill[] = SEEDS.map((seed) => {
+  const missions = buildMissions(seed);
+  return {
+    id: seed.id,
+    title: seed.title,
+    category: seed.category,
+    iconName: seed.iconName,
+    description: seed.description,
+    color: seed.color,
+    thumbnailUrl: SKILL_IMAGES[seed.id] ?? "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
+    difficulty: SKILL_DIFFICULTY[seed.id] ?? "Beginner",
+    estimatedHours: Math.round(missions.reduce((sum, m) => sum + m.estimatedMinutes, 0) / 60),
+    missions,
+    isPublished: true,
+  };
+});
+
+/* --------------------------------- badges --------------------------------- */
+
+export const BADGES: BadgeDef[] = [
+  { id: "first-mission", name: "First Ship", description: "Got your first project approved", iconName: "Flag", color: "#3b82f6" },
+  { id: "projects-5", name: "Builder", description: "5 approved projects", iconName: "Hammer", color: "#8b5cf6" },
+  { id: "projects-20", name: "Shipping Machine", description: "20 approved projects", iconName: "Package", color: "#06b6d4" },
+  { id: "streak-7", name: "Week Warrior", description: "7-day learning streak", iconName: "Flame", color: "#f97316" },
+  { id: "streak-30", name: "Unstoppable", description: "30-day learning streak", iconName: "Flame", color: "#ef4444" },
+  { id: "phase-complete", name: "Phase Cleared", description: "Completed a skill phase", iconName: "Milestone", color: "#eab308" },
+  { id: "skill-complete", name: "Skill Master", description: "Completed all 10 missions of a skill", iconName: "GraduationCap", color: "#22c55e" },
+  { id: "tournament-winner", name: "Arena Champion", description: "Won a weekly tournament", iconName: "Trophy", color: "#facc15" },
+  { id: "founder", name: "Founding Member", description: "Founder Lifetime supporter", iconName: "Crown", color: "#8b5cf6" },
+];
+
+export function badgeDef(id: string): BadgeDef | undefined {
+  return BADGES.find((b) => b.id === id);
 }
 
-export function getLevel(skillId: string, levelNumber: number) {
-  return getSkill(skillId)?.levels.find((l) => l.levelNumber === levelNumber);
+/* ------------------------------ catalog lookups ------------------------------ */
+
+export function findSkill(catalog: Skill[], skillId: string) {
+  return catalog.find((s) => s.id === skillId);
 }
 
-export function getLevelById(levelId: string) {
-  for (const s of SKILLS) {
-    const l = s.levels.find((lv) => lv.id === levelId);
-    if (l) return { skill: s, level: l };
+export function findMission(catalog: Skill[], missionId: string): { skill: Skill; mission: Mission } | null {
+  for (const s of catalog) {
+    const m = s.missions.find((mm) => mm.id === missionId);
+    if (m) return { skill: s, mission: m };
   }
   return null;
+}
+
+/** static-seed lookup (used for quiz seeds only — pages must use the store catalog) */
+export function getSkill(skillId: string) {
+  return SKILLS.find((s) => s.id === skillId);
 }
 
 /* --------------------------------- seed state ------------------------------- */
@@ -579,76 +800,12 @@ const iso = (offsetMs: number) => new Date(now + offsetMs).toISOString();
 const H = 3600000;
 const D = 24 * H;
 
-const seedUsers: User[] = [
-  {
-    id: "u-student",
-    name: "Aarav Mehta",
-    email: "mylearning069@gmail.com",
-    role: "USER",
-    avatar: "🧑‍🚀",
-    edgeCoins: 240,
-    xp: 1250,
-    streakCount: 4,
-    lastActiveDay: null,
-    createdAt: iso(-45 * D),
-  },
-  {
-    id: "u-admin",
-    name: "Skill Edge Admin",
-    email: "skilledgelearning@gmail.com",
-    password: "seladmin",
-    role: "ADMIN",
-    avatar: "🛡️",
-    edgeCoins: 1000,
-    xp: 5000,
-    streakCount: 30,
-    lastActiveDay: null,
-    createdAt: iso(-90 * D),
-  },
-  {
-    id: "u-zara",
-    name: "Zara Khan",
-    email: "zara.builds@gmail.com",
-    role: "USER",
-    avatar: "🦊",
-    edgeCoins: 510,
-    xp: 2380,
-    streakCount: 11,
-    lastActiveDay: null,
-    createdAt: iso(-60 * D),
-  },
-  {
-    id: "u-kabir",
-    name: "Kabir Rao",
-    email: "kabir.rao.dev@gmail.com",
-    role: "USER",
-    avatar: "🐺",
-    edgeCoins: 95,
-    xp: 640,
-    streakCount: 2,
-    lastActiveDay: null,
-    createdAt: iso(-20 * D),
-  },
-  {
-    id: "u-ishita",
-    name: "Ishita Verma",
-    email: "ishita.creates@gmail.com",
-    role: "USER",
-    avatar: "🐙",
-    edgeCoins: 320,
-    xp: 1710,
-    streakCount: 7,
-    lastActiveDay: null,
-    createdAt: iso(-33 * D),
-  },
-];
-
 const quizBankFrom = (skillId: string, count: number): Question[] => {
   const skill = getSkill(skillId)!;
   const qs: Question[] = [];
   const seen = new Set<string>();
-  for (const lvl of skill.levels) {
-    for (const q of lvl.questions) {
+  for (const m of skill.missions) {
+    for (const q of m.quiz) {
       if (!seen.has(q.prompt) && qs.length < count) {
         seen.add(q.prompt);
         qs.push({ ...q, id: `qz-${q.id}` });
@@ -663,9 +820,9 @@ const seedQuizzes: Quiz[] = [
     id: "quiz-ai-battle",
     title: "AI Prompt Battle Royale",
     category: "AI & Automation",
-    entryFeeCoins: 20,
-    prizePoolCoins: 500,
-    startTime: iso(-10 * 60000), // live now
+    entryFeeNeurons: 20,
+    prizePoolNeurons: 500,
+    startTime: iso(2 * D),
     durationMins: 45,
     secondsPerQuestion: 15,
     questions: quizBankFrom("ai-prompt-engineering", 6),
@@ -676,138 +833,50 @@ const seedQuizzes: Quiz[] = [
     id: "quiz-founder-gauntlet",
     title: "Founder Gauntlet: Startup IQ",
     category: "Business & Money",
-    entryFeeCoins: 0,
-    prizePoolCoins: 300,
-    startTime: iso(2 * D + 3 * H),
+    entryFeeNeurons: 0,
+    prizePoolNeurons: 300,
+    startTime: iso(5 * D + 3 * H),
     durationMins: 30,
     secondsPerQuestion: 15,
     questions: quizBankFrom("entrepreneurship", 6),
     isActive: true,
     winnersDeclared: false,
   },
-  {
-    id: "quiz-money-masters",
-    title: "Money Masters Weekly",
-    category: "Business & Money",
-    entryFeeCoins: 10,
-    prizePoolCoins: 400,
-    startTime: iso(-7 * D),
-    durationMins: 30,
-    secondsPerQuestion: 15,
-    questions: quizBankFrom("financial-literacy", 6),
-    isActive: false,
-    winnersDeclared: true,
-  },
 ];
 
 export function seedState(): AppState {
-  // student has completed the first 3 AI levels + first vibe-coding level
-  const studentCompleted: Record<string, { score: number; completedAt: string }> = {
-    "ai-prompt-engineering-level-1": { score: 100, completedAt: iso(-6 * D) },
-    "ai-prompt-engineering-level-2": { score: 90, completedAt: iso(-4 * D) },
-    "ai-prompt-engineering-level-3": { score: 85, completedAt: iso(-2 * D) },
-    "vibe-coding-level-1": { score: 95, completedAt: iso(-1 * D) },
-  };
   return {
-    version: 1,
-    currentUserId: "u-student",
-    users: seedUsers,
-    progress: {
-      "u-student": { completed: studentCompleted, premiumUnlocks: {} },
-      "u-zara": {
-        completed: {
-          "content-creation-level-1": { score: 90, completedAt: iso(-9 * D) },
-          "content-creation-level-2": { score: 100, completedAt: iso(-8 * D) },
-        },
-        premiumUnlocks: {},
-      },
-      "u-kabir": { completed: {}, premiumUnlocks: {} },
-      "u-ishita": { completed: {}, premiumUnlocks: {} },
-    },
-    transactions: [
-      {
-        id: "txn-seed-1",
-        userId: "u-student",
-        amountCoins: 15,
-        amountInr: null,
-        type: "EARNED",
-        status: "APPROVED",
-        note: "Completed AI Tools · Level 1 — Prompt Anatomy 101",
-        createdAt: iso(-6 * D),
-      },
-      {
-        id: "txn-seed-2",
-        userId: "u-student",
-        amountCoins: 20,
-        amountInr: null,
-        type: "EARNED",
-        status: "APPROVED",
-        note: "Completed AI Tools · Level 2 — System Prompts & Personas",
-        createdAt: iso(-4 * D),
-      },
-      {
-        id: "txn-seed-3",
-        userId: "u-student",
-        amountCoins: 25,
-        amountInr: null,
-        type: "EARNED",
-        status: "APPROVED",
-        note: "Completed AI Tools · Level 3 — Few-Shot & Chain-of-Thought",
-        createdAt: iso(-2 * D),
-      },
-      {
-        id: "txn-seed-4",
-        userId: "u-student",
-        amountCoins: 100,
-        amountInr: 50,
-        type: "PURCHASED",
-        status: "APPROVED",
-        utrNumber: "417223981102",
-        note: "EdgeCoin top-up via UPI",
-        createdAt: iso(-3 * D),
-      },
-      {
-        id: "txn-seed-5",
-        userId: "u-kabir",
-        amountCoins: 200,
-        amountInr: 100,
-        type: "PURCHASED",
-        status: "PENDING",
-        utrNumber: "889301247765",
-        proofImageName: "upi-receipt-kabir.png",
-        note: "EdgeCoin top-up via UPI",
-        createdAt: iso(-5 * H),
-      },
-      {
-        id: "txn-seed-6",
-        userId: "u-student",
-        amountCoins: 15,
-        amountInr: null,
-        type: "EARNED",
-        status: "APPROVED",
-        note: "Completed Vibe Coding · Level 1 — Dev Setup Speedrun",
-        createdAt: iso(-1 * D),
-      },
-    ],
+    version: 2,
+    currentUserId: "",
+    users: [],
+    catalog: SKILLS,
+    progress: {},
+    submissions: [],
+    portfolio: [],
+    transactions: [],
+    payments: [],
+    coupons: [{ code: "LAUNCH20", percentOff: 20, active: true }],
     quizzes: seedQuizzes,
-    quizEntries: [
-      { quizId: "quiz-money-masters", userId: "u-zara", joinedAt: iso(-7 * D - H), score: 88, rank: 1, prizeWonCoins: 200 },
-      { quizId: "quiz-money-masters", userId: "u-ishita", joinedAt: iso(-7 * D - H), score: 74, rank: 2, prizeWonCoins: 120 },
-      { quizId: "quiz-money-masters", userId: "u-kabir", joinedAt: iso(-7 * D - H), score: 61, rank: 3, prizeWonCoins: 80 },
-      { quizId: "quiz-ai-battle", userId: "u-zara", joinedAt: iso(-30 * 60000), score: 92 },
-      { quizId: "quiz-ai-battle", userId: "u-ishita", joinedAt: iso(-25 * 60000), score: 78 },
-    ],
+    quizEntries: [],
     certificates: [],
-    notifications: [
+    notifications: [],
+    announcements: [
       {
-        id: "ntf-seed-1",
-        userId: "u-student",
-        message: "Welcome to Skill Edge OS! Complete today's mission to keep your 🔥 streak alive.",
-        kind: "info",
-        createdAt: iso(-2 * H),
-        read: false,
+        id: "ann-welcome",
+        title: "Welcome to Skill Edge Learning",
+        body: "SEL is a skill operating system: every mission produces real work, every skill builds your portfolio. Start your first mission today.",
+        createdAt: iso(0),
       },
     ],
-    overrides: {},
   };
+}
+
+/* ------------------------------ student tier lookup ------------------------------ */
+
+export function studentTierForXp(xp: number): StudentTier {
+  let tier = STUDENT_TIERS[0];
+  for (const t of STUDENT_TIERS) {
+    if (xp >= t.minXp) tier = t;
+  }
+  return tier;
 }

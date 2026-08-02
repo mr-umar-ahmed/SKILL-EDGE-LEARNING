@@ -2,82 +2,303 @@
 
 import { useUser } from "@clerk/nextjs";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { CERT_TIERS, SKILLS, getLevelById, getSkill, seedState } from "./data";
+import { BADGES, CERT_TIERS, SKILLS, findMission, findSkill, seedState } from "./data";
 import type {
+  Announcement,
   AppNotification,
   AppState,
   Certificate,
-  Level,
-  LevelOverride,
+  Coupon,
+  Mission,
+  PaymentMethod,
+  PaymentRecord,
+  PlanId,
+  PortfolioItem,
   Quiz,
   Skill,
+  Submission,
+  SubmissionFile,
+  SubmissionKind,
+  SubmissionLink,
+  SubmissionStatus,
+  Subscription,
   Transaction,
   User,
   UserProgress,
+  V1AppState,
 } from "./types";
-import { INR_TO_COINS, isYesterdayKey, todayKey, uid, verificationHash } from "./utils";
+import {
+  INR_TO_NEURONS,
+  adminEmails,
+  isPaidPlan,
+  isYesterdayKey,
+  todayKey,
+  uid,
+  verificationHash,
+} from "./utils";
 
-const STORAGE_KEY = "skilledge-state-v1";
+const STORAGE_KEY_V2 = "skilledge-state-v2";
+const STORAGE_KEY_V1 = "skilledge-state-v1";
 
-export interface CompleteLevelResult {
-  passed: boolean;
-  firstPass: boolean;
-  coinsEarned: number;
+/* ------------------------------ migration v1 → v2 ------------------------------ */
+
+const V1_DEMO_IDS = new Set(["u-student", "u-admin", "u-zara", "u-kabir", "u-ishita"]);
+
+function migrateV1(v1: V1AppState): AppState {
+  const keptUsers = v1.users.filter((u) => !V1_DEMO_IDS.has(u.id));
+  const keptIds = new Set(keptUsers.map((u) => u.id));
+  const users: User[] = keptUsers.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    avatar: u.avatar,
+    title: u.title,
+    avatarFrame: u.avatarFrame,
+    bio: "",
+    neurons: u.edgeCoins,
+    xp: u.xp,
+    streakCount: u.streakCount,
+    lastActiveDay: u.lastActiveDay,
+    subscription: { plan: "FREE", status: "ACTIVE", startedAt: u.createdAt, expiresAt: null },
+    badges: [],
+    createdAt: u.createdAt,
+  }));
+
+  const fresh = seedState();
+  return {
+    ...fresh,
+    currentUserId: keptIds.has(v1.currentUserId) ? v1.currentUserId : "",
+    users,
+    progress: Object.fromEntries(Object.entries(v1.progress).filter(([userId]) => keptIds.has(userId))),
+    transactions: v1.transactions
+      .filter((t) => keptIds.has(t.userId))
+      .map((t) => ({
+        id: t.id,
+        userId: t.userId,
+        amountNeurons: t.amountCoins,
+        amountInr: t.amountInr,
+        type: t.type,
+        status: t.status,
+        utrNumber: t.utrNumber,
+        proofImageName: t.proofImageName,
+        note: t.note,
+        createdAt: t.createdAt,
+      })),
+    quizzes: v1.quizzes.map((q) => ({
+      id: q.id,
+      title: q.title,
+      category: q.category,
+      entryFeeNeurons: q.entryFeeCoins,
+      prizePoolNeurons: q.prizePoolCoins,
+      startTime: q.startTime,
+      durationMins: q.durationMins,
+      secondsPerQuestion: q.secondsPerQuestion,
+      questions: q.questions,
+      isActive: q.isActive,
+      winnersDeclared: q.winnersDeclared,
+    })),
+    quizEntries: v1.quizEntries
+      .filter((e) => keptIds.has(e.userId))
+      .map((e) => ({
+        quizId: e.quizId,
+        userId: e.userId,
+        joinedAt: e.joinedAt,
+        score: e.score,
+        rank: e.rank,
+        prizeWonNeurons: e.prizeWonCoins,
+      })),
+    certificates: v1.certificates.filter((c) => keptIds.has(c.userId)),
+    notifications: v1.notifications.filter((n) => keptIds.has(n.userId)),
+  };
+}
+
+function loadInitialState(): AppState {
+  return seedState();
+}
+
+/* --------------------------------- helpers --------------------------------- */
+
+function makeNotification(userId: string, message: string, kind: AppNotification["kind"] = "success"): AppNotification {
+  return { id: uid("ntf"), userId, message, kind, createdAt: new Date().toISOString(), read: false };
+}
+
+function subscriptionFor(planId: PlanId, prev?: Subscription): Subscription {
+  const now = new Date();
+  const expires =
+    planId === "PRO_MONTHLY"
+      ? new Date(now.getTime() + 30 * 86400000).toISOString()
+      : planId === "PRO_YEARLY"
+        ? new Date(now.getTime() + 365 * 86400000).toISOString()
+        : null;
+  return {
+    plan: planId,
+    status: "ACTIVE",
+    startedAt: prev?.plan === planId ? prev.startedAt : now.toISOString(),
+    expiresAt: expires,
+  };
+}
+
+/** apply daily streak bump to a user (mutably-safe copy) */
+function withStreak(u: User): User {
+  const today = todayKey();
+  if (u.lastActiveDay === today) return u;
+  const streak = u.lastActiveDay && isYesterdayKey(u.lastActiveDay) ? u.streakCount + 1 : 1;
+  return { ...u, streakCount: streak, lastActiveDay: today };
+}
+
+function grantBadges(u: User, approvedCount: number, extra: string[] = []): { user: User; earned: string[] } {
+  const want = new Set(u.badges);
+  const earned: string[] = [];
+  const tryAdd = (id: string) => {
+    if (!want.has(id)) {
+      want.add(id);
+      earned.push(id);
+    }
+  };
+  if (approvedCount >= 1) tryAdd("first-mission");
+  if (approvedCount >= 5) tryAdd("projects-5");
+  if (approvedCount >= 20) tryAdd("projects-20");
+  if (u.streakCount >= 7) tryAdd("streak-7");
+  if (u.streakCount >= 30) tryAdd("streak-30");
+  extra.forEach(tryAdd);
+  if (earned.length === 0) return { user: u, earned };
+  return { user: { ...u, badges: Array.from(want) }, earned };
+}
+
+export interface UnlockInfo {
+  unlocked: boolean;
+  reason?: "ADMIN_LOCKED" | "LOCKED_PREV" | "NEEDS_PRO";
+}
+
+export interface SubmitPayload {
+  note: string;
+  links: SubmissionLink[];
+  files: SubmissionFile[];
+  reflections: { question: string; answer: string }[];
+  resubmissionOf?: string;
+}
+
+export interface ReviewResult {
+  approved: boolean;
+  neuronsEarned: number;
   xpEarned: number;
+  badgesEarned: string[];
   certificate: Certificate | null;
 }
 
 interface AppApi {
   state: AppState;
   hydrated: boolean;
-  skills: Skill[];
-  currentUser: User;
+  /** published skills for students; admin sees all via state.catalog */
+  catalog: Skill[];
+  currentUser: User | null;
   isAdmin: boolean;
   isAuthenticated: boolean;
+  /** active paid plan (Pro or Founder) */
+  isPro: boolean;
   progressFor: (userId: string) => UserProgress;
   myProgress: UserProgress;
-  isLevelUnlocked: (skill: Skill, levelNumber: number, userId?: string) => boolean;
-  levelWithOverrides: (level: Level) => Level;
-  switchUser: (userId: string) => void;
-  completeLevel: (levelId: string, score: number) => CompleteLevelResult;
-  unlockPremium: (skillId: string) => boolean;
-  requestCoinPurchase: (amountInr: number, utrNumber: string, proofImageName?: string) => Transaction;
+  missionById: (missionId: string) => { skill: Skill; mission: Mission } | null;
+  missionUnlocked: (skill: Skill, order: number, userId?: string) => UnlockInfo;
+
+  /* submissions */
+  submitMission: (missionId: string, payload: SubmitPayload) => Submission | null;
+  submissionsForMission: (missionId: string, userId?: string) => Submission[];
+  mySubmissions: Submission[];
+  adminSetSubmissionStatus: (submissionId: string, status: SubmissionStatus) => void;
+  adminReviewSubmission: (
+    submissionId: string,
+    verdict: "APPROVED" | "REJECTED" | "NEEDS_IMPROVEMENT",
+    feedback: string,
+    score?: number
+  ) => ReviewResult | null;
+
+  /* portfolio */
+  myPortfolio: PortfolioItem[];
+  portfolioFor: (userId: string) => PortfolioItem[];
+  setPortfolioFeatured: (itemId: string, featured: boolean) => void;
+  setPortfolioHidden: (itemId: string, hidden: boolean) => void;
+
+  /* knowledge check */
+  recordKnowledgeCheck: (missionId: string, scorePct: number) => { firstPass: boolean; xpEarned: number };
+
+  /* economy */
+  requestNeuronPurchase: (amountInr: number, utrNumber: string, proofImageName?: string) => Transaction;
   adminSetTxnStatus: (txnId: string, status: "APPROVED" | "REJECTED") => void;
-  adminAdjustCoins: (userId: string, delta: number, note: string) => void;
+  adminAdjustNeurons: (userId: string, delta: number, note: string) => void;
   adminGrantXp: (userId: string, amount: number) => void;
+
+  /* plans & payments */
+  purchasePlanUpi: (planId: PlanId, amountInr: number, utrNumber: string, couponCode?: string) => PaymentRecord;
+  activatePlan: (planId: PlanId, method: PaymentMethod, amountInr: number, meta?: { orderId?: string; paymentId?: string; couponCode?: string }) => void;
+  adminResolvePayment: (paymentId: string, status: "APPROVED" | "REJECTED") => void;
+  adminGrantPlan: (userId: string, planId: PlanId) => void;
+  cancelSubscription: () => void;
+  validateCoupon: (code: string) => Coupon | null;
+  adminUpsertCoupon: (coupon: Coupon) => void;
+  adminDeleteCoupon: (code: string) => void;
+
+  /* catalog CRUD (admin) */
+  adminUpsertSkill: (skill: Skill) => void;
+  adminDeleteSkill: (skillId: string) => void;
+  adminUpsertMission: (skillId: string, mission: Mission) => void;
+  adminDeleteMission: (skillId: string, missionId: string) => void;
+  adminMoveMission: (skillId: string, missionId: string, dir: -1 | 1) => void;
+  adminSetMissionLocked: (missionId: string, locked: boolean) => void;
+  adminResetCatalog: () => void;
+
+  /* tournaments */
   adminCreateQuiz: (quiz: Omit<Quiz, "id" | "isActive" | "winnersDeclared">) => Quiz;
   adminDeclareWinners: (quizId: string) => void;
-  adminUpdateLevel: (levelId: string, patch: LevelOverride) => void;
   joinQuiz: (quizId: string) => { ok: boolean; reason?: string };
   submitQuizScore: (quizId: string, score: number) => void;
+
+  /* messaging */
   markNotificationsRead: () => void;
-  updateProfile: (avatar: string, title?: string, avatarFrame?: string) => void;
-  claimDailyMission: (missionId: string, coinReward: number, xpReward: number) => void;
   adminBroadcastNotification: (message: string, targetUserId?: string) => void;
+  adminAnnounce: (title: string, body: string) => void;
+  adminDeleteAnnouncement: (id: string) => void;
+
+  /* certificates */
   adminIssueCertificate: (userId: string, skillId: string, levelTier: number) => void;
+
+  /* profile */
+  updateProfile: (patch: Partial<Pick<User, "avatar" | "avatarUrl" | "bio" | "title" | "avatarFrame" | "name">>) => void;
+  claimDailyMission: (missionId: string, neuronReward: number, xpReward: number) => void;
+
+  /* data management */
   importDatabase: (jsonStr: string) => { ok: boolean; reason?: string };
-  resetDemoData: () => void;
-  login: (email: string, password?: string) => { ok: boolean; user?: User; reason?: string };
-  register: (name: string, email: string, password?: string, role?: "USER" | "ADMIN", avatar?: string) => { ok: boolean; user: User };
-  logout: () => void;
+  exportDatabase: () => string;
+  resetAllData: () => void;
 }
 
 const AppContext = createContext<AppApi | null>(null);
 
-function makeNotification(userId: string, message: string, kind: AppNotification["kind"] = "success"): AppNotification {
-  return { id: uid("ntf"), userId, message, kind, createdAt: new Date().toISOString(), read: false };
-}
-
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AppState>(() => seedState());
+  const [state, setState] = useState<AppState>(() => loadInitialState());
   const [hydrated, setHydrated] = useState(false);
 
+  /* hydrate from localStorage, migrating v1 if needed */
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as AppState;
-        if (parsed?.version === 1) setState(parsed);
+      const rawV2 = localStorage.getItem(STORAGE_KEY_V2);
+      if (rawV2) {
+        const parsed = JSON.parse(rawV2) as AppState;
+        if (parsed?.version === 2) {
+          // catalog may gain new fields over releases — merge defensively
+          setState({ ...seedState(), ...parsed, catalog: parsed.catalog?.length ? parsed.catalog : SKILLS });
+          setHydrated(true);
+          return;
+        }
+      }
+      const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
+      if (rawV1) {
+        const parsedV1 = JSON.parse(rawV1) as V1AppState;
+        if (parsedV1?.version === 1) {
+          setState(migrateV1(parsedV1));
+          localStorage.removeItem(STORAGE_KEY_V1);
+        }
       }
     } catch {
       // corrupted state — fall back to seeds
@@ -85,68 +306,103 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setHydrated(true);
   }, []);
 
+  /* persist */
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(state));
+    } catch {
+      // storage full/unavailable — app still works in-memory
+    }
+  }, [state, hydrated]);
+
+  /* Clerk → app user sync. Clerk is the only source of identity. */
   const { isLoaded, isSignedIn, user: clerkUser } = useUser();
 
   useEffect(() => {
-    if (!hydrated || !isLoaded || !isSignedIn || !clerkUser) return;
-    const email = clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses[0]?.emailAddress || "";
+    if (!hydrated || !isLoaded) return;
+    if (!isSignedIn || !clerkUser) {
+      setState((s) => (s.currentUserId ? { ...s, currentUserId: "" } : s));
+      return;
+    }
+    const email = (clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses[0]?.emailAddress || "").toLowerCase();
     if (!email) return;
     const fullName = clerkUser.fullName || clerkUser.firstName || clerkUser.username || email.split("@")[0] || "Learner";
-    const role: "USER" | "ADMIN" = email.toLowerCase() === "skilledgelearning@gmail.com" ? "ADMIN" : "USER";
+    const role: "USER" | "ADMIN" = adminEmails().includes(email) ? "ADMIN" : "USER";
+    const avatarUrl = clerkUser.imageUrl || undefined;
 
     setState((s) => {
-      const cleanEmail = email.toLowerCase();
-      const existing = s.users.find((u) => u.email.toLowerCase() === cleanEmail || u.id === clerkUser.id);
-
+      const existing = s.users.find((u) => u.id === clerkUser.id || u.email.toLowerCase() === email);
       if (existing) {
-        if (existing.name === fullName && existing.email === cleanEmail && s.currentUserId === existing.id) {
-          return s;
-        }
-        const updatedUsers = s.users.map((u) =>
-          u.id === existing.id ? { ...u, name: fullName, email: cleanEmail, role } : u
-        );
-        return { ...s, users: updatedUsers, currentUserId: existing.id };
+        const unchanged =
+          existing.name === fullName &&
+          existing.email === email &&
+          existing.role === role &&
+          existing.avatarUrl === avatarUrl &&
+          s.currentUserId === existing.id;
+        if (unchanged) return s;
+        return {
+          ...s,
+          users: s.users.map((u) => (u.id === existing.id ? { ...u, name: fullName, email, role, avatarUrl } : u)),
+          currentUserId: existing.id,
+        };
       }
-
+      const nowIso = new Date().toISOString();
       const newUser: User = {
         id: clerkUser.id,
         name: fullName,
-        email: cleanEmail,
+        email,
         role,
-        avatar: role === "ADMIN" ? "🛡️" : "🚀",
-        title: role === "ADMIN" ? "System Admin" : "Novice Builder",
-        avatarFrame: role === "ADMIN" ? "gold" : "cyan",
-        edgeCoins: 100,
+        avatar: "",
+        avatarUrl,
+        bio: "",
+        title: role === "ADMIN" ? "Administrator" : "Builder in Training",
+        neurons: 100, // welcome bonus
         xp: 0,
         streakCount: 1,
         lastActiveDay: todayKey(),
-        createdAt: new Date().toISOString(),
+        subscription: { plan: "FREE", status: "ACTIVE", startedAt: nowIso, expiresAt: null },
+        badges: [],
+        createdAt: nowIso,
       };
-
       return {
         ...s,
         users: [...s.users, newUser],
         currentUserId: newUser.id,
+        transactions: [
+          {
+            id: uid("txn"),
+            userId: newUser.id,
+            amountNeurons: 100,
+            amountInr: null,
+            type: "EARNED",
+            status: "APPROVED",
+            note: "Welcome bonus",
+            createdAt: nowIso,
+          },
+          ...s.transactions,
+        ],
         notifications: [
-          makeNotification(newUser.id, `🎉 Welcome to Skill Edge OS, ${newUser.name}! +100 ↁ bonus credited!`),
+          makeNotification(newUser.id, `Welcome to Skill Edge Learning, ${newUser.name}! 100 Neurons credited as your welcome bonus.`),
           ...s.notifications,
         ],
       };
     });
   }, [hydrated, isLoaded, isSignedIn, clerkUser]);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // storage full/unavailable — app still works in-memory
-    }
-  }, [state, hydrated]);
+  /* ------------------------------ derived state ------------------------------ */
 
   const currentUser = useMemo(
-    () => state.users.find((u) => u.id === state.currentUserId) ?? state.users[0],
+    () => state.users.find((u) => u.id === state.currentUserId) ?? null,
     [state.users, state.currentUserId]
+  );
+
+  const isAdmin = Boolean(currentUser && currentUser.role === "ADMIN");
+  const isPro = isPaidPlan(currentUser?.subscription);
+
+  const catalog = useMemo(
+    () => (isAdmin ? state.catalog : state.catalog.filter((s) => s.isPublished)),
+    [state.catalog, isAdmin]
   );
 
   const progressFor = useCallback(
@@ -156,193 +412,309 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const myProgress = currentUser ? progressFor(currentUser.id) : { completed: {}, premiumUnlocks: {} };
 
-  const levelWithOverrides = useCallback(
-    (level: Level): Level => {
-      const o = state.overrides[level.id];
-      return o ? { ...level, ...o } : level;
-    },
-    [state.overrides]
+  const missionById = useCallback(
+    (missionId: string) => findMission(state.catalog, missionId),
+    [state.catalog]
   );
 
-  const skills = useMemo(() => {
-    if (Object.keys(state.overrides).length === 0) return SKILLS;
-    return SKILLS.map((s) => ({
-      ...s,
-      levels: s.levels.map((l) => (state.overrides[l.id] ? { ...l, ...state.overrides[l.id] } : l)),
-    }));
-  }, [state.overrides]);
-
-  const isLevelUnlocked = useCallback(
-    (skill: Skill, levelNumber: number, userId?: string) => {
+  const missionUnlocked = useCallback(
+    (skill: Skill, order: number, userId?: string): UnlockInfo => {
       const targetUid = userId ?? currentUser?.id;
-      if (!targetUid) return levelNumber === 1;
+      const mission = skill.missions.find((m) => m.order === order);
+      if (!mission) return { unlocked: false, reason: "LOCKED_PREV" };
+      if (mission.isLocked) return { unlocked: false, reason: "ADMIN_LOCKED" };
+      const user = state.users.find((u) => u.id === targetUid);
+      if (mission.isPremium && !isPaidPlan(user?.subscription)) return { unlocked: false, reason: "NEEDS_PRO" };
+      if (order === 1) return { unlocked: true };
+      if (!targetUid) return { unlocked: false, reason: "LOCKED_PREV" };
       const prog = progressFor(targetUid);
-      const level = skill.levels.find((l) => l.levelNumber === levelNumber);
-      if (!level) return false;
-      if (level.isPremium && !prog.premiumUnlocks[skill.id]) return false;
-      if (levelNumber === 1) return true;
-      const prev = skill.levels.find((l) => l.levelNumber === levelNumber - 1);
-      return !!prev && !!prog.completed[prev.id];
+      const prev = skill.missions.find((m) => m.order === order - 1);
+      return prev && prog.completed[prev.id] ? { unlocked: true } : { unlocked: false, reason: "LOCKED_PREV" };
     },
-    [currentUser?.id, progressFor]
+    [currentUser?.id, progressFor, state.users]
   );
 
-  const switchUser = useCallback((userId: string) => {
-    setState((s) => (s.users.some((u) => u.id === userId) ? { ...s, currentUserId: userId } : s));
+  /* ------------------------------- submissions ------------------------------- */
+
+  const submitMission = useCallback(
+    (missionId: string, payload: SubmitPayload): Submission | null => {
+      if (!currentUser) return null;
+      const found = findMission(state.catalog, missionId);
+      if (!found) return null;
+      const sub: Submission = {
+        id: uid("sub"),
+        userId: currentUser.id,
+        missionId,
+        skillId: found.skill.id,
+        note: payload.note,
+        links: payload.links,
+        files: payload.files,
+        reflections: payload.reflections,
+        status: "PENDING",
+        resubmissionOf: payload.resubmissionOf,
+        createdAt: new Date().toISOString(),
+      };
+      setState((s) => ({
+        ...s,
+        submissions: [sub, ...s.submissions],
+        notifications: [
+          makeNotification(
+            currentUser.id,
+            `Submission received for "${found.mission.title}". You'll get feedback after review.`,
+            "info"
+          ),
+          ...s.notifications,
+        ],
+      }));
+      return sub;
+    },
+    [currentUser, state.catalog]
+  );
+
+  const submissionsForMission = useCallback(
+    (missionId: string, userId?: string) => {
+      const targetUid = userId ?? currentUser?.id;
+      return state.submissions.filter((s) => s.missionId === missionId && (!targetUid || s.userId === targetUid));
+    },
+    [state.submissions, currentUser?.id]
+  );
+
+  const mySubmissions = useMemo(
+    () => (currentUser ? state.submissions.filter((s) => s.userId === currentUser.id) : []),
+    [state.submissions, currentUser]
+  );
+
+  const adminSetSubmissionStatus = useCallback((submissionId: string, status: SubmissionStatus) => {
+    setState((s) => ({
+      ...s,
+      submissions: s.submissions.map((sub) => (sub.id === submissionId ? { ...sub, status } : sub)),
+    }));
   }, []);
 
-  const completeLevel = useCallback(
-    (levelId: string, score: number): CompleteLevelResult => {
-      const found = getLevelById(levelId);
-      const empty: CompleteLevelResult = { passed: false, firstPass: false, coinsEarned: 0, xpEarned: 0, certificate: null };
-      if (!found) return empty;
-      const override = state.overrides[levelId];
-      const level = override ? { ...found.level, ...override } : found.level;
-      const skill = found.skill;
-      const passed = score >= level.minPassScore;
-      if (!passed) return { ...empty, passed: false };
-
-      const uidNow = state.currentUserId;
-      const prog = state.progress[uidNow] ?? { completed: {}, premiumUnlocks: {} };
-      const firstPass = !prog.completed[levelId];
+  const adminReviewSubmission = useCallback(
+    (
+      submissionId: string,
+      verdict: "APPROVED" | "REJECTED" | "NEEDS_IMPROVEMENT",
+      feedback: string,
+      score?: number
+    ): ReviewResult | null => {
+      const sub = state.submissions.find((x) => x.id === submissionId);
+      if (!sub) return null;
+      const found = findMission(state.catalog, sub.missionId);
+      if (!found) return null;
+      const { skill, mission } = found;
       const nowIso = new Date().toISOString();
-      let certificate: Certificate | null = null;
+      const reviewerId = currentUser?.id ?? "admin";
+
+      const result: ReviewResult = { approved: verdict === "APPROVED", neuronsEarned: 0, xpEarned: 0, badgesEarned: [], certificate: null };
 
       setState((s) => {
-        const p = s.progress[uidNow] ?? { completed: {}, premiumUnlocks: {} };
-        const already = p.completed[levelId];
-        const completed = {
-          ...p.completed,
-          [levelId]: { score: Math.max(score, already?.score ?? 0), completedAt: already?.completedAt ?? nowIso },
-        };
-        const progress = { ...s.progress, [uidNow]: { ...p, completed } };
-
+        let submissions = s.submissions.map((x) =>
+          x.id === submissionId
+            ? { ...x, status: verdict as SubmissionStatus, feedback, score, reviewedBy: reviewerId, reviewedAt: nowIso }
+            : x
+        );
         let users = s.users;
         let transactions = s.transactions;
         let certificates = s.certificates;
         let notifications = s.notifications;
+        let portfolio = s.portfolio;
+        let progress = s.progress;
 
-        if (!already) {
-          const today = todayKey();
-          users = s.users.map((u) => {
-            if (u.id !== uidNow) return u;
-            let streak = u.streakCount;
-            if (u.lastActiveDay !== today) {
-              streak = u.lastActiveDay && isYesterdayKey(u.lastActiveDay) ? streak + 1 : Math.max(1, u.lastActiveDay ? 1 : streak + 1);
-            }
-            return {
-              ...u,
-              edgeCoins: u.edgeCoins + level.coinReward,
-              xp: u.xp + level.xpReward,
-              streakCount: streak,
-              lastActiveDay: today,
-            };
-          });
-          transactions = [
-            {
-              id: uid("txn"),
-              userId: uidNow,
-              amountCoins: level.coinReward,
-              amountInr: null,
-              type: "EARNED" as const,
-              status: "APPROVED" as const,
-              note: `Completed ${skill.title} · Level ${level.levelNumber} — ${level.title}`,
-              createdAt: nowIso,
+        const student = s.users.find((u) => u.id === sub.userId);
+        if (!student) return { ...s, submissions };
+
+        if (verdict === "APPROVED") {
+          const prog = s.progress[sub.userId] ?? { completed: {}, premiumUnlocks: {} };
+          const firstPass = !prog.completed[sub.missionId];
+
+          progress = {
+            ...s.progress,
+            [sub.userId]: {
+              ...prog,
+              completed: {
+                ...prog.completed,
+                [sub.missionId]: {
+                  score: Math.max(score ?? 100, prog.completed[sub.missionId]?.score ?? 0),
+                  completedAt: prog.completed[sub.missionId]?.completedAt ?? nowIso,
+                  submissionId,
+                },
+              },
             },
-            ...s.transactions,
-          ];
-          if (CERT_TIERS.includes(level.levelNumber)) {
-            const exists = s.certificates.some(
-              (c) => c.userId === uidNow && c.skillId === skill.id && c.levelTier === level.levelNumber
-            );
-            if (!exists) {
-              certificate = {
-                id: `${skill.id}-t${level.levelNumber}-${uidNow}`,
-                userId: uidNow,
-                skillId: skill.id,
-                levelTier: level.levelNumber,
-                verificationCode: verificationHash(`${uidNow}:${skill.id}:${level.levelNumber}:${nowIso}`),
-                issuedAt: nowIso,
-              };
-              certificates = [...s.certificates, certificate];
-              notifications = [
-                makeNotification(uidNow, `🏆 Certificate earned: ${skill.title} — Tier ${level.levelNumber}!`),
-                ...notifications,
-              ];
+          };
+
+          if (firstPass) {
+            result.neuronsEarned = mission.neuronReward;
+            result.xpEarned = mission.xpReward;
+
+            const approvedCount = Object.keys(progress[sub.userId].completed).length;
+            const skillDone = skill.missions.every((m) => progress[sub.userId].completed[m.id]);
+            const extraBadges: string[] = [];
+            if (mission.order === 5) extraBadges.push("phase-complete");
+            if (skillDone) extraBadges.push("skill-complete");
+
+            users = s.users.map((u) => {
+              if (u.id !== sub.userId) return u;
+              let updated = withStreak({ ...u, neurons: u.neurons + mission.neuronReward, xp: u.xp + mission.xpReward });
+              const badged = grantBadges(updated, approvedCount, extraBadges);
+              result.badgesEarned = badged.earned;
+              return badged.user;
+            });
+
+            transactions = [
+              {
+                id: uid("txn"),
+                userId: sub.userId,
+                amountNeurons: mission.neuronReward,
+                amountInr: null,
+                type: "EARNED" as const,
+                status: "APPROVED" as const,
+                note: `Project approved: ${skill.title} · ${mission.title}`,
+                createdAt: nowIso,
+              },
+              ...s.transactions,
+            ];
+
+            // portfolio item from the approved submission
+            const item: PortfolioItem = {
+              id: uid("pf"),
+              userId: sub.userId,
+              missionId: sub.missionId,
+              skillId: skill.id,
+              title: `${mission.title} — ${skill.title}`,
+              description: sub.note || mission.objective,
+              links: sub.links,
+              coverImage: sub.files.find((f) => f.mime.startsWith("image/"))?.dataUrl ?? skill.thumbnailUrl,
+              score,
+              completedAt: nowIso,
+              featured: false,
+              hidden: false,
+            };
+            portfolio = [item, ...s.portfolio];
+
+            // certificates at phase (order 5) and completion (order 10)
+            if (CERT_TIERS.includes(mission.order)) {
+              const exists = s.certificates.some(
+                (c) => c.userId === sub.userId && c.skillId === skill.id && c.levelTier === mission.order
+              );
+              if (!exists) {
+                const cert: Certificate = {
+                  id: `${skill.id}-t${mission.order}-${sub.userId}`,
+                  userId: sub.userId,
+                  skillId: skill.id,
+                  levelTier: mission.order,
+                  certType: mission.order === 10 ? "Skill Completion" : "Phase Completion",
+                  verificationCode: verificationHash(`${sub.userId}:${skill.id}:${mission.order}:${nowIso}`),
+                  issuedAt: nowIso,
+                  status: "Active",
+                };
+                certificates = [...s.certificates, cert];
+                result.certificate = cert;
+                notifications = [
+                  makeNotification(sub.userId, `Certificate earned: ${skill.title} — ${cert.certType}!`),
+                  ...notifications,
+                ];
+              }
             }
+
+            notifications = [
+              makeNotification(
+                sub.userId,
+                `"${mission.title}" approved! +${mission.neuronReward} Neurons, +${mission.xpReward} XP. Project added to your portfolio.`
+              ),
+              ...notifications,
+            ];
+          } else {
+            notifications = [
+              makeNotification(sub.userId, `Resubmission for "${mission.title}" approved. Feedback: ${feedback || "Great work!"}`),
+              ...notifications,
+            ];
           }
+        } else if (verdict === "NEEDS_IMPROVEMENT") {
           notifications = [
-            makeNotification(uidNow, `+${level.coinReward} ↁ and +${level.xpReward} XP for clearing ${level.title}!`),
+            makeNotification(
+              sub.userId,
+              `"${mission.title}" needs another pass. Check the feedback and resubmit — you've got this.`,
+              "warning"
+            ),
+            ...notifications,
+          ];
+        } else {
+          notifications = [
+            makeNotification(sub.userId, `"${mission.title}" submission was rejected. Read the feedback and try again.`, "warning"),
             ...notifications,
           ];
         }
 
-        return { ...s, progress, users, transactions, certificates, notifications };
+        return { ...s, submissions, users, transactions, certificates, notifications, portfolio, progress };
       });
 
-      return {
-        passed: true,
-        firstPass,
-        coinsEarned: firstPass ? level.coinReward : 0,
-        xpEarned: firstPass ? level.xpReward : 0,
-        certificate,
-      };
+      return result;
     },
-    [state.currentUserId, state.overrides, state.progress]
+    [state.submissions, state.catalog, currentUser?.id]
   );
 
-  const unlockPremium = useCallback(
-    (skillId: string) => {
-      const skill = getSkill(skillId);
-      if (!skill) return false;
-      const user = state.users.find((u) => u.id === state.currentUserId);
-      if (!user || user.edgeCoins < skill.premiumCost) return false;
+  /* -------------------------------- portfolio -------------------------------- */
+
+  const myPortfolio = useMemo(
+    () => (currentUser ? state.portfolio.filter((p) => p.userId === currentUser.id) : []),
+    [state.portfolio, currentUser]
+  );
+
+  const portfolioFor = useCallback(
+    (userId: string) => state.portfolio.filter((p) => p.userId === userId && !p.hidden),
+    [state.portfolio]
+  );
+
+  const setPortfolioFeatured = useCallback((itemId: string, featured: boolean) => {
+    setState((s) => ({ ...s, portfolio: s.portfolio.map((p) => (p.id === itemId ? { ...p, featured } : p)) }));
+  }, []);
+
+  const setPortfolioHidden = useCallback((itemId: string, hidden: boolean) => {
+    setState((s) => ({ ...s, portfolio: s.portfolio.map((p) => (p.id === itemId ? { ...p, hidden } : p)) }));
+  }, []);
+
+  /* ----------------------------- knowledge check ----------------------------- */
+
+  const recordKnowledgeCheck = useCallback(
+    (missionId: string, scorePct: number) => {
+      const key = `kc-${missionId}`;
+      const res = { firstPass: false, xpEarned: 0 };
+      if (!currentUser || scorePct < 80) return res;
+      const prog = state.progress[currentUser.id] ?? { completed: {}, premiumUnlocks: {} };
+      if (prog.claimedMissions?.[key]) return res;
+      res.firstPass = true;
+      res.xpEarned = 15;
       setState((s) => {
-        const p = s.progress[s.currentUserId] ?? { completed: {}, premiumUnlocks: {} };
-        if (p.premiumUnlocks[skillId]) return s;
+        const p = s.progress[currentUser.id] ?? { completed: {}, premiumUnlocks: {} };
         return {
           ...s,
-          users: s.users.map((u) => (u.id === s.currentUserId ? { ...u, edgeCoins: u.edgeCoins - skill.premiumCost } : u)),
           progress: {
             ...s.progress,
-            [s.currentUserId]: { ...p, premiumUnlocks: { ...p.premiumUnlocks, [skillId]: true } },
+            [currentUser.id]: { ...p, claimedMissions: { ...(p.claimedMissions ?? {}), [key]: true } },
           },
-          transactions: [
-            {
-              id: uid("txn"),
-              userId: s.currentUserId,
-              amountCoins: -skill.premiumCost,
-              amountInr: null,
-              type: "SPENT_COURSE" as const,
-              status: "APPROVED" as const,
-              note: `Unlocked premium tiers 7-10 · ${skill.title}`,
-              createdAt: new Date().toISOString(),
-            },
-            ...s.transactions,
-          ],
-          notifications: [
-            makeNotification(s.currentUserId, `🔓 Premium tiers unlocked for ${skill.title}. Go claim Sovereign Master!`),
-            ...s.notifications,
-          ],
+          users: s.users.map((u) => (u.id === currentUser.id ? { ...u, xp: u.xp + 15 } : u)),
         };
       });
-      return true;
+      return res;
     },
-    [state.users, state.currentUserId]
+    [currentUser, state.progress]
   );
 
-  const requestCoinPurchase = useCallback(
+  /* --------------------------------- economy --------------------------------- */
+
+  const requestNeuronPurchase = useCallback(
     (amountInr: number, utrNumber: string, proofImageName?: string) => {
       const txn: Transaction = {
         id: uid("txn"),
         userId: state.currentUserId,
-        amountCoins: Math.round(amountInr * INR_TO_COINS),
+        amountNeurons: Math.round(amountInr * INR_TO_NEURONS),
         amountInr,
         type: "PURCHASED",
         status: "PENDING",
         utrNumber,
         proofImageName,
-        note: "EdgeCoin top-up via UPI",
+        note: "Neuron top-up via UPI",
         createdAt: new Date().toISOString(),
       };
       setState((s) => ({
@@ -351,7 +723,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         notifications: [
           makeNotification(
             s.currentUserId,
-            `Payment of ₹${amountInr} submitted for verification. ${txn.amountCoins} ↁ will be credited once approved.`,
+            `Payment of ₹${amountInr} submitted for verification. ${txn.amountNeurons} Neurons will be credited once approved.`,
             "info"
           ),
           ...s.notifications,
@@ -370,14 +742,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       let users = s.users;
       let notifications = s.notifications;
       if (status === "APPROVED") {
-        users = s.users.map((u) => (u.id === txn.userId ? { ...u, edgeCoins: u.edgeCoins + txn.amountCoins } : u));
+        users = s.users.map((u) => (u.id === txn.userId ? { ...u, neurons: u.neurons + txn.amountNeurons } : u));
         notifications = [
-          makeNotification(txn.userId, `✅ Payment approved! ${txn.amountCoins} ↁ credited to your wallet.`),
+          makeNotification(txn.userId, `Payment approved! ${txn.amountNeurons} Neurons credited to your wallet.`),
           ...notifications,
         ];
       } else {
         notifications = [
-          makeNotification(txn.userId, `❌ Payment (UTR ${txn.utrNumber ?? "—"}) was rejected. Contact support if this is a mistake.`, "warning"),
+          makeNotification(txn.userId, `Payment (UTR ${txn.utrNumber ?? "—"}) was rejected. Contact support if this is a mistake.`, "warning"),
           ...notifications,
         ];
       }
@@ -385,20 +757,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const adminAdjustCoins = useCallback((userId: string, delta: number, note: string) => {
+  const adminAdjustNeurons = useCallback((userId: string, delta: number, note: string) => {
     if (!delta) return;
     setState((s) => ({
       ...s,
-      users: s.users.map((u) => (u.id === userId ? { ...u, edgeCoins: Math.max(0, u.edgeCoins + delta) } : u)),
+      users: s.users.map((u) => (u.id === userId ? { ...u, neurons: Math.max(0, u.neurons + delta) } : u)),
       transactions: [
         {
           id: uid("txn"),
           userId,
-          amountCoins: delta,
+          amountNeurons: delta,
           amountInr: null,
           type: "ADMIN_GRANT" as const,
           status: "APPROVED" as const,
-          note: note || (delta > 0 ? "Admin coin grant" : "Admin coin revoke"),
+          note: note || (delta > 0 ? "Admin grant" : "Admin adjustment"),
           createdAt: new Date().toISOString(),
         },
         ...s.transactions,
@@ -406,7 +778,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       notifications: [
         makeNotification(
           userId,
-          delta > 0 ? `🎁 Admin granted you ${delta} ↁ!` : `⚠️ Admin adjusted your wallet by ${delta} ↁ.`,
+          delta > 0 ? `Admin granted you ${delta} Neurons!` : `Admin adjusted your wallet by ${delta} Neurons.`,
           delta > 0 ? "success" : "warning"
         ),
         ...s.notifications,
@@ -419,9 +791,217 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       users: s.users.map((u) => (u.id === userId ? { ...u, xp: Math.max(0, u.xp + amount) } : u)),
-      notifications: [makeNotification(userId, `⭐ Admin boosted you +${amount} XP!`), ...s.notifications],
+      notifications: [makeNotification(userId, `Admin boosted you +${amount} XP!`), ...s.notifications],
     }));
   }, []);
+
+  /* ----------------------------- plans & payments ----------------------------- */
+
+  const validateCoupon = useCallback(
+    (code: string): Coupon | null => {
+      const c = state.coupons.find((x) => x.code.toLowerCase() === code.trim().toLowerCase() && x.active);
+      return c ?? null;
+    },
+    [state.coupons]
+  );
+
+  const purchasePlanUpi = useCallback(
+    (planId: PlanId, amountInr: number, utrNumber: string, couponCode?: string): PaymentRecord => {
+      const rec: PaymentRecord = {
+        id: uid("pay"),
+        userId: state.currentUserId,
+        purpose: "PLAN",
+        planId,
+        amountInr,
+        method: "UPI",
+        status: "PENDING",
+        utrNumber,
+        couponCode,
+        createdAt: new Date().toISOString(),
+      };
+      setState((s) => ({
+        ...s,
+        payments: [rec, ...s.payments],
+        notifications: [
+          makeNotification(
+            s.currentUserId,
+            `Plan payment of ₹${amountInr} submitted. Your ${planId.replace(/_/g, " ")} plan activates once the payment is verified.`,
+            "info"
+          ),
+          ...s.notifications,
+        ],
+      }));
+      return rec;
+    },
+    [state.currentUserId]
+  );
+
+  const applyPlanToUser = (s: AppState, userId: string, planId: PlanId): AppState => {
+    const users = s.users.map((u) => {
+      if (u.id !== userId) return u;
+      let updated: User = { ...u, subscription: subscriptionFor(planId, u.subscription) };
+      if (planId === "FOUNDER_LIFETIME" && !updated.badges.includes("founder")) {
+        updated = { ...updated, badges: [...updated.badges, "founder"] };
+      }
+      return updated;
+    });
+    return {
+      ...s,
+      users,
+      notifications: [
+        makeNotification(userId, `Your ${planId.replace(/_/g, " ")} plan is now active. Welcome to the full Skill OS!`),
+        ...s.notifications,
+      ],
+    };
+  };
+
+  const activatePlan = useCallback(
+    (planId: PlanId, method: PaymentMethod, amountInr: number, meta?: { orderId?: string; paymentId?: string; couponCode?: string }) => {
+      if (!currentUser) return;
+      const rec: PaymentRecord = {
+        id: uid("pay"),
+        userId: currentUser.id,
+        purpose: "PLAN",
+        planId,
+        amountInr,
+        method,
+        status: "APPROVED",
+        gatewayOrderId: meta?.orderId,
+        gatewayPaymentId: meta?.paymentId,
+        couponCode: meta?.couponCode,
+        createdAt: new Date().toISOString(),
+        resolvedAt: new Date().toISOString(),
+      };
+      setState((s) => applyPlanToUser({ ...s, payments: [rec, ...s.payments] }, currentUser.id, planId));
+    },
+    [currentUser]
+  );
+
+  const adminResolvePayment = useCallback((paymentId: string, status: "APPROVED" | "REJECTED") => {
+    setState((s) => {
+      const rec = s.payments.find((p) => p.id === paymentId);
+      if (!rec || rec.status !== "PENDING") return s;
+      const payments = s.payments.map((p) =>
+        p.id === paymentId ? { ...p, status, resolvedAt: new Date().toISOString() } : p
+      );
+      let next: AppState = { ...s, payments };
+      if (status === "APPROVED" && rec.purpose === "PLAN" && rec.planId) {
+        next = applyPlanToUser(next, rec.userId, rec.planId);
+      } else if (status === "REJECTED") {
+        next = {
+          ...next,
+          notifications: [
+            makeNotification(rec.userId, `Your payment (₹${rec.amountInr}) was rejected. Contact support if this is a mistake.`, "warning"),
+            ...next.notifications,
+          ],
+        };
+      }
+      return next;
+    });
+  }, []);
+
+  const adminGrantPlan = useCallback((userId: string, planId: PlanId) => {
+    setState((s) => applyPlanToUser(s, userId, planId));
+  }, []);
+
+  const cancelSubscription = useCallback(() => {
+    if (!currentUser) return;
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) =>
+        u.id === currentUser.id ? { ...u, subscription: { ...u.subscription, status: "CANCELLED" } } : u
+      ),
+      notifications: [
+        makeNotification(currentUser.id, "Subscription cancelled. You keep access until the end of the billing period.", "info"),
+        ...s.notifications,
+      ],
+    }));
+  }, [currentUser]);
+
+  const adminUpsertCoupon = useCallback((coupon: Coupon) => {
+    setState((s) => {
+      const exists = s.coupons.some((c) => c.code.toLowerCase() === coupon.code.toLowerCase());
+      return {
+        ...s,
+        coupons: exists
+          ? s.coupons.map((c) => (c.code.toLowerCase() === coupon.code.toLowerCase() ? coupon : c))
+          : [...s.coupons, coupon],
+      };
+    });
+  }, []);
+
+  const adminDeleteCoupon = useCallback((code: string) => {
+    setState((s) => ({ ...s, coupons: s.coupons.filter((c) => c.code.toLowerCase() !== code.toLowerCase()) }));
+  }, []);
+
+  /* ------------------------------ catalog CRUD ------------------------------ */
+
+  const adminUpsertSkill = useCallback((skill: Skill) => {
+    setState((s) => {
+      const exists = s.catalog.some((x) => x.id === skill.id);
+      return { ...s, catalog: exists ? s.catalog.map((x) => (x.id === skill.id ? skill : x)) : [...s.catalog, skill] };
+    });
+  }, []);
+
+  const adminDeleteSkill = useCallback((skillId: string) => {
+    setState((s) => ({ ...s, catalog: s.catalog.filter((x) => x.id !== skillId) }));
+  }, []);
+
+  const adminUpsertMission = useCallback((skillId: string, mission: Mission) => {
+    setState((s) => ({
+      ...s,
+      catalog: s.catalog.map((sk) => {
+        if (sk.id !== skillId) return sk;
+        const exists = sk.missions.some((m) => m.id === mission.id);
+        const missions = exists
+          ? sk.missions.map((m) => (m.id === mission.id ? mission : m))
+          : [...sk.missions, mission].sort((a, b) => a.order - b.order);
+        return { ...sk, missions };
+      }),
+    }));
+  }, []);
+
+  const adminDeleteMission = useCallback((skillId: string, missionId: string) => {
+    setState((s) => ({
+      ...s,
+      catalog: s.catalog.map((sk) =>
+        sk.id === skillId
+          ? { ...sk, missions: sk.missions.filter((m) => m.id !== missionId).map((m, i) => ({ ...m, order: i + 1 })) }
+          : sk
+      ),
+    }));
+  }, []);
+
+  const adminMoveMission = useCallback((skillId: string, missionId: string, dir: -1 | 1) => {
+    setState((s) => ({
+      ...s,
+      catalog: s.catalog.map((sk) => {
+        if (sk.id !== skillId) return sk;
+        const idx = sk.missions.findIndex((m) => m.id === missionId);
+        const j = idx + dir;
+        if (idx < 0 || j < 0 || j >= sk.missions.length) return sk;
+        const missions = [...sk.missions];
+        [missions[idx], missions[j]] = [missions[j], missions[idx]];
+        return { ...sk, missions: missions.map((m, i) => ({ ...m, order: i + 1 })) };
+      }),
+    }));
+  }, []);
+
+  const adminSetMissionLocked = useCallback((missionId: string, locked: boolean) => {
+    setState((s) => ({
+      ...s,
+      catalog: s.catalog.map((sk) => ({
+        ...sk,
+        missions: sk.missions.map((m) => (m.id === missionId ? { ...m, isLocked: locked } : m)),
+      })),
+    }));
+  }, []);
+
+  const adminResetCatalog = useCallback(() => {
+    setState((s) => ({ ...s, catalog: SKILLS }));
+  }, []);
+
+  /* ------------------------------- tournaments ------------------------------- */
 
   const adminCreateQuiz = useCallback((quiz: Omit<Quiz, "id" | "isActive" | "winnersDeclared">) => {
     const created: Quiz = { ...quiz, id: uid("quiz"), isActive: true, winnersDeclared: false };
@@ -443,28 +1023,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const updatedEntries = s.quizEntries.map((e) => {
         const idx = entries.indexOf(e);
         if (e.quizId !== quizId || idx === -1) return e;
-        const prize = idx < 3 ? Math.round(quiz.prizePoolCoins * splits[idx]) : 0;
+        const prize = idx < 3 ? Math.round(quiz.prizePoolNeurons * splits[idx]) : 0;
         if (prize > 0) {
-          users = users.map((u) => (u.id === e.userId ? { ...u, edgeCoins: u.edgeCoins + prize } : u));
+          users = users.map((u) => {
+            if (u.id !== e.userId) return u;
+            const withPrize = { ...u, neurons: u.neurons + prize };
+            return idx === 0 && !withPrize.badges.includes("tournament-winner")
+              ? { ...withPrize, badges: [...withPrize.badges, "tournament-winner"] }
+              : withPrize;
+          });
           transactions = [
             {
               id: uid("txn"),
               userId: e.userId,
-              amountCoins: prize,
+              amountNeurons: prize,
               amountInr: null,
               type: "PRIZE" as const,
               status: "APPROVED" as const,
-              note: `🏆 Rank #${idx + 1} in ${quiz.title}`,
+              note: `Rank #${idx + 1} in ${quiz.title}`,
               createdAt: new Date().toISOString(),
             },
             ...transactions,
           ];
           notifications = [
-            makeNotification(e.userId, `🏆 You ranked #${idx + 1} in ${quiz.title} and won ${prize} ↁ!`),
+            makeNotification(e.userId, `You ranked #${idx + 1} in ${quiz.title} and won ${prize} Neurons!`),
             ...notifications,
           ];
         }
-        return { ...e, rank: idx + 1, prizeWonCoins: prize };
+        return { ...e, rank: idx + 1, prizeWonNeurons: prize };
       });
       return {
         ...s,
@@ -477,34 +1063,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const adminUpdateLevel = useCallback((levelId: string, patch: LevelOverride) => {
-    setState((s) => ({
-      ...s,
-      overrides: { ...s.overrides, [levelId]: { ...s.overrides[levelId], ...patch } },
-    }));
-  }, []);
-
   const joinQuiz = useCallback(
     (quizId: string): { ok: boolean; reason?: string } => {
+      if (!currentUser) return { ok: false, reason: "Sign in to join tournaments." };
       const quiz = state.quizzes.find((q) => q.id === quizId);
-      if (!quiz) return { ok: false, reason: "Quiz not found." };
-      if (state.quizEntries.some((e) => e.quizId === quizId && e.userId === state.currentUserId))
+      if (!quiz) return { ok: false, reason: "Tournament not found." };
+      if (state.quizEntries.some((e) => e.quizId === quizId && e.userId === currentUser.id))
         return { ok: false, reason: "Already joined." };
-      const user = state.users.find((u) => u.id === state.currentUserId)!;
-      if (quiz.entryFeeCoins > user.edgeCoins)
-        return { ok: false, reason: `Not enough EdgeCoins — entry costs ${quiz.entryFeeCoins} ↁ.` };
+      if (quiz.entryFeeNeurons > currentUser.neurons)
+        return { ok: false, reason: `Not enough Neurons — entry costs ${quiz.entryFeeNeurons}.` };
       setState((s) => {
         let users = s.users;
         let transactions = s.transactions;
-        if (quiz.entryFeeCoins > 0) {
-          users = s.users.map((u) =>
-            u.id === s.currentUserId ? { ...u, edgeCoins: u.edgeCoins - quiz.entryFeeCoins } : u
-          );
+        if (quiz.entryFeeNeurons > 0) {
+          users = s.users.map((u) => (u.id === s.currentUserId ? { ...u, neurons: u.neurons - quiz.entryFeeNeurons } : u));
           transactions = [
             {
               id: uid("txn"),
               userId: s.currentUserId,
-              amountCoins: -quiz.entryFeeCoins,
+              amountNeurons: -quiz.entryFeeNeurons,
               amountInr: null,
               type: "SPENT_QUIZ" as const,
               status: "APPROVED" as const,
@@ -518,15 +1095,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ...s,
           users,
           transactions,
-          quizEntries: [
-            ...s.quizEntries,
-            { quizId, userId: s.currentUserId, joinedAt: new Date().toISOString(), score: null },
-          ],
+          quizEntries: [...s.quizEntries, { quizId, userId: s.currentUserId, joinedAt: new Date().toISOString(), score: null }],
         };
       });
       return { ok: true };
     },
-    [state.quizzes, state.quizEntries, state.users, state.currentUserId]
+    [state.quizzes, state.quizEntries, currentUser]
   );
 
   const submitQuizScore = useCallback((quizId: string, score: number) => {
@@ -538,6 +1112,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  /* -------------------------------- messaging -------------------------------- */
+
   const markNotificationsRead = useCallback(() => {
     setState((s) => ({
       ...s,
@@ -545,102 +1121,105 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  const updateProfile = useCallback((avatar: string, title?: string, avatarFrame?: string) => {
-    setState((s) => ({
-      ...s,
-      users: s.users.map((u) => (u.id === s.currentUserId ? { ...u, avatar, title, avatarFrame } : u)),
-      notifications: [
-        makeNotification(s.currentUserId, "Profile customization saved!"),
-        ...s.notifications,
-      ],
-    }));
-  }, []);
-
-  const claimDailyMission = useCallback((missionId: string, coinReward: number, xpReward: number) => {
-    setState((s) => {
-      const u = s.users.find((x) => x.id === s.currentUserId);
-      if (!u) return s;
-
-      const userProg = s.progress[s.currentUserId] || { completed: {}, premiumUnlocks: {} };
-      if (userProg.claimedMissions?.[missionId]) return s;
-
-      const updatedProg: UserProgress = {
-        ...userProg,
-        claimedMissions: { ...(userProg.claimedMissions || {}), [missionId]: true },
-      };
-
-      const updatedUser: User = {
-        ...u,
-        edgeCoins: u.edgeCoins + coinReward,
-        xp: u.xp + xpReward,
-      };
-
-      const txn: Transaction = {
-        id: uid("txn"),
-        userId: s.currentUserId,
-        amountCoins: coinReward,
-        amountInr: null,
-        type: "EARNED",
-        status: "APPROVED",
-        note: `Daily quest reward (${missionId})`,
-        createdAt: new Date().toISOString(),
-      };
-
-      return {
-        ...s,
-        users: s.users.map((x) => (x.id === s.currentUserId ? updatedUser : x)),
-        progress: { ...s.progress, [s.currentUserId]: updatedProg },
-        transactions: [txn, ...s.transactions],
-        notifications: [
-          makeNotification(s.currentUserId, `Claimed Daily Quest: +ↁ${coinReward} & +${xpReward} XP!`),
-          ...s.notifications,
-        ],
-      };
-    });
-  }, []);
-
   const adminBroadcastNotification = useCallback((message: string, targetUserId?: string) => {
     setState((s) => {
       const targets = targetUserId ? [targetUserId] : s.users.map((u) => u.id);
       const newNotifs = targets.map((userId) => makeNotification(userId, message, "info"));
-      return {
-        ...s,
-        notifications: [...newNotifs, ...s.notifications],
-      };
+      return { ...s, notifications: [...newNotifs, ...s.notifications] };
     });
   }, []);
+
+  const adminAnnounce = useCallback((title: string, body: string) => {
+    setState((s) => ({
+      ...s,
+      announcements: [{ id: uid("ann"), title, body, createdAt: new Date().toISOString() }, ...s.announcements],
+    }));
+  }, []);
+
+  const adminDeleteAnnouncement = useCallback((id: string) => {
+    setState((s) => ({ ...s, announcements: s.announcements.filter((a) => a.id !== id) }));
+  }, []);
+
+  /* ------------------------------- certificates ------------------------------- */
 
   const adminIssueCertificate = useCallback((userId: string, skillId: string, levelTier: number) => {
     setState((s) => {
       const u = s.users.find((x) => x.id === userId);
-      const sk = SKILLS.find((x) => x.id === skillId);
+      const sk = findSkill(s.catalog, skillId);
       if (!u || !sk) return s;
-
       const cert: Certificate = {
         id: uid("cert"),
         userId,
         skillId,
         levelTier,
+        certType: levelTier >= 10 ? "Skill Completion" : "Phase Completion",
         verificationCode: verificationHash(`${userId}:${skillId}:${levelTier}`),
         issuedAt: new Date().toISOString(),
+        status: "Active",
       };
-
       return {
         ...s,
         certificates: [cert, ...s.certificates],
+        notifications: [makeNotification(userId, `Admin issued you a certificate in ${sk.title}!`), ...s.notifications],
+      };
+    });
+  }, []);
+
+  /* --------------------------------- profile --------------------------------- */
+
+  const updateProfile = useCallback(
+    (patch: Partial<Pick<User, "avatar" | "avatarUrl" | "bio" | "title" | "avatarFrame" | "name">>) => {
+      setState((s) => ({
+        ...s,
+        users: s.users.map((u) => (u.id === s.currentUserId ? { ...u, ...patch } : u)),
+      }));
+    },
+    []
+  );
+
+  const claimDailyMission = useCallback((missionId: string, neuronReward: number, xpReward: number) => {
+    setState((s) => {
+      const u = s.users.find((x) => x.id === s.currentUserId);
+      if (!u) return s;
+      const userProg = s.progress[s.currentUserId] || { completed: {}, premiumUnlocks: {} };
+      if (userProg.claimedMissions?.[missionId]) return s;
+      const updatedProg: UserProgress = {
+        ...userProg,
+        claimedMissions: { ...(userProg.claimedMissions || {}), [missionId]: true },
+      };
+      const updatedUser = withStreak({ ...u, neurons: u.neurons + neuronReward, xp: u.xp + xpReward });
+      return {
+        ...s,
+        users: s.users.map((x) => (x.id === s.currentUserId ? updatedUser : x)),
+        progress: { ...s.progress, [s.currentUserId]: updatedProg },
+        transactions: [
+          {
+            id: uid("txn"),
+            userId: s.currentUserId,
+            amountNeurons: neuronReward,
+            amountInr: null,
+            type: "EARNED" as const,
+            status: "APPROVED" as const,
+            note: `Daily quest reward (${missionId})`,
+            createdAt: new Date().toISOString(),
+          },
+          ...s.transactions,
+        ],
         notifications: [
-          makeNotification(userId, `🏆 Admin issued you a Tier ${levelTier} Certificate in ${sk.title}!`),
+          makeNotification(s.currentUserId, `Daily quest claimed: +${neuronReward} Neurons & +${xpReward} XP!`),
           ...s.notifications,
         ],
       };
     });
   }, []);
 
+  /* ------------------------------ data management ------------------------------ */
+
   const importDatabase = useCallback((jsonStr: string) => {
     try {
       const parsed = JSON.parse(jsonStr) as AppState;
-      if (!parsed || !Array.isArray(parsed.users) || !Array.isArray(parsed.transactions)) {
-        return { ok: false, reason: "Invalid JSON database structure." };
+      if (!parsed || parsed.version !== 2 || !Array.isArray(parsed.users) || !Array.isArray(parsed.catalog)) {
+        return { ok: false, reason: "Invalid v2 database structure." };
       }
       setState(parsed);
       return { ok: true };
@@ -649,135 +1228,73 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const resetDemoData = useCallback(() => {
+  const exportDatabase = useCallback(() => JSON.stringify(state, null, 2), [state]);
+
+  const resetAllData = useCallback(() => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY_V2);
+      localStorage.removeItem(STORAGE_KEY_V1);
     } catch {}
     setState(seedState());
   }, []);
 
-  const login = useCallback(
-    (email: string, password?: string) => {
-      const cleanEmail = email.trim().toLowerCase();
-      // Fixed Admin Credentials Check
-      if (cleanEmail === "skilledgelearning@gmail.com") {
-        if (password === "seladmin") {
-          let adminUser = state.users.find((x) => x.id === "u-admin" || x.email.toLowerCase() === "skilledgelearning@gmail.com");
-          if (!adminUser) {
-            adminUser = {
-              id: "u-admin",
-              name: "Skill Edge Admin",
-              email: "skilledgelearning@gmail.com",
-              password: "seladmin",
-              role: "ADMIN",
-              avatar: "🛡️",
-              title: "Super Admin",
-              avatarFrame: "gold",
-              edgeCoins: 1000,
-              xp: 5000,
-              streakCount: 30,
-              lastActiveDay: todayKey(),
-              createdAt: new Date().toISOString(),
-            };
-            setState((s) => ({ ...s, users: [...s.users, adminUser!], currentUserId: adminUser!.id }));
-          } else {
-            setState((s) => ({ ...s, currentUserId: adminUser!.id }));
-          }
-          return { ok: true, user: adminUser };
-        } else {
-          return { ok: false, reason: "Incorrect password for Admin account." };
-        }
-      }
-
-      // Standard User Login
-      const u = state.users.find((x) => x.email.toLowerCase() === cleanEmail);
-      if (u) {
-        if (u.password && password && u.password !== password) {
-          return { ok: false, reason: "Incorrect password." };
-        }
-        setState((s) => ({ ...s, currentUserId: u.id }));
-        return { ok: true, user: u };
-      }
-      return { ok: false, reason: "No account found with this email. Please sign up!" };
-    },
-    [state.users]
-  );
-
-  const register = useCallback(
-    (name: string, email: string, password?: string, _role?: "USER" | "ADMIN", avatar: string = "🚀") => {
-      const cleanEmail = email.trim().toLowerCase();
-      const existing = state.users.find((x) => x.email.toLowerCase() === cleanEmail);
-      if (existing) {
-        setState((s) => ({ ...s, currentUserId: existing.id }));
-        return { ok: true, user: existing };
-      }
-      const newId = uid("u");
-      const newUser: User = {
-        id: newId,
-        name: name || email.split("@")[0],
-        email: cleanEmail,
-        password,
-        role: "USER", // Strictly standard USER role
-        avatar,
-        title: "Novice Builder",
-        avatarFrame: "cyan",
-        edgeCoins: 100, // welcome bonus
-        xp: 0,
-        streakCount: 1,
-        lastActiveDay: todayKey(),
-        createdAt: new Date().toISOString(),
-      };
-      setState((s) => ({
-        ...s,
-        users: [...s.users, newUser],
-        currentUserId: newId,
-        notifications: [
-          makeNotification(newId, `🎉 Welcome to Skill Edge OS, ${newUser.name}! +100 ↁ bonus credited!`),
-          ...s.notifications,
-        ],
-      }));
-      return { ok: true, user: newUser };
-    },
-    [state.users]
-  );
-
-  const logout = useCallback(() => {
-    setState((s) => ({ ...s, currentUserId: "" }));
-  }, []);
+  /* ---------------------------------- expose ---------------------------------- */
 
   const api: AppApi = {
     state,
     hydrated,
-    skills,
+    catalog,
     currentUser,
-    isAdmin: Boolean(currentUser && currentUser.role === "ADMIN"),
+    isAdmin,
     isAuthenticated: Boolean(currentUser),
+    isPro,
     progressFor,
     myProgress,
-    isLevelUnlocked,
-    levelWithOverrides,
-    switchUser,
-    completeLevel,
-    unlockPremium,
-    requestCoinPurchase,
+    missionById,
+    missionUnlocked,
+    submitMission,
+    submissionsForMission,
+    mySubmissions,
+    adminSetSubmissionStatus,
+    adminReviewSubmission,
+    myPortfolio,
+    portfolioFor,
+    setPortfolioFeatured,
+    setPortfolioHidden,
+    recordKnowledgeCheck,
+    requestNeuronPurchase,
     adminSetTxnStatus,
-    adminAdjustCoins,
+    adminAdjustNeurons,
     adminGrantXp,
+    purchasePlanUpi,
+    activatePlan,
+    adminResolvePayment,
+    adminGrantPlan,
+    cancelSubscription,
+    validateCoupon,
+    adminUpsertCoupon,
+    adminDeleteCoupon,
+    adminUpsertSkill,
+    adminDeleteSkill,
+    adminUpsertMission,
+    adminDeleteMission,
+    adminMoveMission,
+    adminSetMissionLocked,
+    adminResetCatalog,
     adminCreateQuiz,
     adminDeclareWinners,
-    adminUpdateLevel,
     joinQuiz,
     submitQuizScore,
     markNotificationsRead,
+    adminBroadcastNotification,
+    adminAnnounce,
+    adminDeleteAnnouncement,
+    adminIssueCertificate,
     updateProfile,
     claimDailyMission,
-    adminBroadcastNotification,
-    adminIssueCertificate,
     importDatabase,
-    resetDemoData,
-    login,
-    register,
-    logout,
+    exportDatabase,
+    resetAllData,
   };
 
   return <AppContext.Provider value={api}>{children}</AppContext.Provider>;
@@ -788,3 +1305,5 @@ export function useApp() {
   if (!ctx) throw new Error("useApp must be used inside <AppProvider>");
   return ctx;
 }
+
+export type { SubmissionKind };

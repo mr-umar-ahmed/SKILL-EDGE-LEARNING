@@ -1,13 +1,14 @@
 "use client";
 
 import {
-  ChevronDown,
-  Folder,
-  Home,
-  Layers,
+  Award,
+  FolderKanban,
+  Hexagon,
   LayoutDashboard,
+  Library,
   Search,
   ShieldCheck,
+  Sparkles,
   Swords,
   Trophy,
   UserRound,
@@ -15,8 +16,40 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useApp } from "@/lib/store";
-import { cn, fmtNum } from "@/lib/utils";
+import { cn, fmtNum, isPaidPlan } from "@/lib/utils";
+
+const NAV_GROUPS: { label: string; items: { href: string; label: string; icon: typeof LayoutDashboard }[] }[] = [
+  {
+    label: "Learn",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/skills", label: "Skills", icon: Library },
+    ],
+  },
+  {
+    label: "Build",
+    items: [
+      { href: "/portfolio", label: "Portfolio", icon: FolderKanban },
+      { href: "/certificates", label: "Certificates", icon: Award },
+    ],
+  },
+  {
+    label: "Compete",
+    items: [
+      { href: "/quizzes", label: "Tournaments", icon: Swords },
+      { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { href: "/wallet", label: "Wallet", icon: Wallet2 },
+      { href: "/profile", label: "Profile", icon: UserRound },
+    ],
+  },
+];
 
 export function Sidebar({
   onOpenSearch,
@@ -26,238 +59,106 @@ export function Sidebar({
   onOpenUserMenu: () => void;
 }) {
   const pathname = usePathname();
-  const { currentUser, isAdmin, skills } = useApp();
-
-  const PRIMARY_RAIL = [
-    { href: "/dashboard", label: "Dashboard", icon: Home },
-    { href: "/quizzes", label: "Tournaments", icon: Swords },
-    { href: "/leaderboard", label: "Hall of Fame", icon: Trophy },
-    { href: "/payment", label: "Wallet", icon: Wallet2 },
-    { href: "/profile", label: "Identity & Profile", icon: UserRound },
-  ];
-
-  if (isAdmin) {
-    PRIMARY_RAIL.push({ href: "/admin", label: "Admin Panel", icon: ShieldCheck });
-  }
-
-  const SKILL_CATEGORIES = Array.from(new Set(skills.map((s) => s.category)));
+  const { currentUser, isAdmin, isPro } = useApp();
 
   return (
-    <>
-      {/* 1. Far-Left Floating Primary Command Rail */}
-      <aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col items-center justify-between py-6 px-2 lg:flex z-50">
-        {/* Floating Rail Capsule */}
-        <div className="sidebar-floating-capsule flex flex-col items-center gap-5 py-4 px-2.5 rounded-full shadow-2xl">
-          {/* Top Brand Star Icon */}
-          <Link
-            href="/"
-            className="flex h-10 w-10 items-center justify-center rounded-full btn-primary font-mono text-xl font-black shadow-lg hover:scale-110 transition"
-          >
-            ✳
-          </Link>
-
-          <div className="h-px w-6 bg-white/10" />
-
-          {/* Primary Nav Icons */}
-          {PRIMARY_RAIL.map((item) => {
-            const active = pathname.startsWith(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={item.label}
-                className={cn(
-                  "relative flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300",
-                  active
-                    ? "nav-active-pill shadow-lg scale-105"
-                    : "text-zinc-400 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 1.75} />
-              </Link>
-            );
-          })}
+    <aside className="sidebar-expanded-panel sticky top-0 hidden h-dvh w-64 shrink-0 flex-col gap-4 p-4 backdrop-blur-3xl lg:flex">
+      {/* Brand */}
+      <Link href="/dashboard" className="flex items-center gap-2.5 px-2 pt-1">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-deep shadow-brand">
+          <Hexagon className="h-5 w-5 text-white" strokeWidth={2.5} />
+        </span>
+        <div className="leading-tight">
+          <div className="font-display text-sm font-bold tracking-tight text-white">Skill Edge</div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Learning OS</div>
         </div>
+      </Link>
 
-        {/* Bottom Floating Profile Capsule */}
-        <div className="sidebar-floating-capsule flex flex-col items-center py-2 px-2 rounded-full shadow-2xl">
-          <button
-            onClick={onOpenUserMenu}
-            title="User Profile & Settings"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-amber-500 hover:bg-white/10 transition"
-          >
-            <UserRound className="h-5 w-5" strokeWidth={1.75} />
-          </button>
-        </div>
-      </aside>
+      {/* Search trigger */}
+      <button
+        onClick={onOpenSearch}
+        className="neo-inset flex w-full items-center gap-2 px-3 py-2.5 text-xs text-zinc-400 transition hover:border-brand/40 hover:text-white"
+      >
+        <Search className="h-3.5 w-3.5" />
+        <span>Search…</span>
+        <span className="ml-auto rounded-md border border-line bg-card px-1.5 py-0.5 font-mono text-[10px] text-zinc-500">
+          Ctrl K
+        </span>
+      </button>
 
-      {/* 2. Secondary Expanded Navigation Panel */}
-      <aside className="sidebar-expanded-panel sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-5 border-r border-white/[0.08] p-5 lg:flex backdrop-blur-3xl overflow-y-auto">
-        {/* User Card Header */}
+      {/* Nav groups */}
+      <nav className="flex-1 space-y-4 overflow-y-auto pb-2">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label} className="space-y-0.5">
+            <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">{group.label}</div>
+            {group.items.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(item.href + "/");
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-semibold transition-all duration-200",
+                    active ? "nav-active-pill" : "text-zinc-400 hover:bg-hover/60 hover:text-white"
+                  )}
+                >
+                  <Icon className="h-4 w-4" strokeWidth={active ? 2.5 : 1.75} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+
+        {isAdmin && (
+          <div className="space-y-0.5">
+            <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Manage</div>
+            <Link
+              href="/admin"
+              className={cn(
+                "flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-semibold transition-all duration-200",
+                pathname.startsWith("/admin") ? "nav-active-pill" : "text-zinc-400 hover:bg-hover/60 hover:text-white"
+              )}
+            >
+              <ShieldCheck className="h-4 w-4" strokeWidth={1.75} />
+              <span>Admin</span>
+            </Link>
+          </div>
+        )}
+      </nav>
+
+      {/* Upgrade nudge (free users) */}
+      {currentUser && !isPro && (
+        <Link
+          href="/pricing"
+          className="card-glow flex items-center gap-2.5 p-3 transition"
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-premium/15 text-premium">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 leading-tight">
+            <div className="text-xs font-bold text-white">Upgrade to Pro</div>
+            <div className="truncate text-[10px] text-zinc-500">All missions · ad-free</div>
+          </div>
+        </Link>
+      )}
+
+      {/* User footer */}
+      {currentUser && (
         <button
           onClick={onOpenUserMenu}
-          title="Click to Open Profile Settings"
-          className="flex items-center gap-3 border-b border-white/[0.08] pb-4 text-left group hover:opacity-90 transition"
+          className="flex items-center gap-2.5 rounded-xl border border-line bg-card/70 p-2.5 text-left transition hover:border-brand/40"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl neo-box border border-amber-400/40 text-2xl shadow-md group-hover:scale-105 transition">
-            {currentUser?.avatar}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <span className="truncate text-sm font-bold text-white">{currentUser?.name}</span>
-              <span className="chip border-amber-400/40 text-[9px] font-mono py-0 px-1 font-bold text-amber-500">
-                {currentUser?.role}
-              </span>
-              <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0 group-hover:translate-y-0.5 transition" />
+          <UserAvatar user={currentUser} size={32} />
+          <div className="min-w-0 flex-1 leading-tight">
+            <div className="truncate text-xs font-bold text-white">{currentUser.name}</div>
+            <div className="truncate text-[10px] text-zinc-500">
+              {isPaidPlan(currentUser.subscription) ? "Pro Member" : "Free Plan"} · {fmtNum(currentUser.neurons)} Neurons
             </div>
-            <div className="truncate text-[11px] text-zinc-400 font-mono">{currentUser?.email}</div>
           </div>
         </button>
-
-        {/* Category Section: Navigation */}
-        <div className="space-y-1.5">
-          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500 px-2">
-            Projects & Navigation
-          </div>
-          <Link
-            href="/dashboard"
-            className={cn(
-              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
-              pathname === "/dashboard"
-                ? "nav-active-pill shadow-lg"
-                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
-            )}
-          >
-            <div className="flex items-center gap-2.5">
-              <LayoutDashboard className="h-4 w-4" strokeWidth={1.75} />
-              <span>Dashboard</span>
-            </div>
-            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px]">0</span>
-          </Link>
-          <Link
-            href="/learn/ai-prompt-engineering/practice"
-            className={cn(
-              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
-              pathname.includes("practice")
-                ? "nav-active-pill shadow-lg"
-                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
-            )}
-          >
-            <div className="flex items-center gap-2.5">
-              <Layers className="h-4 w-4" strokeWidth={1.75} />
-              <span>Practice Deck</span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Category Section: Status & Competitions */}
-        <div className="space-y-1.5">
-          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500 px-2">
-            Status & Events
-          </div>
-          <Link
-            href="/quizzes"
-            className={cn(
-              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
-              pathname.startsWith("/quizzes")
-                ? "nav-active-pill shadow-lg"
-                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
-            )}
-          >
-            <div className="flex items-center gap-2.5">
-              <Swords className="h-4 w-4" strokeWidth={1.75} />
-              <span>Tournaments</span>
-            </div>
-            <span className="rounded-full bg-rose-500/20 text-rose-400 border border-rose-400/40 px-2 py-0.5 font-mono text-[10px]">
-              3
-            </span>
-          </Link>
-          <Link
-            href="/leaderboard"
-            className={cn(
-              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
-              pathname.startsWith("/leaderboard")
-                ? "nav-active-pill shadow-lg"
-                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
-            )}
-          >
-            <div className="flex items-center gap-2.5">
-              <Trophy className="h-4 w-4" strokeWidth={1.75} />
-              <span>Hall of Fame</span>
-            </div>
-            <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px]">2</span>
-          </Link>
-        </div>
-
-        {/* Category Section: Economy & Vault */}
-        <div className="space-y-1.5">
-          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500 px-2">
-            Economy & Vault
-          </div>
-          <Link
-            href="/payment"
-            className={cn(
-              "flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all duration-300",
-              pathname.startsWith("/payment")
-                ? "nav-active-pill shadow-lg"
-                : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
-            )}
-          >
-            <div className="flex items-center gap-2.5">
-              <Wallet2 className="h-4 w-4" strokeWidth={1.75} />
-              <span>EdgeCoin Wallet</span>
-            </div>
-            <span className="rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-400/40 px-2 py-0.5 font-mono text-[10px] font-bold">
-              ↁ {fmtNum(currentUser?.edgeCoins ?? 0)}
-            </span>
-          </Link>
-        </div>
-
-        {/* Category Section: Skill Tracks */}
-        <div className="space-y-2 pt-2 border-t border-white/[0.08]">
-          <div className="flex items-center justify-between px-2 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-            <span>Skill Tracks</span>
-            <button onClick={onOpenSearch} className="text-zinc-400 hover:text-white">
-              +
-            </button>
-          </div>
-
-          <button
-            onClick={onOpenSearch}
-            className="neo-inset flex w-full items-center gap-2 px-3 py-2 text-xs text-zinc-400 hover:text-white transition"
-          >
-            <Search className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="font-mono text-[11px]">Search skills...</span>
-          </button>
-
-          <div className="space-y-1 pl-1">
-            {SKILL_CATEGORIES.map((cat) => (
-              <div key={cat} className="space-y-1">
-                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300 py-1 px-2">
-                  <Folder className="h-3.5 w-3.5 text-amber-500" />
-                  <span className="truncate">{cat}</span>
-                </div>
-                <div className="pl-4 space-y-1 border-l border-white/10 ml-3">
-                  {skills
-                    .filter((s) => s.category === cat)
-                    .slice(0, 3)
-                    .map((s) => (
-                      <Link
-                        key={s.id}
-                        href={`/learn/${s.id}`}
-                        className="flex items-center justify-between text-[11px] font-medium text-zinc-400 hover:text-white py-1 px-2 rounded-lg hover:bg-white/[0.04]"
-                      >
-                        <span className="truncate">{s.title}</span>
-                        <span className="font-mono text-[9px] text-zinc-500">10L</span>
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </aside>
-    </>
+      )}
+    </aside>
   );
 }

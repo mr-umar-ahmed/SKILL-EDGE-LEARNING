@@ -5,22 +5,44 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        base: "#030303",
-        surface: "#0a0a0c",
+        base: "#0B0F19",
+        surface: "#111827",
+        card: "#1A2235",
+        hover: "#222C44",
+        line: "#2D3748",
+        brand: {
+          DEFAULT: "#3B82F6",
+          deep: "#2563EB",
+        },
+        accent: "#06B6D4",
+        premium: "#8B5CF6",
+        success: "#22C55E",
+        warning: "#FACC15",
+        danger: "#EF4444",
+        // legacy aliases still referenced by v1 pages — mapped onto the v2 palette
         edge: {
-          cyan: "#06b6d4",
-          violet: "#8b5cf6",
-          gold: "#eab308",
+          cyan: "#06B6D4",
+          violet: "#8B5CF6",
+          gold: "#FACC15",
         },
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-outfit)", "var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+      },
+      borderRadius: {
+        card: "1.125rem", // 18px — the standard card radius
+      },
+      boxShadow: {
+        card: "0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -8px rgba(0,0,0,0.5)",
+        "card-hover": "0 2px 4px rgba(0,0,0,0.4), 0 16px 40px -12px rgba(59,130,246,0.25)",
+        brand: "0 8px 24px -6px rgba(59,130,246,0.45)",
       },
       keyframes: {
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 12px 0 rgba(6,182,212,0.35)" },
-          "50%": { boxShadow: "0 0 28px 6px rgba(6,182,212,0.55)" },
+          "0%, 100%": { boxShadow: "0 0 12px 0 rgba(59,130,246,0.35)" },
+          "50%": { boxShadow: "0 0 28px 6px rgba(59,130,246,0.55)" },
         },
         "coin-pop": {
           "0%": { transform: "scale(1)" },
@@ -35,12 +57,22 @@ const config: Config = {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "scale-in": {
+          "0%": { opacity: "0", transform: "scale(0.96)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "pulse-glow": "pulse-glow 2.4s ease-in-out infinite",
         "coin-pop": "coin-pop 0.5s ease-out",
         float: "float 4s ease-in-out infinite",
         shimmer: "shimmer 2.5s linear infinite",
+        "fade-up": "fade-up 0.45s cubic-bezier(0.22,1,0.36,1) both",
+        "scale-in": "scale-in 0.3s cubic-bezier(0.22,1,0.36,1) both",
       },
     },
   },

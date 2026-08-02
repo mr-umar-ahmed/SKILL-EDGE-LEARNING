@@ -1,11 +1,12 @@
 "use client";
 
-import { ChevronDown, Flame, Menu, Search, ShieldCheck, Target, Zap } from "lucide-react";
+import { Flame, Hexagon, Menu, Search, Target, Zap } from "lucide-react";
 import Link from "next/link";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useApp } from "@/lib/store";
-import { fmtNum, levelForXp, studentTierForXp } from "@/lib/utils";
+import { fmtNum, levelForXp } from "@/lib/utils";
 import { NotificationsBell } from "./NotificationsBell";
-import { SoundToggle, ThemeToggle } from "./Toggles";
+import { SoundToggle } from "./Toggles";
 
 export function TopBar({
   onOpenSearch,
@@ -18,84 +19,64 @@ export function TopBar({
   onOpenUserMenu: () => void;
   onOpenMobileDrawer: () => void;
 }) {
-  const { currentUser, isAdmin } = useApp();
+  const { currentUser } = useApp();
   const badgeLevel = currentUser ? levelForXp(currentUser.xp) : 1;
-  const studentTier = studentTierForXp(currentUser?.xp ?? 0);
 
   return (
     <header className="top-header-bar sticky top-0 z-40 backdrop-blur-2xl">
       <div className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 lg:hidden">
-          <span className="clay-badge flex h-8 w-8 items-center justify-center btn-primary font-mono text-base font-black">
-            S
+        {/* Mobile brand */}
+        <Link href="/dashboard" className="flex items-center gap-2 lg:hidden">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-deep">
+            <Hexagon className="h-4 w-4 text-white" strokeWidth={2.5} />
           </span>
-          <span className="font-mono font-bold text-white">
-            SKILL<span className="text-amber-500">EDGE</span>
-          </span>
+          <span className="font-display text-sm font-bold text-white">Skill Edge</span>
         </Link>
         <div className="hidden lg:block" />
 
-        {/* Desktop Topbar Actions */}
-        <div className="hidden lg:flex items-center gap-1.5 overflow-x-auto py-1 sm:gap-2">
-          <button
-            onClick={onOpenSearch}
-            className="header-chip-btn font-mono transition hover:scale-105"
-            title="Search skills (Ctrl+K)"
-          >
-            <Search className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} /> Search{" "}
-            <span className="text-[10px] text-zinc-400">Ctrl+K</span>
+        {/* Desktop actions */}
+        <div className="hidden items-center gap-2 py-1 lg:flex">
+          <button onClick={onOpenSearch} className="header-chip-btn" title="Search (Ctrl+K)">
+            <Search className="h-3.5 w-3.5" strokeWidth={1.75} /> Search
           </button>
-          <button
-            onClick={onOpenMissions}
-            className="header-chip-btn font-mono text-amber-500 transition hover:scale-105"
-            title="Daily Cyber Quests"
-          >
-            <Target className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} /> Quests
+          <button onClick={onOpenMissions} className="header-chip-btn text-brand" title="Daily Quests">
+            <Target className="h-3.5 w-3.5" strokeWidth={1.75} /> Quests
           </button>
-          <div className="header-chip-btn font-mono text-orange-500">
+          <div className="header-chip-btn text-warning" title="Learning streak">
             <Flame className="h-3.5 w-3.5" strokeWidth={1.75} /> {currentUser?.streakCount ?? 0}
           </div>
-          <Link href="/payment" className="header-chip-btn font-mono text-yellow-600 transition hover:scale-105">
-            <span className="font-bold">ↁ</span> {fmtNum(currentUser?.edgeCoins ?? 0)}
+          <Link href="/wallet" className="header-chip-btn text-accent" title="Neuron wallet">
+            <Hexagon className="h-3.5 w-3.5 fill-accent/20" strokeWidth={2} /> {fmtNum(currentUser?.neurons ?? 0)}
           </Link>
-          <div className="header-chip-btn font-mono text-violet-500">
+          <div className="header-chip-btn text-premium" title="XP level">
             <Zap className="h-3.5 w-3.5" strokeWidth={1.75} /> LVL {badgeLevel}
           </div>
-          <div className="header-chip-btn font-mono text-cyan-400 font-bold flex items-center gap-1 border border-cyan-500/30 bg-cyan-500/10">
-            <span>{studentTier.icon}</span>
-            <span>{studentTier.name}</span>
-          </div>
 
-          <ThemeToggle />
           <SoundToggle />
           <NotificationsBell />
 
-          {/* User Profile Trigger Button */}
           <button
             onClick={onOpenUserMenu}
-            className="header-chip-btn flex items-center gap-2 py-1.5 pl-2 pr-2.5 transition hover:scale-105 active:scale-95"
-            title="User Profile & Settings"
+            className="flex items-center rounded-full transition hover:scale-105 active:scale-95"
+            title="Account"
           >
-            <span className="text-lg leading-none">{currentUser?.avatar}</span>
-            <span className="hidden max-w-28 truncate text-xs font-semibold md:block">{currentUser?.name}</span>
-            {isAdmin && <ShieldCheck className="h-3.5 w-3.5 text-amber-500" strokeWidth={1.75} />}
-            <ChevronDown className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
+            <UserAvatar user={currentUser} size={32} />
           </button>
         </div>
 
-        {/* Mobile Header Right Actions */}
-        <div className="flex lg:hidden items-center gap-2">
-          <Link href="/payment" className="header-chip-btn font-mono text-yellow-600">
-            <span className="font-bold">ↁ</span> {fmtNum(currentUser?.edgeCoins ?? 0)}
+        {/* Mobile actions */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <Link href="/wallet" className="header-chip-btn text-accent">
+            <Hexagon className="h-3.5 w-3.5 fill-accent/20" strokeWidth={2} /> {fmtNum(currentUser?.neurons ?? 0)}
           </Link>
-
+          <NotificationsBell />
           <button
             onClick={onOpenMobileDrawer}
-            className="header-chip-btn p-2 text-zinc-300 hover:text-white"
-            title="Open Mobile Navigation Menu"
-            aria-label="Open Mobile Navigation Menu"
+            className="header-chip-btn p-2"
+            title="Menu"
+            aria-label="Open navigation menu"
           >
-            <Menu className="h-5 w-5 text-amber-500" strokeWidth={2} />
+            <Menu className="h-5 w-5 text-white" strokeWidth={2} />
           </button>
         </div>
       </div>
