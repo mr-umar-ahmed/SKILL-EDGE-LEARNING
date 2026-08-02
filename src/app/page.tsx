@@ -94,7 +94,7 @@ export default function LandingPage() {
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs font-mono hover:bg-emerald-500/20 transition"
             >
               <MessageCircle className="h-3.5 w-3.5" />
-              <span>Let's Talk</span>
+              <span>Let&apos;s Talk</span>
             </a>
 
             {isAuthenticated ? (
@@ -162,7 +162,7 @@ export default function LandingPage() {
             </h1>
             <p className="mt-6 text-sm sm:text-base md:text-lg text-zinc-400 max-w-2xl mx-auto font-light leading-relaxed">
               Skill Edge Learning is a student-led learning OS that complements formal education with practical,
-              future-ready skills — built by students, for the world you'll graduate into.
+              future-ready skills — built by students, for the world you&apos;ll graduate into.
             </p>
           </div>
 
@@ -216,10 +216,10 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-5 space-y-4">
               <span className="font-mono text-xs font-semibold text-rose-400 uppercase tracking-widest flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" /> // System Conflict
+                <AlertCircle className="h-4 w-4" /> {/* // System Conflict */}
               </span>
               <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
-                TODAY'S EDUCATION CREATES TEST-TAKERS.
+                TODAY&apos;S EDUCATION CREATES TEST-TAKERS.
               </h3>
               <p className="text-zinc-400 font-light text-xs sm:text-sm leading-relaxed">
                 The future belongs to builders, yet teenagers are forced through an industrial system optimized for routine
@@ -241,7 +241,7 @@ export default function LandingPage() {
 
               <div className="p-6 rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl">
                 <h4 className="font-mono text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">
-                  // Missing School Tracks
+                  {/* // Missing School Tracks */}
                 </h4>
                 <div className="flex flex-wrap gap-2 text-xs font-mono text-zinc-300">
                   {[
@@ -372,7 +372,7 @@ export default function LandingPage() {
               <Heart className="h-3.5 w-3.5" /> ABOUT US
             </div>
             <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-              We're building the learning OS we{" "}
+              We&apos;re building the learning OS we{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400">
                 wish we had.
               </span>
@@ -388,7 +388,7 @@ export default function LandingPage() {
         <section id="contact" className="py-20 border-t border-white/10">
           <div className="neo-box p-8 sm:p-12 rounded-3xl border border-emerald-500/40 bg-gradient-to-br from-emerald-950/20 via-black to-black max-w-4xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-[11px] font-mono text-emerald-400 uppercase tracking-widest">
-              <MessageCircle className="h-3.5 w-3.5" /> LET'S TALK
+              <MessageCircle className="h-3.5 w-3.5" /> LET&apos;S TALK
             </div>
             <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
               Have questions or want to partner with us?
