@@ -130,47 +130,50 @@ function CheckoutModal({
     setGatewayError(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/payments/razorpay/order", {
+      const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amountInr: finalAmount, planId: plan.id }),
+        body: JSON.stringify({ amount: finalAmount, currency: "INR", receipt: `plan_${plan.id}_${Date.now()}` }),
       });
-      if (res.status === 503) {
-        setGatewayError("Gateway not configured yet — use UPI (manual verify) instead.");
+      if (res.status === 401 || res.status === 503) {
+        setGatewayError("Gateway credentials missing — use UPI (manual verify) instead.");
         return;
       }
       if (!res.ok) {
         setGatewayError("Could not create the payment order. Try again, or use UPI.");
         return;
       }
-      const order = (await res.json()) as { orderId: string; amount: number; currency: string; keyId: string };
+      const order = (await res.json()) as { order_id: string; amount: number; currency: string; key_id: string };
       const ok = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
       if (!ok || !window.Razorpay) {
-        setGatewayError("Could not load Razorpay checkout. Check your connection and retry.");
+        setGatewayError("Could not load Razorpay checkout script. Check your internet connection.");
         return;
       }
       const rzp = new window.Razorpay({
-        key: order.keyId,
+        key: order.key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: order.amount,
         currency: order.currency,
         name: "Skill Edge Learning",
         description: `${plan.name} plan`,
-        order_id: order.orderId,
+        order_id: order.order_id,
         prefill: { name: currentUser?.name, email: currentUser?.email },
-        theme: { color: "#3B82F6" },
+        theme: { color: "#E85002" },
+        modal: {
+          ondismiss: () => setBusy(false),
+        },
         handler: async (resp: RazorpayResponse) => {
           try {
-            const vr = await fetch("/api/payments/razorpay/verify", {
+            const vr = await fetch("/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                orderId: resp.razorpay_order_id,
-                paymentId: resp.razorpay_payment_id,
-                signature: resp.razorpay_signature,
+                razorpay_order_id: resp.razorpay_order_id,
+                razorpay_payment_id: resp.razorpay_payment_id,
+                razorpay_signature: resp.razorpay_signature,
               }),
             });
-            const data = (await vr.json().catch(() => null)) as { valid?: boolean } | null;
-            if (vr.ok && data?.valid) {
+            const data = (await vr.json().catch(() => null)) as { success?: boolean; error?: string } | null;
+            if (vr.ok && data?.success) {
               activatePlan(plan.id, "RAZORPAY", finalAmount, {
                 orderId: resp.razorpay_order_id,
                 paymentId: resp.razorpay_payment_id,
@@ -179,17 +182,18 @@ function CheckoutModal({
               fireBigConfetti();
               setPaid(true);
             } else {
-              setGatewayError("Payment verification failed. Contact support if you were charged.");
+              setGatewayError(data?.error || "Payment verification failed. Contact support if you were charged.");
             }
           } catch {
             setGatewayError("Payment verification failed. Contact support if you were charged.");
+          } finally {
+            setBusy(false);
           }
         },
       });
       rzp.open();
     } catch {
       setGatewayError("Something went wrong starting Razorpay. Try again, or use UPI.");
-    } finally {
       setBusy(false);
     }
   };
