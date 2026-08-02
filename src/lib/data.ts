@@ -686,6 +686,57 @@ function buildMissions(seed: SkillSeed): Mission[] {
       ...(n === 1 ? STARTER_RESOURCES[seed.id] ?? [] : []),
     ];
 
+    const gamifiedSteps: GamifiedStep[] = [
+      {
+        id: `${seed.id}-l${n}-step1`,
+        type: "HOOK",
+        title: "Curiosity Hook",
+        hookText: `What if mastering ${title} took only 5 minutes of focused action instead of weeks of passive video watching?`,
+      },
+      {
+        id: `${seed.id}-l${n}-step2`,
+        type: "STORY",
+        title: "Story Card",
+        storyText: brief,
+        storyAnalogy: `Think of ${seed.title} as building blocks: every mission adds a real-world capability to your skill portfolio.`,
+      },
+      {
+        id: `${seed.id}-l${n}-step3`,
+        type: "DISCOVERY",
+        title: "The Concept Discovery",
+        discoveryText: n === 10
+          ? "A portfolio-grade capstone project ready to share with employers, clients, or investors."
+          : `By executing ${title}, you master the exact framework used by top industry practitioners.`,
+      },
+      {
+        id: `${seed.id}-l${n}-step4`,
+        type: "MINI_MISSION",
+        title: "Mini-Mission Activity",
+        miniMission: {
+          type: "MATCH_PAIRS",
+          question: `Match the core concept of ${title} with its real-world outcome:`,
+          pairs: [
+            { left: title, right: brief.slice(0, 32) + "..." },
+            { left: "Deliverable Proof", right: "Reviewable link or file attached" },
+          ],
+          explanation: "Spot on! Linking objective frameworks to real deliverable proof is key.",
+        },
+      },
+      {
+        id: `${seed.id}-l${n}-step5`,
+        type: "REFLECTION",
+        title: "Active Recall Reflection",
+        reflectionQuestion: `In your own words, how will completing "${title}" strengthen your public proof-of-work portfolio?`,
+      },
+      {
+        id: `${seed.id}-l${n}-step6`,
+        type: "REWARD",
+        title: "Mission Victory!",
+        xpReward: n * 50,
+        neuronReward: n <= 6 ? 10 + n * 5 : n * 8,
+      },
+    ];
+
     return {
       id: `${seed.id}-level-${n}`,
       skillId: seed.id,
@@ -709,6 +760,8 @@ function buildMissions(seed: SkillSeed): Mission[] {
       neuronReward: n <= 6 ? 10 + n * 5 : n * 8,
       isPremium: n >= 5,
       isLocked: false,
+      isBossBattle: n % 5 === 0,
+      steps: gamifiedSteps,
     };
   });
 }

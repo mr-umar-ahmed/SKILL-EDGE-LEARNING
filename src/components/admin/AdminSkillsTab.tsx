@@ -78,8 +78,15 @@ export function AdminSkillsTab() {
   };
 
   const save = () => {
-    if (!form.title.trim() || !form.category.trim()) {
-      setError("Title and category are required.");
+    if (
+      !form.title.trim() ||
+      !form.category.trim() ||
+      !form.description.trim() ||
+      !form.iconName.trim() ||
+      !form.color.trim() ||
+      !form.estimatedHours.trim()
+    ) {
+      setError("ALL fields are mandatory. Please enter values for title, category, description, icon, color, and estimated hours.");
       return;
     }
     const existing = editingId ? state.catalog.find((s) => s.id === editingId) : undefined;
@@ -103,7 +110,7 @@ export function AdminSkillsTab() {
       iconName: form.iconName.trim() || "Sparkles",
       color: form.color || "#3b82f6",
       difficulty: form.difficulty,
-      estimatedHours: Math.max(0, Number(form.estimatedHours) || 0),
+      estimatedHours: Math.max(1, Number(form.estimatedHours) || 1),
       missions: existing ? existing.missions : [],
       isPublished: form.isPublished,
     };
@@ -115,6 +122,32 @@ export function AdminSkillsTab() {
     adminUpsertSkill({ ...skill, isPublished: !skill.isPublished });
   };
 
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importJsonText, setImportJsonText] = useState("");
+  const [importStatus, setImportStatus] = useState("");
+
+  const handleImportSkillsJson = () => {
+    try {
+      const parsed = JSON.parse(importJsonText);
+      const skillsArray: Skill[] = Array.isArray(parsed) ? parsed : parsed.catalog ? parsed.catalog : [parsed];
+      let count = 0;
+      for (const sk of skillsArray) {
+        if (sk && sk.id && sk.title) {
+          adminUpsertSkill(sk);
+          count++;
+        }
+      }
+      setImportStatus(`Successfully imported ${count} skill(s) into the live catalog!`);
+      setTimeout(() => {
+        setImportModalOpen(false);
+        setImportStatus("");
+        setImportJsonText("");
+      }, 2000);
+    } catch (e) {
+      setImportStatus(`Invalid JSON error: ${(e as Error).message}`);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -122,9 +155,14 @@ export function AdminSkillsTab() {
           {fmtNum(state.catalog.length)} skills in catalog ·{" "}
           {fmtNum(state.catalog.filter((s) => s.isPublished).length)} published
         </p>
-        <button onClick={openCreate} className="btn-primary px-4 py-2 text-xs">
-          <Plus className="h-4 w-4" /> Add Skill
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setImportModalOpen(true)} className="btn-ghost px-4 py-2 text-xs border-brand/40 text-brand font-bold">
+            Import JSON Catalog
+          </button>
+          <button onClick={openCreate} className="btn-primary px-4 py-2 text-xs">
+            <Plus className="h-4 w-4" /> Add Mandatory Skill
+          </button>
+        </div>
       </div>
 
       {state.catalog.length === 0 ? (
@@ -354,6 +392,37 @@ export function AdminSkillsTab() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* --------------------------- import JSON catalog modal --------------------------- */}
+      <Modal open={importModalOpen} onClose={() => setImportModalOpen(false)} title="Import Complete JSON Skills Catalog">
+        <div className="space-y-4">
+          <p className="text-xs text-zinc-400">
+            Paste a JSON array of complete Skill objects (with all mandatory fields: title, category, description, icon, color, missions, and micro-lesson steps):
+          </p>
+          <textarea
+            rows={8}
+            value={importJsonText}
+            onChange={(e) => setImportJsonText(e.target.value)}
+            placeholder='[ { "id": "ai-vibe-coding", "title": "AI Vibe Coding", "category": "Engineering", "description": "...", "iconName": "Code", "color": "#E85002", "difficulty": "Intermediate", "estimatedHours": 10, "isPublished": true, "missions": [...] } ]'
+            className="input-dark font-mono text-[11px]"
+          />
+
+          {importStatus && (
+            <div className="rounded-xl border border-line bg-card p-3 text-xs font-bold text-white">
+              {importStatus}
+            </div>
+          )}
+
+          <div className="flex gap-2 border-t border-line pt-4">
+            <button onClick={handleImportSkillsJson} className="btn-primary flex-1">
+              Import & Publish to Catalog
+            </button>
+            <button onClick={() => setImportModalOpen(false)} className="btn-ghost">
+              Cancel
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

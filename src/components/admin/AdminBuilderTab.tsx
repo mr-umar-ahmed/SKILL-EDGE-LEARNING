@@ -48,11 +48,18 @@ export function AdminBuilderTab() {
   const [isBoss, setIsBoss] = useState(Boolean(currentMission?.isBossBattle));
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  const [validationError, setValidationError] = useState("");
+
   if (!currentSkill || !currentMission) {
     return <div className="p-6 text-center text-xs text-zinc-400">No skills or missions found to edit.</div>;
   }
 
   const handleSaveLesson = () => {
+    if (!hookText.trim() || !storyText.trim() || !discoveryText.trim() || !miniQuestion.trim()) {
+      setValidationError("ALL fields are mandatory. Please complete Curiosity Hook, Story Card, Discovery, and Mini-Mission prompt before saving.");
+      return;
+    }
+    setValidationError("");
     const updatedSteps: GamifiedStep[] = [
       {
         id: "step-1",
@@ -133,6 +140,12 @@ export function AdminBuilderTab() {
           <Save className="h-4 w-4" /> Publish Micro-Lesson Instantly
         </button>
       </div>
+
+      {validationError && (
+        <div className="flex items-center gap-2 rounded-xl border border-warning/40 bg-warning/15 p-3 text-xs font-bold text-warning">
+          <span>⚠️ {validationError}</span>
+        </div>
+      )}
 
       {savedSuccess && (
         <div className="flex items-center gap-2 rounded-xl border border-success/40 bg-success/15 p-3 text-xs font-bold text-success">
