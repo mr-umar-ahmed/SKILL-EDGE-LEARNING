@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandMark } from "@/components/BrandMark";
 import { UserAvatar } from "@/components/UserAvatar";
 import { playClickSound } from "@/lib/sound";
 import { useApp } from "@/lib/store";
@@ -42,7 +43,7 @@ export function MobileDrawer({
 
   if (!open) return null;
 
-  const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; badge?: string }[] = [
+  const NAV_ITEMS = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/skills", label: "Skills", icon: Library },
     { href: "/portfolio", label: "Portfolio", icon: FolderKanban },
@@ -62,12 +63,9 @@ export function MobileDrawer({
       <div className="glass-strong flex h-full w-4/5 max-w-sm flex-col overflow-y-auto rounded-none border-l border-line p-5 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line pb-4">
-          <Link href="/dashboard" onClick={onClose} className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-deep">
-              <Hexagon className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </span>
-            <span className="font-display text-sm font-bold text-white">Skill Edge</span>
-          </Link>
+          <div onClick={onClose}>
+            <BrandMark href="/dashboard" size="sm" />
+          </div>
           <button onClick={onClose} className="header-chip-btn p-2" aria-label="Close menu">
             <X className="h-5 w-5" />
           </button>

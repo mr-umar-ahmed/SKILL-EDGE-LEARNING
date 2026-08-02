@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandMark } from "@/components/BrandMark";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useApp } from "@/lib/store";
 import { cn, fmtNum, isPaidPlan } from "@/lib/utils";
@@ -38,14 +39,14 @@ const NAV_GROUPS: { label: string; items: { href: string; label: string; icon: t
   {
     label: "Compete",
     items: [
-      { href: "/quizzes", label: "Tournaments", icon: Swords },
       { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+      { href: "/quizzes", label: "Tournaments", icon: Swords },
     ],
   },
   {
     label: "Account",
     items: [
-      { href: "/wallet", label: "Wallet", icon: Wallet2 },
+      { href: "/wallet", label: "Neuron Wallet", icon: Wallet2 },
       { href: "/profile", label: "Profile", icon: UserRound },
     ],
   },
@@ -64,15 +65,9 @@ export function Sidebar({
   return (
     <aside className="sidebar-expanded-panel sticky top-0 hidden h-dvh w-64 shrink-0 flex-col gap-4 p-4 backdrop-blur-3xl lg:flex">
       {/* Brand */}
-      <Link href="/dashboard" className="flex items-center gap-2.5 px-2 pt-1">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-deep shadow-brand">
-          <Hexagon className="h-5 w-5 text-white" strokeWidth={2.5} />
-        </span>
-        <div className="leading-tight">
-          <div className="font-display text-sm font-bold tracking-tight text-white">Skill Edge</div>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Learning OS</div>
-        </div>
-      </Link>
+      <div className="px-2 pt-1">
+        <BrandMark href="/dashboard" size="md" />
+      </div>
 
       {/* Search trigger */}
       <button

@@ -181,19 +181,7 @@ function Reveal({ children, delay = 0, className }: { children: ReactNode; delay
   );
 }
 
-function BrandMark() {
-  return (
-    <span className="flex items-center gap-2.5">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand via-brand-bright to-brand-deep shadow-brand">
-        <Hexagon className="h-5 w-5 text-white" strokeWidth={2.5} />
-      </span>
-      <span className="flex flex-col leading-none">
-        <span className="font-display text-base font-extrabold tracking-tight text-white">SKILL EDGE</span>
-        <span className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.25em] text-brand">LEARNING v2</span>
-      </span>
-    </span>
-  );
-}
+import { BrandMark } from "@/components/BrandMark";
 
 export default function LandingPage() {
   const { hydrated, isAuthenticated } = useApp();
@@ -620,6 +608,43 @@ export default function LandingPage() {
                 </div>
               </Reveal>
             ))}
+          </div>
+        </section>
+
+        {/* ============================================================
+            MANIFESTO SECTION (Duolingo × Notion × Linear × Apple)
+            ============================================================ */}
+        <section id="manifesto" className="mx-auto max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-brand/40 bg-gradient-to-br from-brand/15 via-card to-base p-8 sm:p-14 shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-brand">
+              <Globe className="h-4 w-4" /> THE SKILL EDGE MANIFESTO
+            </div>
+
+            <h2 className="font-display text-3xl font-black tracking-tight text-white sm:text-5xl leading-tight">
+              We&apos;re Building the Learning OS We{" "}
+              <span className="bg-gradient-to-r from-brand via-brand-bright to-amber-400 bg-clip-text text-transparent">
+                Wish We Had.
+              </span>
+            </h2>
+
+            <p className="max-w-3xl text-base leading-relaxed text-zinc-300 sm:text-lg">
+              Traditional EdTech failed because it treats learning like watching television. You don&apos;t master a skill by passively watching a 40-hour video playlist. You master a skill by <strong>executing, shipping real projects, and receiving feedback</strong>.
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-3 pt-4 border-t border-line/60">
+              <div className="space-y-2">
+                <div className="text-sm font-bold text-white">🎮 Duolingo Gamification</div>
+                <p className="text-xs text-zinc-400">2-5 minute micro-missions, XP rewards, streak fire, and node roadmaps.</p>
+              </div>
+              <div className="space-y-2">
+                <div className="text-sm font-bold text-white">⚡ Notion × Linear Clarity</div>
+                <p className="text-xs text-zinc-400">Minimalist distraction-free UI designed for focused execution.</p>
+              </div>
+              <div className="space-y-2">
+                <div className="text-sm font-bold text-white">🍎 Apple-Grade Aesthetics</div>
+                <p className="text-xs text-zinc-400">Curated dark mode theme, fluid animations, and QR-verified credentials.</p>
+              </div>
+            </div>
           </div>
         </section>
 

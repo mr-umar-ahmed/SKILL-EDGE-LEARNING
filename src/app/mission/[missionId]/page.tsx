@@ -45,6 +45,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AssessmentModal } from "@/components/AssessmentModal";
 import { AIAssignmentPreChecker } from "@/components/AIAssignmentPreChecker";
+import { InteractiveLessonRunner } from "@/components/InteractiveLessonRunner";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { fireConfetti } from "@/components/confetti";
 import { EmptyState, SectionTitle, Skeleton, SkeletonCard, StatusPill } from "@/components/ui";
@@ -413,6 +414,8 @@ export default function MissionPage() {
   const { hydrated, missionById, missionUnlocked, myProgress, submissionsForMission } = useApp();
 
   const [quizOpen, setQuizOpen] = useState(false);
+  const [lessonRunnerOpen, setLessonRunnerOpen] = useState(false);
+  const [showOptionalResources, setShowOptionalResources] = useState(false);
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [resubmitFrom, setResubmitFrom] = useState<string | null>(null);
 
@@ -514,9 +517,30 @@ export default function MissionPage() {
           </div>
         </Card>
 
-        {/* 1 · overview */}
+        {/* Gen-Z Motivational Hook Card */}
+        <Card className="mb-5 border-brand/40 bg-gradient-to-br from-brand/20 via-surface to-base p-6 text-center space-y-3">
+          <div className="text-xs font-black uppercase tracking-widest text-brand">
+            🔥 MISSION BRIEF · STEP 01
+          </div>
+          <h2 className="font-display text-xl font-black text-white sm:text-2xl">
+            &ldquo;Bro, today&apos;s mission is to make AI obey your commands 😎. Let&apos;s turn you into a {skill.title} Wizard.&rdquo;
+          </h2>
+          <p className="text-xs text-zinc-300">
+            No endless theory or boring lectures. Play through this 2-5 minute interactive Duolingo mission to master the concept.
+          </p>
+          <div className="pt-2">
+            <button
+              onClick={() => setLessonRunnerOpen(true)}
+              className="btn-primary w-full py-3.5 text-sm font-black shadow-[0_0_25px_rgba(232,80,2,0.5)] animate-pulse"
+            >
+              🚀 Launch Interactive Duolingo Mission (2-5 Mins)
+            </button>
+          </div>
+        </Card>
+
+        {/* 1 · Overview */}
         <Card className="mb-5">
-          <SectionTitle>Overview</SectionTitle>
+          <SectionTitle>Mission Overview & Objectives</SectionTitle>
           <div className="space-y-4">
             <div className="flex gap-3">
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand/15 text-brand">
@@ -536,54 +560,35 @@ export default function MissionPage() {
                 <p className="mt-0.5 text-sm leading-relaxed text-zinc-300">{mission.expectedOutcome}</p>
               </div>
             </div>
-            {prereqs.length > 0 && (
-              <div className="flex gap-3">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-premium/15 text-premium">
-                  <ListChecks className="h-4 w-4" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold uppercase tracking-wider text-zinc-500">Prerequisites</div>
-                  <div className="mt-1.5 space-y-1.5">
-                    {prereqs.map(({ mission: pm }) => {
-                      const done = Boolean(myProgress.completed[pm.id]);
-                      return (
-                        <Link
-                          key={pm.id}
-                          href={`/mission/${pm.id}`}
-                          className="group flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-xs font-semibold transition hover:border-brand/50 hover:bg-hover"
-                        >
-                          {done ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" />
-                          ) : (
-                            <Lock className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
-                          )}
-                          <span className="truncate text-zinc-300 group-hover:text-white">
-                            Mission {pm.order} · {pm.title}
-                          </span>
-                          <ChevronRight className="ml-auto h-3.5 w-3.5 shrink-0 text-zinc-500" />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </Card>
 
-        {/* 2 · learning resources */}
+        {/* 2 · (Optional) Supplementary Learning Resources Drawer */}
         {mission.resources.length > 0 && (
           <Card className="mb-5">
-            <SectionTitle>
-              <span className="inline-flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5" /> Learning Resources
-              </span>
-            </SectionTitle>
-            <div className="space-y-3">
-              {mission.resources.map((r) => (
-                <ResourceRow key={r.id} resource={r} />
-              ))}
+            <div className="flex items-center justify-between">
+              <SectionTitle>
+                <span className="inline-flex items-center gap-1.5">
+                  <BookOpen className="h-3.5 w-3.5 text-brand" /> (Optional) Supplementary Learning Resources
+                </span>
+              </SectionTitle>
+              <button
+                onClick={() => setShowOptionalResources((v) => !v)}
+                className="text-xs font-bold text-brand hover:underline"
+              >
+                {showOptionalResources ? "Hide Resources ▲" : "Show Resources (Videos, PDFs, Templates) ▼"}
+              </button>
             </div>
+            <p className="text-[11px] text-zinc-400 mb-3">
+              * Optional reference materials for deep-diving. You can complete the mission directly via the interactive cards above.
+            </p>
+            {showOptionalResources && (
+              <div className="space-y-3 pt-2">
+                {mission.resources.map((res) => (
+                  <ResourceRow key={res.id} resource={res} />
+                ))}
+              </div>
+            )}
           </Card>
         )}
 
@@ -879,6 +884,15 @@ export default function MissionPage() {
 
         <AdSlot className="mt-8" />
       </div>
+
+      {lessonRunnerOpen && (
+        <InteractiveLessonRunner
+          skill={skill}
+          mission={mission}
+          open={lessonRunnerOpen}
+          onClose={() => setLessonRunnerOpen(false)}
+        />
+      )}
 
       {mission.quiz.length > 0 && (
         <AssessmentModal mission={mission} open={quizOpen} onClose={() => setQuizOpen(false)} />
