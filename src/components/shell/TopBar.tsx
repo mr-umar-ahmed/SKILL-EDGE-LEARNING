@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Flame, Hexagon, Menu, Search, Target, Users, Zap } from "lucide-react";
+import { Flame, HelpCircle, Hexagon, Menu, Search, Target, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FamilyProfileSwitcher } from "@/components/FamilyProfileSwitcher";
+import { UserGuideModal } from "@/components/UserGuideModal";
 import { useApp } from "@/lib/store";
 import { fmtNum, levelForXp } from "@/lib/utils";
 import { NotificationsBell } from "./NotificationsBell";
@@ -23,6 +24,7 @@ export function TopBar({
 }) {
   const { currentUser } = useApp();
   const [familyOpen, setFamilyOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const badgeLevel = currentUser ? levelForXp(currentUser.xp) : 1;
 
   return (
@@ -39,6 +41,9 @@ export function TopBar({
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-2 py-1 lg:flex">
+          <button onClick={() => setGuideOpen(true)} className="header-chip-btn text-brand font-bold" title="Platform User Guide">
+            <HelpCircle className="h-3.5 w-3.5 text-brand" /> Guide
+          </button>
           <button onClick={onOpenSearch} className="header-chip-btn" title="Search (Ctrl+K)">
             <Search className="h-3.5 w-3.5" strokeWidth={1.75} /> Search
           </button>
@@ -83,6 +88,7 @@ export function TopBar({
         </div>
 
         {familyOpen && <FamilyProfileSwitcher open={familyOpen} onClose={() => setFamilyOpen(false)} />}
+        {guideOpen && <UserGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />}
 
         {/* Mobile actions */}
         <div className="flex items-center gap-2 lg:hidden">

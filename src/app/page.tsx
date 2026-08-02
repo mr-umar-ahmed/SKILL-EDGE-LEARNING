@@ -44,6 +44,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { SkillIcon } from "@/components/SkillIcon";
+import { UserGuideModal } from "@/components/UserGuideModal";
 import { SKILLS } from "@/lib/data";
 import { useApp } from "@/lib/store";
 import { PLANS, cn, fmtInr, fmtNum } from "@/lib/utils";
@@ -197,6 +198,7 @@ function BrandMark() {
 export default function LandingPage() {
   const { hydrated, isAuthenticated } = useApp();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   const primaryHref = isAuthenticated ? "/dashboard" : "/register";
 
@@ -307,6 +309,12 @@ export default function LandingPage() {
                 Start Learning Free
                 <ArrowRight className="h-5 w-5" />
               </Link>
+              <button
+                onClick={() => setGuideOpen(true)}
+                className="btn-ghost border-brand/40 bg-brand/10 text-brand px-7 py-3.5 text-sm font-bold sm:text-base"
+              >
+                Platform User Guide
+              </button>
               <a href="#guide" className="btn-ghost px-7 py-3.5 text-sm font-bold text-zinc-300 sm:text-base">
                 How It Works Guide
               </a>
@@ -714,6 +722,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {guideOpen && <UserGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />}
     </div>
   );
 }
