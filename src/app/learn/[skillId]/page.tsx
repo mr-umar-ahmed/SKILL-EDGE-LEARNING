@@ -22,6 +22,8 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { EmptyState, ProgressBar, Skeleton, SkeletonCard, StatusPill } from "@/components/ui";
 import { SkillTransformationHero } from "@/components/SkillTransformationHero";
+import { SkillVideoEmbeds } from "@/components/SkillVideoEmbeds";
+import { InteractiveWidget } from "@/components/InteractiveWidget";
 import { DuolingoMissionPath } from "@/components/DuolingoMissionPath";
 import { RpgSkillTree } from "@/components/RpgSkillTree";
 import { useApp } from "@/lib/store";
@@ -273,6 +275,17 @@ export default function SkillMapPage() {
 
         {/* Skill Transformation Outcome Section */}
         <SkillTransformationHero transformation={skill.transformation} skillTitle={skill.title} skillColor={skill.color} />
+
+        {/* Video Embeds Section (Netflix-style Intro + 60-Second Breakdown) */}
+        <SkillVideoEmbeds
+          skillTitle={skill.title}
+          skillColor={skill.color}
+          videoIds={skill.missions[0]?.resources?.map((r) => r.url).filter(Boolean) || ["UF8uR6Z6KLc", "u4ZoJKF_VuA"]}
+          thumbnailUrl={skill.thumbnailUrl}
+        />
+
+        {/* Interactive Custom Widgets (Prompt Sandbox / Financial Calculators) */}
+        <InteractiveWidget skillId={skill.id} />
 
         {/* Upgrade / Single Skill Unlock CTA Banner */}
         {!isPro && !myProgress.unlockedSingleSkills?.includes(skill.id) && (

@@ -127,6 +127,31 @@ export const SKILL_TRANSFORMATIONS: Record<string, SkillTransformation> = {
       "Freelance AI App Developer ($80 - $160/hr)",
     ],
   },
+  "financial-literacy": {
+    become: "Wealth Architect & Solopreneur CFO",
+    headline: "Master budgeting without crying, build compounding index fund portfolios, navigate crypto without getting rekt, and conquer adulting taxes.",
+    canBuild: [
+      "Automated 50/30/20 Cash Flow & Savings System",
+      "30-Year Wealth Compounding Index Portfolio",
+      "Freelance Tax Deduction & Expense Tracker",
+      "Personal Financial Independence (FIRE) Roadmap",
+    ],
+    realWorldOutcomes: [
+      "Automate monthly savings and eliminate lifestyle inflation",
+      "Invest in low-cost S&P 500 index funds for long-term compound wealth",
+      "Hackle tax deductions legally as a solopreneur or founder",
+    ],
+    projectsCompleted: [
+      "Personal Cash Flow & Automated Savings Blueprint",
+      "Crypto Risk Management & Asset Allocation Matrix",
+      "Personal Financial Independence (FIRE) Roadmap",
+    ],
+    careerOpportunities: [
+      "Solopreneur CFO & Money Architect",
+      "Wealth Management Consultant",
+      "Financial Independence Strategist",
+    ],
+  },
   "ai-automation": {
     become: "AI Workflow & Automation Specialist",
     headline: "By completing this skill, you'll become an AI Workflow Specialist capable of building autonomous multi-step business automations using Make.com, n8n, and OpenAI APIs.",
@@ -444,6 +469,35 @@ const SKILL_SEEDS: SkillSeed[] = [
       ["What does Vercel do in modern AI software development?", "Hosts and deploys Next.js web applications instantly", "Generates logo graphics", "Edits video files", "Sends SMS messages"],
       ["Why is breaking features into small modular prompts better than asking AI to 'build everything'?", "Prevents hallucination and keeps code clean and testable", "AI cannot write code longer than 10 lines", "It increases cloud costs", "It deletes old files"],
       ["What is Claude Code / Windsurf primarily designed for?", "AI-assisted multi-file codebase manipulation", "Playing 3D games", "Crypto mining", "Editing PDF documents"],
+    ],
+  },
+  {
+    id: "financial-literacy",
+    title: "Financial Literacy & Money Moves",
+    category: "Core Skills",
+    iconName: "DollarSign",
+    description: "Master budgeting without crying, build compounding index fund portfolios, navigate crypto without getting rekt, and conquer adulting taxes.",
+    color: "#22c55e",
+    videoIds: ["u4ZoJKF_VuA", "UF8uR6Z6KLc"],
+    levels: [
+      ["Money Moves 101 (Budgeting Without Crying 💀)", "The 50/30/20 Rule adapted for Gen-Z & freelancers. Set up automated zero-friction bank savings buckets."],
+      ["Investing 101 & Compound Interest (8th Wonder 📈)", "Stock market basics: S&P 500, Total Index Funds, ETFs vs single stocks, Dollar-Cost Averaging vs market timing."],
+      ["Crypto, Web3 & Risk Management (Not Getting Rekt 📉)", "Bitcoin, Ethereum, DeFi, cold storage wallets vs exchange security, and asset allocation risk matrices."],
+      ["Side Hustles & Monetizing Modern Skills (ROI 🤑)", "Digital products vs freelancing vs SaaS ROI. Setting pricing tiers and building recurring subscription income."],
+      ["Credit Scores, Debt Destruction & Leverage", "Credit score hacking: utilization, payment history, avalanche vs snowball debt payoff methods."],
+      ["Taxes & Adulting (Boring Stuff Explained with Memes 📑)", "W-2 vs 1099/Sole Prop tax write-offs (home office, tech, travel) and setting aside quarterly estimated taxes."],
+      ["Real Estate & Physical Asset Basics", "Renting vs buying, REITs for passive property exposure, house hacking, and rental cash flow metrics."],
+      ["Emergency Funds & Financial Fortress Building", "Build a 6-month recession-proof emergency moat in High-Yield Savings Accounts (HYSA) + insurance basics."],
+      ["Negotiation Skills & Salary Hacking", "Levels.fyi market benchmarking, anchor pricing, counter-offers, and value-based salary/client rate negotiation scripts."],
+      ["Freedom Metric & Early Retirement (FIRE Movement)", "Calculate your Walk-Away Number using the 4% Rule and build generational wealth portfolios."],
+    ],
+    bank: [
+      ["What is the 50/30/20 rule in personal budgeting?", "50% Needs, 30% Wants, 20% Automated Investments", "50% Savings, 30% Taxes, 20% Rent", "50% Crypto, 30% Stocks, 20% Cash", "50% Food, 30% Travel, 20% Clothes"],
+      ["What is the main advantage of low-cost S&P 500 index funds?", "Broad diversification across 500 top companies with historically strong compound growth", "Guaranteed 100% daily profit", "Zero risk of any market change", "They pay you cash every hour"],
+      ["What does Dollar-Cost Averaging (DCA) mean?", "Investing a fixed dollar amount at regular intervals regardless of share price", "Buying stocks only when prices double", "Selling all stocks when news is bad", "Borrowing money to trade"],
+      ["Why are tax write-offs critical for freelancers and solopreneurs?", "They reduce total taxable income by subtracting legitimate business expenses", "They make taxes optional", "They double your bank balance instantly", "They pay off credit cards automatically"],
+      ["What is an Emergency Fund recommendation for Financial Independence?", "3 to 6 months of living expenses in a High-Yield Savings Account (HYSA)", "1 week of coffee money", "Buying $10,000 of lottery tickets", "Keeping cash under a mattress"],
+      ["What is the 4% Rule in the FIRE (Financial Independence) movement?", "A guideline estimating how much you can withdraw annually in retirement without depleting savings", "Paying 4% tax", "Investing 4% of salary", "Saving for 4 years only"],
     ],
   },
   {
@@ -1475,8 +1529,162 @@ function buildVibeCodingSteps(n: number, title: string, brief: string): Gamified
   }
 }
 
+function buildFinancialLiteracySteps(n: number, title: string, brief: string): GamifiedStep[] {
+  switch (n) {
+    case 1:
+      return [
+        {
+          id: "financial-literacy-l1-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "Imagine making $10,000/month but having $0 in your bank account because you spent it all on zero-ROI flexes 💀. Budgeting without crying is the ultimate main character energy! 💅💸",
+        },
+        {
+          id: "financial-literacy-l1-step2",
+          type: "STORY",
+          title: "Story Card: The 50/30/20 Cash Flow Engine 📈",
+          storyText: "Meet Leo. Leo thought budgeting meant living on instant ramen. Then Leo adopted the 50/30/20 rule: 50% Needs, 30% Wants, 20% Automated Wealth Investment. Zero guilt, 100% financial peace of mind! 🤑",
+          storyAnalogy: "Budgeting isn't a financial jail sentence — it's an automated resource router allocating your cash flow like an elite solopreneur CFO! 🏦",
+        },
+        {
+          id: "financial-literacy-l1-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Automated Buckets 🧱",
+          discoveryText: "The 3 Money Buckets:\n1. Needs (50%): Rent, groceries, utility bills\n2. Wants (30%): Tech, dining out, lifestyle\n3. Wealth Investment (20%): S&P 500 Index Funds, HYSA Emergency Fund.\n\nAutomate transfers on payday so you never even see the investment money to spend it!",
+        },
+        {
+          id: "financial-literacy-l1-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Budget Allocations 🎯",
+          miniMission: {
+            type: "MATCH_PAIRS",
+            question: "Match each 50/30/20 budget category with its allocation target:",
+            pairs: [
+              { left: "Needs (Rent & Bills)", right: "50% of Net Income" },
+              { left: "Wants (Lifestyle & Fun)", right: "30% of Net Income" },
+              { left: "Automated Wealth Investments", right: "20% of Net Income" },
+            ],
+            explanation: "Spot on! 🎯 Automating the 20% investment bucket guarantees long-term wealth growth.",
+          },
+        },
+        {
+          id: "financial-literacy-l1-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Mindset Shift 🧠",
+          reflectionQuestion: "Common Mistake: Trying to save 'whatever is left at the end of the month' (usually $0 💀). Why is paying yourself first through automated transfers a game-changer?",
+        },
+        {
+          id: "financial-literacy-l1-step6",
+          type: "REWARD",
+          title: "Module 1 Victory! 🎉",
+          xpReward: 50,
+          neuronReward: 15,
+        },
+      ];
+    case 2:
+      return [
+        {
+          id: "financial-literacy-l2-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "What if you could turn $100/month into over $350,000 without working an extra hour of overtime? 🤯 Compound interest is the 8th wonder of the world FR!",
+        },
+        {
+          id: "financial-literacy-l2-step2",
+          type: "STORY",
+          title: "Story Card: S&P 500 & The 8th Wonder 🚀",
+          storyText: "Warren Buffett didn't build wealth by picking 100 random penny stocks. He put his money into low-cost index funds tracking the 500 biggest companies in America. Compound growth did the rest while he slept! 📈",
+          storyAnalogy: "Compound interest is like a snowball rolling down a snow-covered mountain: small at first, but exponentially massive over time! 🏔️❄️",
+        },
+        {
+          id: "financial-literacy-l2-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Index Fund Strategy 🏛️",
+          discoveryText: "Investing Basics:\n1. S&P 500 Index Funds (VOO / SPY): Instant ownership in top 500 US companies\n2. Dollar-Cost Averaging (DCA): Buying fixed amounts monthly regardless of market hype\n3. Time in the market > Timing the market!",
+        },
+        {
+          id: "financial-literacy-l2-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Investing Truths 🎯",
+          miniMission: {
+            type: "FILL_BLANKS",
+            question: "Investing fixed monthly amounts into low-cost index funds regardless of ups and downs is called ___.",
+            fillBlankSentence: "We build compound wealth over time using ___.",
+            blankOptions: ["Dollar-Cost Averaging", "Day Trading", "Crypto Gambling", "Panic Selling"],
+            correctAnswer: "Dollar-Cost Averaging",
+            explanation: "Bingo! Dollar-Cost Averaging removes emotional impulse decisions and captures long-term market growth.",
+          },
+        },
+        {
+          id: "financial-literacy-l2-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Compounding Logic 🧠",
+          reflectionQuestion: "Common Mistake: Panic selling during temporary market drops. In your own words, why does time in the market beat trying to time market tops and bottoms?",
+        },
+        {
+          id: "financial-literacy-l2-step6",
+          type: "REWARD",
+          title: "Module 2 Victory! 🎉",
+          xpReward: 100,
+          neuronReward: 20,
+        },
+      ];
+    default:
+      return [
+        {
+          id: `financial-literacy-l${n}-step1`,
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: `Bro, today's mission is to master ${title} 😎. Let's build your financial fortress!`,
+        },
+        {
+          id: `financial-literacy-l${n}-step2`,
+          type: "STORY",
+          title: "Story Card 📖",
+          storyText: brief,
+          storyAnalogy: "Money is leverage: every financial system you master gives you total freedom to make work optional! 🤑",
+        },
+        {
+          id: `financial-literacy-l${n}-step3`,
+          type: "DISCOVERY",
+          title: "Core Explanation 🏛️",
+          discoveryText: `By executing ${title}, you master the exact wealth framework used by top solopreneurs and CFOs.`,
+        },
+        {
+          id: `financial-literacy-l${n}-step4`,
+          type: "MINI_MISSION",
+          title: "Mini-Mission Activity 🎯",
+          miniMission: {
+            type: "MATCH_PAIRS",
+            question: `Match the core concept of ${title} with its real-world outcome:`,
+            pairs: [
+              { left: title, right: brief.slice(0, 32) + "..." },
+              { left: "Deliverable Proof", right: "Reviewable sheet or asset model attached" },
+            ],
+            explanation: "Spot on! Connecting financial literacy concepts to real asset models builds wealth.",
+          },
+        },
+        {
+          id: `financial-literacy-l${n}-step5`,
+          type: "REFLECTION",
+          title: "Active Recall & Action Plan 🧠",
+          reflectionQuestion: `In your own words, how will completing "${title}" move you closer to your financial independence goal?`,
+        },
+        {
+          id: `financial-literacy-l${n}-step6`,
+          type: "REWARD",
+          title: "Module Victory! 🎉",
+          xpReward: n * 50,
+          neuronReward: n <= 6 ? 10 + n * 5 : n * 8,
+        },
+      ];
+  }
+}
+
     const gamifiedSteps: GamifiedStep[] = seed.id === "vibe-coding"
       ? buildVibeCodingSteps(n, title, brief)
+      : seed.id === "financial-literacy"
+      ? buildFinancialLiteracySteps(n, title, brief)
       : [
           {
             id: `${seed.id}-l${n}-step1`,
@@ -1559,6 +1767,7 @@ function buildVibeCodingSteps(n: number, title: string, brief: string): Gamified
 
 const SKILL_IMAGES: Record<string, string> = {
   "vibe-coding": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+  "financial-literacy": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
   "ai-automation": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
   "ai-product-management": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
   "fullstack-web": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
