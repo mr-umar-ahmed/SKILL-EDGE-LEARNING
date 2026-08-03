@@ -101,28 +101,30 @@ export const QUOTES = [
 
 export const SKILL_TRANSFORMATIONS: Record<string, SkillTransformation> = {
   "vibe-coding": {
-    become: "AI Software Engineer & Product Architect",
-    headline: "By completing this skill, you'll become an AI Software Engineer capable of building real-world software using AI tools like Cursor, Claude Code, Windsurf, Bolt, Supabase, and Vercel.",
+    become: "AI Software Engineer & Flagship Product Architect",
+    headline: "Transform from complete beginner into a confident AI-powered software engineer capable of independently building, debugging, and deploying production SaaS applications, AI agents, and custom web products.",
     canBuild: [
-      "AI SaaS Web Applications",
-      "Full-stack Web Platforms",
-      "Custom AI Tools & Dashboards",
-      "Automated Developer Bots & Micro-SaaS",
+      "Fullstack SaaS Applications with Supabase & Clerk Auth",
+      "Autonomous AI Agents & Multi-Agent Workflow Engines",
+      "Interactive Dark-Mode Dashboards & API Integrations",
+      "Production-Ready Micro-Tools Deployed on Vercel with Custom Domains",
     ],
     realWorldOutcomes: [
-      "Ship software 10x faster using Cursor, Claude Code, and Windsurf",
-      "Connect databases, auth, and APIs without writing boilerplate from scratch",
-      "Deploy production apps with custom domain and backend persistence",
+      "Collaborate with AI (Lovable, Bolt, Cursor, Claude Code) to build production software 10x faster",
+      "Master web systems architecture: Frontends, Backends, Databases, APIs, Auth, and Cloud Deployment",
+      "Systematically debug, test, and ship software products without getting stuck memorizing traditional syntax",
     ],
     projectsCompleted: [
-      "AI Prompt-to-App Generator",
-      "SaaS Landing Page with Authentication & Stripe",
-      "Autonomous Bug-Fixing Pipeline & Live Vercel App",
+      "AI SaaS Landing Page & Responsive UI Kit",
+      "Multi-Platform AI Coding Tool Comparison Audit",
+      "Fullstack SaaS Backend with Supabase DB & Clerk Auth",
+      "Autonomous AI Research Agent & Multi-Model Chatbot",
+      "Flagship Capstone AI SaaS Deployed on Live Custom Domain",
     ],
     careerOpportunities: [
-      "AI Software Engineer ($90k - $160k/yr)",
-      "Founding Engineer / Micro-SaaS Creator",
-      "Freelance AI App Developer ($75 - $150/hr)",
+      "AI Software Engineer ($95k - $175k/yr)",
+      "Founding Engineer & Micro-SaaS Creator ($5k - $20k/mo)",
+      "Freelance AI App Developer ($80 - $160/hr)",
     ],
   },
   "ai-automation": {
@@ -970,57 +972,562 @@ function buildMissions(seed: SkillSeed): Mission[] {
       ...(n === 1 ? STARTER_RESOURCES[seed.id] ?? [] : []),
     ];
 
-    const gamifiedSteps: GamifiedStep[] = [
-      {
-        id: `${seed.id}-l${n}-step1`,
-        type: "HOOK",
-        title: "Curiosity Hook",
-        hookText: `Bro, today's mission is to master ${title} 😎. Let's turn you into a dangerous practitioner.`,
-      },
-      {
-        id: `${seed.id}-l${n}-step2`,
-        type: "STORY",
-        title: "Story Card",
-        storyText: brief,
-        storyAnalogy: `Think of ${seed.title} as building blocks: every mission adds a real-world capability to your skill portfolio.`,
-      },
-      {
-        id: `${seed.id}-l${n}-step3`,
-        type: "DISCOVERY",
-        title: "The Concept Discovery",
-        discoveryText:
-          n === 10
-            ? "A portfolio-grade capstone project ready to share with employers, clients, or investors."
-            : `By executing ${title}, you master the exact framework used by top industry practitioners in 2026.`,
-      },
-      {
-        id: `${seed.id}-l${n}-step4`,
-        type: "MINI_MISSION",
-        title: "Mini-Mission Activity",
-        miniMission: {
-          type: "MATCH_PAIRS",
-          question: `Match the core concept of ${title} with its real-world outcome:`,
-          pairs: [
-            { left: title, right: brief.slice(0, 32) + "..." },
-            { left: "Deliverable Proof", right: "Reviewable link or file attached" },
-          ],
-          explanation: "Spot on! Linking objective frameworks to real deliverable proof is key.",
+function buildVibeCodingSteps(n: number, title: string, brief: string): GamifiedStep[] {
+  switch (n) {
+    case 1:
+      return [
+        {
+          id: "vibe-coding-l1-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "Imagine trying to build a skyscraper by hand-carving every single brick vs having an AI super-architect build your blueprint in 30 seconds... 🤯 absolute cheat code status!",
         },
-      },
-      {
-        id: `${seed.id}-l${n}-step5`,
-        type: "REFLECTION",
-        title: "Active Recall Reflection",
-        reflectionQuestion: `In your own words, how will completing "${title}" strengthen your public proof-of-work portfolio?`,
-      },
-      {
-        id: `${seed.id}-l${n}-step6`,
-        type: "REWARD",
-        title: "Mission Victory!",
-        xpReward: n * 50,
-        neuronReward: n <= 6 ? 10 + n * 5 : n * 8,
-      },
-    ];
+        {
+          id: "vibe-coding-l1-step2",
+          type: "STORY",
+          title: "Story Card: From Syntax Slog to AI Architect 🚀",
+          storyText: "Meet Alex. Alex spent 6 months trying to memorize JavaScript syntax and almost quit tech forever 💀. Then Alex discovered Vibe Coding: collaborating with AI as a product architect. In just 24 hours, Alex built and shipped a live SaaS landing page that got 500 signups! 🚀",
+          storyAnalogy: "Traditional coding is like handwriting a 500-page book letter by letter. AI Vibe Coding is like directing a movie where AI is your Oscar-winning production crew! 🎬💻",
+        },
+        {
+          id: "vibe-coding-l1-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Systems Architecture 🏛️",
+          discoveryText: "Software engineering isn't syntax memorization — it's Systems Architecture! 🧠\n\n1. Client (Frontend UI) = What users see (React/Tailwind)\n2. Server (Backend) = The brain processing logic\n3. Database (Supabase) = Secure vault storing user data\n4. APIs = Bridges connecting services\n5. Auth (Clerk) = Security guard checking passes\n6. Hosting (Vercel) = Cloud launchpad.\n\nYou direct the AI like a movie director!",
+        },
+        {
+          id: "vibe-coding-l1-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Systems Match 🎯",
+          miniMission: {
+            type: "MATCH_PAIRS",
+            question: "Match each modern web architecture component with its core role:",
+            pairs: [
+              { left: "Client (Frontend)", right: "Visual interface users interact with" },
+              { left: "Server (Backend)", right: "Processes business logic & calculations" },
+              { left: "Database (Supabase)", right: "Persistent data storage vault" },
+              { left: "API Bridge", right: "JSON messenger between services" },
+            ],
+            explanation: "Spot on! 🎯 When you understand how these components communicate, AI does the heavy coding for you.",
+          },
+        },
+        {
+          id: "vibe-coding-l1-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Builder Mindset 🧠",
+          reflectionQuestion: "Common Mistake: Asking AI to 'build me a full app' without specifying architecture components! In your own words, why is thinking like a product builder 10x more valuable than memorizing traditional syntax?",
+        },
+        {
+          id: "vibe-coding-l1-step6",
+          type: "REWARD",
+          title: "Module 1 Victory! 🎉",
+          xpReward: 50,
+          neuronReward: 15,
+        },
+      ];
+    case 2:
+      return [
+        {
+          id: "vibe-coding-l2-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "Ever seen an AI write code that looks super smart, but completely crashes your browser when you hit run? 💀 Welcome to the AI Hallucination Trap!",
+        },
+        {
+          id: "vibe-coding-l2-step2",
+          type: "STORY",
+          title: "Story Card: The Power of .cursorrules 🤖",
+          storyText: "Sarah asked ChatGPT: 'Build me an app'. ChatGPT generated a broken, outdated snippet. Then Sarah created a `.cursorrules` context file specifying Next.js 14, Tailwind CSS, and Supabase RLS. The AI generated a 500-line production app on the first try! 🔥",
+          storyAnalogy: "Prompting AI without context is like telling an Uber driver 'take me somewhere nice'. Context engineering gives the driver exact GPS coordinates and lane instructions! 🗺️",
+        },
+        {
+          id: "vibe-coding-l2-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & AI Platform Toolkit 🛠️",
+          discoveryText: "Mastering the AI Coding Stack: Lovable, Z.ai, Bolt.new, Google AI Studio, Claude Code, Cursor, GitHub Copilot. 🛠️\n\nThe 3 Rules of Context Engineering:\n1. Provide tech stack rules (.cursorrules / CLAUDE.md)\n2. Prompt Chaining: Break big features into micro-steps\n3. Iterative Refinement: Feed exact stack traces back to AI when errors happen.",
+        },
+        {
+          id: "vibe-coding-l2-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Hallucination Defense 🛑",
+          miniMission: {
+            type: "FILL_BLANKS",
+            question: "To prevent AI coding tools from generating outdated or broken packages, developers use a ___ file.",
+            fillBlankSentence: "We enforce coding standards and stack choices using a ___ file.",
+            blankOptions: [".cursorrules", "styles.css", "index.html", "readme.txt"],
+            correctAnswer: ".cursorrules",
+            explanation: "Bingo! `.cursorrules` and `CLAUDE.md` force the AI model to adhere strictly to your exact project stack rules.",
+          },
+        },
+        {
+          id: "vibe-coding-l2-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Common Pitfalls ⚠️",
+          reflectionQuestion: "Common Mistake: Guessing why AI code failed instead of feeding raw terminal error logs. How does prompt chaining prevent AI models from freezing on complex multi-file projects?",
+        },
+        {
+          id: "vibe-coding-l2-step6",
+          type: "REWARD",
+          title: "Module 2 Victory! 🎉",
+          xpReward: 100,
+          neuronReward: 20,
+        },
+      ];
+    case 3:
+      return [
+        {
+          id: "vibe-coding-l3-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "An ugly UI will destroy even the smartest AI backend on Day 1. 💀 Let's build glassmorphism dark-mode interfaces that make users go WOW at first glance! 🤩✨",
+        },
+        {
+          id: "vibe-coding-l3-step2",
+          type: "STORY",
+          title: "Story Card: Design is Revenue Leverage 📈",
+          storyText: "Two devs launched AI tools on Product Hunt. Dev A built a basic white page with a plain button. Dev B built a dark-mode `#0B0F19` glassmorphism interface with interactive shimmer skeletons. Dev B got 10,000 users and $2,500 MRR on launch day! 📈🤑",
+          storyAnalogy: "A great UI is like a luxury sports car's sleek body — even if the engine under the hood is identical, everyone wants to drive the beautiful car! 🏎️💨",
+        },
+        {
+          id: "vibe-coding-l3-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & UI/UX Design System 🎨",
+          discoveryText: "Modern SaaS UI System:\n1. Base Background: `#0B0F19` (Deep Obsidian)\n2. Surface & Cards: `#111827` & `#1A2235` with subtle 1px border `#2D3748`\n3. Glassmorphism: `backdrop-blur-md` with white/10 opacity\n4. Micro-states: Loading Shimmer Skeletons, Empty States with clear CTAs, Error Toasts\n5. Describing designs to AI using exact Tailwind tokens.",
+        },
+        {
+          id: "vibe-coding-l3-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: UI Token Matching 🎨",
+          miniMission: {
+            type: "MATCH_PAIRS",
+            question: "Match each UI design concept with its Tailwind CSS token implementation:",
+            pairs: [
+              { left: "Glassmorphism Card", right: "backdrop-blur-md bg-card/80 border border-line" },
+              { left: "Shimmer Skeleton", right: "animate-pulse bg-surface/50 rounded-lg" },
+              { left: "Primary Brand CTA", right: "bg-gradient-to-r from-brand to-accent text-white" },
+              { left: "Dark Theme Base", right: "bg-[#0B0F19] text-white" },
+            ],
+            explanation: "Spot on! Pre-defining design tokens allows AI to generate visual interfaces that feel ultra-premium.",
+          },
+        },
+        {
+          id: "vibe-coding-l3-step5",
+          type: "REFLECTION",
+          title: "Active Recall & UX Psychology 🧠",
+          reflectionQuestion: "Common Mistake: Forgetting loading and empty states when async AI requests take 3 seconds to complete. Why are skeleton loaders crucial for user retention?",
+        },
+        {
+          id: "vibe-coding-l3-step6",
+          type: "REWARD",
+          title: "Module 3 Victory! 🎉",
+          xpReward: 150,
+          neuronReward: 25,
+        },
+      ];
+    case 4:
+      return [
+        {
+          id: "vibe-coding-l4-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "The frontend is the pretty face, but the Backend is the vault where user accounts, databases, and money actually live! 🧠🔐💰",
+        },
+        {
+          id: "vibe-coding-l4-step2",
+          type: "STORY",
+          title: "Story Card: The Supabase & Clerk Power Combo ⚡",
+          storyText: "Imagine trying to build a bank vault by hand. You'd spend years installing steel doors. Supabase gives you an instant PostgreSQL database with real-time updates and cloud storage buckets. Clerk handles Google OAuth in 3 lines of code! ⚡",
+          storyAnalogy: "Supabase is your app's high-tech digital filing cabinet. Clerk is the biometric security guard standing at the front door checking badges! 🏢🛡️",
+        },
+        {
+          id: "vibe-coding-l4-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Backend Data Flow 🗄️",
+          discoveryText: "Backend Fundamentals:\n1. PostgreSQL Tables: Rows & Columns linked by Foreign Keys\n2. CRUD: Create, Read, Update, Delete data\n3. Row Level Security (RLS): Database rules enforcing that User A can NEVER view or edit User B's private rows!\n4. Clerk Auth: Seamless Google & Email login, JWT session management, protected routes.",
+        },
+        {
+          id: "vibe-coding-l4-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Database Security 🔐",
+          miniMission: {
+            type: "SCENARIO",
+            question: "Which database security mechanism ensures a user can ONLY query their own private database rows in Supabase?",
+            options: ["Row Level Security (RLS)", "CSS z-index", "Localstorage", "HTML form action"],
+            correctAnswer: "Row Level Security (RLS)",
+            explanation: "Correct! RLS policies run directly inside PostgreSQL, guaranteeing zero data leaks across users.",
+          },
+        },
+        {
+          id: "vibe-coding-l4-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Security Auditing 🛡️",
+          reflectionQuestion: "Common Mistake: Disabling RLS in production or storing sensitive user data in client-side state. Explain when you would choose Clerk Auth vs native Supabase Auth.",
+        },
+        {
+          id: "vibe-coding-l4-step6",
+          type: "REWARD",
+          title: "Module 4 Victory! 🎉",
+          xpReward: 200,
+          neuronReward: 30,
+        },
+      ];
+    case 5:
+      return [
+        {
+          id: "vibe-coding-l5-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "What if your app could talk to OpenAI, Gemini, ElevenLabs voice synthesis, and Stripe payments all in parallel? ⚡ Welcome to API Orchestration!",
+        },
+        {
+          id: "vibe-coding-l5-step2",
+          type: "STORY",
+          title: "Story Card: The API Superpower 🤖",
+          storyText: "Instead of training a billion-dollar AI model yourself, APIs allow you to plug into state-of-the-art models via simple HTTP requests. Groq gives super-fast latency, ElevenLabs generates hyper-realistic human voiceovers, and Resend emails the result to your user! 🤖🎙️",
+          storyAnalogy: "APIs are like restaurant menus: your app makes an order (HTTP POST request), the server kitchen cooks it, and brings back delicious JSON data! 🍔📦",
+        },
+        {
+          id: "vibe-coding-l5-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Provider Ecosystem 🌐",
+          discoveryText: "API Architecture:\n• REST APIs & JSON Payloads (`{ 'prompt': 'hello' }`)\n• API Keys: Secret tokens authorizing requests\n• Groq API: Insanely fast LLM inference (500+ tokens/sec)\n• OpenRouter: Single endpoint access to 100+ LLMs\n• ElevenLabs: AI Voice Synthesis\n• Resend & Stripe: Emails & Checkout payments.",
+        },
+        {
+          id: "vibe-coding-l5-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: API Ecosystem Match ⚡",
+          miniMission: {
+            type: "MATCH_PAIRS",
+            question: "Match each API platform with its primary strength:",
+            pairs: [
+              { left: "Groq API", right: "Ultra-high speed LLM inference" },
+              { left: "ElevenLabs API", right: "Realistic AI voiceover generation" },
+              { left: "Resend API", right: "Transactional email delivery" },
+              { left: "Stripe API", right: "Global credit card checkout" },
+            ],
+            explanation: "Bingo! Knowing which API provider to use for each job is what separates pro builders from amateurs.",
+          },
+        },
+        {
+          id: "vibe-coding-l5-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Secret Security 🔑",
+          reflectionQuestion: "Common Mistake: Hardcoding secret API keys inside frontend React code where anyone can inspect them. Why must API calls be routed through Next.js API Routes or Server Actions?",
+        },
+        {
+          id: "vibe-coding-l5-step6",
+          type: "REWARD",
+          title: "Module 5 Victory! 🎉",
+          xpReward: 250,
+          neuronReward: 35,
+        },
+      ];
+    case 6:
+      return [
+        {
+          id: "vibe-coding-l6-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "Single prompts are cool, but AI Agents that think step-by-step, search the web, and execute real-world tools autonomously are the FUTURE. 🤖🔥",
+        },
+        {
+          id: "vibe-coding-l6-step2",
+          type: "STORY",
+          title: "Story Card: The Autonomous Research Agent 🕵️‍♂️",
+          storyText: "Meet Agent Jarvis. Jarvis receives a command: 'Find top 5 competitor pricing and email a summary'. Jarvis searches Google, extracts HTML, parses pricing tables, compiles a markdown report, and emails you — zero human intervention required! 🚀",
+          storyAnalogy: "A basic LLM is a calculator. An AI Agent is a smart employee with a computer, internet access, and a task list! 💼🌐",
+        },
+        {
+          id: "vibe-coding-l6-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Agent Architecture 🤖",
+          discoveryText: "AI Agent Components:\n1. Agent Loop: Observe -> Think -> Act -> Repeat\n2. Tool Calling (Function Calling): Giving LLMs custom tools (e.g. `web_search()`, `send_email()`, `query_db()`)\n3. Memory: Short-term context vs Long-term vector DB\n4. Multi-Agent Systems: Specialized agents collaborating.",
+        },
+        {
+          id: "vibe-coding-l6-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Agent Tool Calling 🛠️",
+          miniMission: {
+            type: "FILL_BLANKS",
+            question: "An AI Agent uses ___ to trigger external functions like searching the web or writing to a database.",
+            fillBlankSentence: "Agents execute external actions using ___ definitions.",
+            blankOptions: ["Tool Calling", "CSS Styles", "HTML Headings", "Font Sizes"],
+            correctAnswer: "Tool Calling",
+            explanation: "Spot on! Tool Calling allows the LLM to output structured JSON instructing your backend code to execute real functions.",
+          },
+        },
+        {
+          id: "vibe-coding-l6-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Agent Guardrails 🛡️",
+          reflectionQuestion: "Common Mistake: Infinite agent loops that consume thousands of API tokens. How do max iteration caps and human-in-the-loop approvals safeguard agent workflows?",
+        },
+        {
+          id: "vibe-coding-l6-step6",
+          type: "REWARD",
+          title: "Module 6 Victory! 🎉",
+          xpReward: 300,
+          neuronReward: 40,
+        },
+      ];
+    case 7:
+      return [
+        {
+          id: "vibe-coding-l7-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "If your app only runs on `localhost:3000`, it doesn't exist to the world! 💀 Let's ship it live to millions of users on Vercel. 🌐🚀",
+        },
+        {
+          id: "vibe-coding-l7-step2",
+          type: "STORY",
+          title: "Story Card: The 2-Minute Cloud Launch ⚡",
+          storyText: "You finish building your SaaS. You push your code to GitHub main branch. Vercel automatically detects the push, runs TypeScript checks, builds the production bundle, and deploys it to your custom domain `mysaas.com` in 90 seconds! ⚡",
+          storyAnalogy: "Localhost is practicing in your bedroom. Deployment is stepping onto the stadium stage under the bright lights! 🏟️✨",
+        },
+        {
+          id: "vibe-coding-l7-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Cloud Infrastructure ☁️",
+          discoveryText: "Cloud Infrastructure Checklist:\n1. Deployment: Vercel / Netlify serverless deployment\n2. Custom Domains: Pointing CNAME & A records in DNS\n3. Environment Variables: Safely storing production secrets (`SUPABASE_URL`, `OPENAI_API_KEY`)\n4. Telemetry & Analytics: Sentry error monitoring + PostHog user tracking.",
+        },
+        {
+          id: "vibe-coding-l7-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Infrastructure Matching 🌐",
+          miniMission: {
+            type: "MATCH_PAIRS",
+            question: "Match each deployment & infrastructure tool with its purpose:",
+            pairs: [
+              { left: "Vercel", right: "Serverless Next.js cloud hosting platform" },
+              { left: "Environment Variables", right: "Encrypted production API secret storage" },
+              { left: "CNAME DNS Record", right: "Maps custom domain name to host servers" },
+              { left: "Sentry", right: "Real-time production crash & error monitoring" },
+            ],
+            explanation: "Awesome! Knowing cloud infrastructure gives you complete autonomy as a software founder.",
+          },
+        },
+        {
+          id: "vibe-coding-l7-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Environment Security 🔒",
+          reflectionQuestion: "Common Mistake: Mixing up development database keys with production database keys. Why is keeping `.env.local` separate from production environment settings vital?",
+        },
+        {
+          id: "vibe-coding-l7-step6",
+          type: "REWARD",
+          title: "Module 7 Victory! 🎉",
+          xpReward: 350,
+          neuronReward: 45,
+        },
+      ];
+    case 8:
+      return [
+        {
+          id: "vibe-coding-l8-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "Bugs happen to EVERY developer. Amateurs panic and guess. Vibe Coders inspect console telemetry, isolate errors, and prompt AI like a surgeon! 🛠️🎯",
+        },
+        {
+          id: "vibe-coding-l8-step2",
+          type: "STORY",
+          title: "Story Card: The F12 Inspector Strategy 🔍",
+          storyText: "Your submit button throws a red error. Instead of typing 20 random prompts like 'why button no work', you open F12 Dev Tools, copy the exact stack trace `401 Unauthorized: Invalid API Key`, paste it into Cursor, and fix it in 5 seconds flat! 💡",
+          storyAnalogy: "Debugging blindly is like fixing a car engine in total darkness. Dev Console and network logs turn on high-powered floodlights! 💡🚗",
+        },
+        {
+          id: "vibe-coding-l8-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Telemetry Toolkit 🛠️",
+          discoveryText: "Systematic Debugging Checklist:\n1. Browser Console (Red error stack traces)\n2. Network Tab: Check HTTP Status Codes (200 OK, 401 Unauth, 404 Not Found, 500 Server Error) & JSON payloads\n3. Isolate the Root Cause before modifying code\n4. Feed raw logs & line numbers directly to AI.",
+        },
+        {
+          id: "vibe-coding-l8-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: HTTP Telemetry 🚨",
+          miniMission: {
+            type: "PREDICT",
+            question: "Your app's fetch request to Supabase fails with an HTTP Status 401. What does 401 indicate?",
+            options: ["Unauthorized / Invalid authentication credentials", "Server CPU overheated", "Page found successfully", "CSS file missing"],
+            correctAnswer: "Unauthorized / Invalid authentication credentials",
+            explanation: "Spot on! 401 means the authentication headers or API keys were invalid or missing.",
+          },
+        },
+        {
+          id: "vibe-coding-l8-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Systematic Troubleshooting 🧠",
+          reflectionQuestion: "Common Mistake: Modifying working code files before checking the network tab response payload. Why is feeding exact stack traces to AI 10x faster than plain-text bug descriptions?",
+        },
+        {
+          id: "vibe-coding-l8-step6",
+          type: "REWARD",
+          title: "Module 8 Victory! 🎉",
+          xpReward: 400,
+          neuronReward: 50,
+        },
+      ];
+    case 9:
+      return [
+        {
+          id: "vibe-coding-l9-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "Welcome to the AI SaaS Factory! 🏭 Time to take your skills and build real-world micro-apps that solve real user pain points. 🤑📈",
+        },
+        {
+          id: "vibe-coding-l9-step2",
+          type: "STORY",
+          title: "Story Card: The Micro-SaaS Arsenal 🏭",
+          storyText: "You now possess the complete arsenal: Frontend UI, Supabase DB, Clerk Auth, LLM APIs, AI Agents, and Vercel Hosting. Now you build production products: AI Resume Builder, AI Finance Tracker, AI Content Engine, AI CRM. You are officially unstoppable! 🚀",
+          storyAnalogy: "You started as a student learning tools. Now you are a factory owner mass-producing high-value digital assets! 🏭💻",
+        },
+        {
+          id: "vibe-coding-l9-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Factory Blueprint 📐",
+          discoveryText: "The 10 Product Building Blocks:\n1. AI Chatbot\n2. AI Notes App\n3. AI Resume Builder\n4. AI Finance Tracker\n5. AI CRM\n6. AI LMS\n7. Portfolio Website\n8. AI Content Generator\n9. AI Image Generator\n10. AI Automation Dashboard.\n\nPattern: Input Form -> API Call -> DB Persistence -> UI Display.",
+        },
+        {
+          id: "vibe-coding-l9-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Micro-SaaS Flow ⚙️",
+          miniMission: {
+            type: "SCENARIO",
+            question: "You are building an AI Resume Builder micro-SaaS. What is the correct fullstack data architecture flow?",
+            options: [
+              "User Form -> LLM API -> Supabase DB -> PDF Export",
+              "Localhost -> CSS -> Image -> Printer",
+              "HTML File -> Desktop -> Delete",
+              "Notepad -> Email -> Screenshot",
+            ],
+            correctAnswer: "User Form -> LLM API -> Supabase DB -> PDF Export",
+            explanation: "Bingo! This architecture powers hundreds of profitable micro-SaaS products globally.",
+          },
+        },
+        {
+          id: "vibe-coding-l9-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Product Strategy 🚀",
+          reflectionQuestion: "Common Mistake: Trying to build a complex social network before mastering single-purpose micro-SaaS tools. Which 2 factory products will you build for your portfolio?",
+        },
+        {
+          id: "vibe-coding-l9-step6",
+          type: "REWARD",
+          title: "Module 9 Victory! 🎉",
+          xpReward: 450,
+          neuronReward: 60,
+        },
+      ];
+    case 10:
+    default:
+      return [
+        {
+          id: "vibe-coding-l10-step1",
+          type: "HOOK",
+          title: "Curiosity Hook 💡",
+          hookText: "Building software is 50% of the journey. Solving real user problems and launching to the world is where LEGENDS are born! 👑🔥",
+        },
+        {
+          id: "vibe-coding-l10-step2",
+          type: "STORY",
+          title: "Story Card: The Flagship Capstone Launch 🏆",
+          storyText: "You started as a complete beginner. Now, for your Flagship Capstone, you take an original idea, architect it, build it with AI, connect Supabase & Clerk, integrate LLM APIs, deploy live to Vercel, record a demo video, and publish it to the world. You are an AI Software Engineer! 🎓🚀",
+          storyAnalogy: "This isn't a final exam. This is your grand opening ceremony as an independent software founder! 🏛️✨",
+        },
+        {
+          id: "vibe-coding-l10-step3",
+          type: "DISCOVERY",
+          title: "Core Explanation & Launch Blueprint 📋",
+          discoveryText: "The Flagship Capstone Deliverables:\n1. Live Production URL (Vercel/Netlify)\n2. GitHub Repository with documentation README\n3. Systems Architecture Diagram\n4. 2-Minute Loom/YouTube Product Demo Video\n5. Screenshots & Personal Reflection Report.",
+        },
+        {
+          id: "vibe-coding-l10-step4",
+          type: "MINI_MISSION",
+          title: "Mini-Mission: Capstone Requirements 🏆",
+          miniMission: {
+            type: "MATCH_PAIRS",
+            question: "Match each capstone deliverable with its evaluation purpose:",
+            pairs: [
+              { left: "Live Production Site", right: "Proves real-world usability and hosting" },
+              { left: "GitHub Repository", right: "Proves code quality & commit history" },
+              { left: "Architecture Diagram", right: "Proves systems engineering understanding" },
+              { left: "Product Demo Video", right: "Demonstrates core user flows in action" },
+            ],
+            explanation: "Spot on! This complete portfolio proof-of-work bundle makes you stand out to employers and clients.",
+          },
+        },
+        {
+          id: "vibe-coding-l10-step5",
+          type: "REFLECTION",
+          title: "Active Recall & Mindset Transformation 🌟",
+          reflectionQuestion: "Reflect on your journey from Module 1 to Module 10: How has your mindset transformed from a passive learner to a confident AI-powered software engineer and product architect?",
+        },
+        {
+          id: "vibe-coding-l10-step6",
+          type: "REWARD",
+          title: "Flagship Skill Victory! 👑",
+          xpReward: 500,
+          neuronReward: 100,
+        },
+      ];
+  }
+}
+
+    const gamifiedSteps: GamifiedStep[] = seed.id === "vibe-coding"
+      ? buildVibeCodingSteps(n, title, brief)
+      : [
+          {
+            id: `${seed.id}-l${n}-step1`,
+            type: "HOOK",
+            title: "Curiosity Hook",
+            hookText: `Bro, today's mission is to master ${title} 😎. Let's turn you into a dangerous practitioner.`,
+          },
+          {
+            id: `${seed.id}-l${n}-step2`,
+            type: "STORY",
+            title: "Story Card",
+            storyText: brief,
+            storyAnalogy: `Think of ${seed.title} as building blocks: every mission adds a real-world capability to your skill portfolio.`,
+          },
+          {
+            id: `${seed.id}-l${n}-step3`,
+            type: "DISCOVERY",
+            title: "The Concept Discovery",
+            discoveryText:
+              n === 10
+                ? "A portfolio-grade capstone project ready to share with employers, clients, or investors."
+                : `By executing ${title}, you master the exact framework used by top industry practitioners in 2026.`,
+          },
+          {
+            id: `${seed.id}-l${n}-step4`,
+            type: "MINI_MISSION",
+            title: "Mini-Mission Activity",
+            miniMission: {
+              type: "MATCH_PAIRS",
+              question: `Match the core concept of ${title} with its real-world outcome:`,
+              pairs: [
+                { left: title, right: brief.slice(0, 32) + "..." },
+                { left: "Deliverable Proof", right: "Reviewable link or file attached" },
+              ],
+              explanation: "Spot on! Linking objective frameworks to real deliverable proof is key.",
+            },
+          },
+          {
+            id: `${seed.id}-l${n}-step5`,
+            type: "REFLECTION",
+            title: "Active Recall Reflection",
+            reflectionQuestion: `In your own words, how will completing "${title}" strengthen your public proof-of-work portfolio?`,
+          },
+          {
+            id: `${seed.id}-l${n}-step6`,
+            type: "REWARD",
+            title: "Mission Victory!",
+            xpReward: n * 50,
+            neuronReward: n <= 6 ? 10 + n * 5 : n * 8,
+          },
+        ];
 
     return {
       id: `${seed.id}-level-${n}`,
