@@ -202,9 +202,7 @@ export default function LandingPage() {
       {/* ---------- Sticky Glass Navbar ---------- */}
       <header className="sticky top-0 z-50 border-b border-line/60 bg-base/90 backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/" aria-label="Skill Edge Learning home">
-            <BrandMark />
-          </Link>
+          <BrandMark />
 
           <nav className="hidden items-center gap-6 text-xs font-semibold text-zinc-300 md:flex">
             <a href="#hero" className="transition hover:text-brand">
