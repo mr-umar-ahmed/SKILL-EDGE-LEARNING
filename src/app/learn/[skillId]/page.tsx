@@ -294,7 +294,7 @@ export default function SkillMapPage() {
                   <Zap className="h-4 w-4" /> Unlock for ₹99
                 </Link>
                 <Link href="/pricing" className="btn-premium shrink-0 text-xs px-4">
-                  <Crown className="h-4 w-4" /> Upgrade to Pro
+                  <Crown className="h-4 w-4" /> Upgrade to Pro (₹299/mo)
                 </Link>
               </div>
             </div>

@@ -45,9 +45,10 @@ interface RazorpayResponse {
 const PLAN_ICONS: Record<string, typeof Zap> = {
   FREE: Sparkles,
   INDIVIDUAL_SKILL: BookOpen,
+  PRO: Zap,
+  PREMIUM: Crown,
   PRO_MONTHLY: Zap,
   PRO_YEARLY: Crown,
-  FAMILY: Layers,
 };
 
 function fireBigConfetti() {
@@ -458,12 +459,12 @@ function PricingContent() {
       a: "The Free Plan gives you access to the first 2-3 missions of every skill, community access, basic project feedback, and basic certificates. It lets you test the gamified learning loop before buying.",
     },
     {
-      q: "How does the Family Plan (₹699/mo) work?",
-      a: "The Family Plan is designed for parents with multiple children/siblings. It supports up to 4 child accounts, each with separate profiles, independent progress, separate portfolios, certificates, XP, Neurons, and a dedicated Parent oversight dashboard.",
+      q: "What is the difference between Pro Plan (₹299) and Premium Plan (₹499)?",
+      a: "The Pro Plan (₹299/mo) gives you full access to all 12 skills, all 120 missions, portfolio hosting, and standard project reviews. The Premium Plan (₹499/mo) adds priority AI & Admin project reviews, 1-on-1 portfolio review feedback, exclusive Mastermind challenges, and direct Founder support.",
     },
     {
-      q: "Can I upgrade from an Individual Skill to Pro later?",
-      a: "Yes! You can upgrade to Pro Monthly (₹399/mo) or Pro Yearly (₹3,999/yr) at any time to instantly unlock all 12 skills and future skill drops.",
+      q: "Can I upgrade from an Individual Skill to Pro or Premium later?",
+      a: "Yes! You can upgrade to Pro (₹299/mo) or Premium (₹499/mo) at any time to instantly unlock all 12 skills and future skill drops.",
     },
     {
       q: "How does UPI manual verification work?",
@@ -564,7 +565,7 @@ function PricingContent() {
                 const isCurrent = hydrated && currentPlanId === plan.id;
                 const price = discounted(plan.priceInr, coupon);
                 const hasDiscount = coupon !== null && plan.priceInr > 0 && price < plan.priceInr;
-                const isFamily = plan.id === "FAMILY";
+                const isPremium = plan.id === "PREMIUM";
 
                 return (
                   <div
@@ -572,7 +573,7 @@ function PricingContent() {
                     className={cn(
                       "card-glow relative flex flex-col p-6 animate-fade-up",
                       plan.highlight && "ring-2 ring-brand",
-                      isFamily && "ring-1 ring-premium/50"
+                      isPremium && "ring-1 ring-premium/50"
                     )}
                     style={{ animationDelay: `${i * 70}ms` }}
                   >
@@ -581,9 +582,9 @@ function PricingContent() {
                         Most popular
                       </span>
                     )}
-                    {isFamily && (
+                    {isPremium && (
                       <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-premium to-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                        Family Bundle
+                        Full Perks
                       </span>
                     )}
 
@@ -591,7 +592,7 @@ function PricingContent() {
                       <span
                         className={cn(
                           "flex h-9 w-9 items-center justify-center rounded-xl",
-                          isFamily ? "bg-premium/15 text-premium" : "bg-brand/15 text-brand"
+                          isPremium ? "bg-premium/15 text-premium" : "bg-brand/15 text-brand"
                         )}
                       >
                         <Icon className="h-5 w-5" />
@@ -612,7 +613,7 @@ function PricingContent() {
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-start gap-2 text-xs text-zinc-300">
                           <Check
-                            className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", isFamily ? "text-premium" : "text-success")}
+                            className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", isPremium ? "text-premium" : "text-success")}
                             strokeWidth={3}
                           />
                           {f}
@@ -641,13 +642,13 @@ function PricingContent() {
                             setCheckoutSkill(null);
                             setCheckoutPlan(plan);
                           }}
-                          className={cn("w-full", isFamily ? "btn-premium" : "btn-primary")}
+                          className={cn("w-full", isPremium ? "btn-premium" : "btn-primary")}
                         >
-                          {isFamily ? <Crown className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+                          {isPremium ? <Crown className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
                           Choose {plan.name}
                         </button>
                       ) : (
-                        <Link href="/register" className={cn("w-full", isFamily ? "btn-premium" : "btn-primary")}>
+                        <Link href="/register" className={cn("w-full", isPremium ? "btn-premium" : "btn-primary")}>
                           Get started <ArrowRight className="h-4 w-4" />
                         </Link>
                       )}

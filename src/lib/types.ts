@@ -8,7 +8,7 @@ export type Role = "USER" | "ADMIN";
 
 /* ------------------------------ plans ------------------------------ */
 
-export type PlanId = "FREE" | "INDIVIDUAL_SKILL" | "PRO_MONTHLY" | "PRO_YEARLY" | "FAMILY" | "FOUNDER_LIFETIME";
+export type PlanId = "FREE" | "INDIVIDUAL_SKILL" | "PRO" | "PREMIUM" | "PRO_MONTHLY" | "PRO_YEARLY" | "FAMILY" | "FOUNDER_LIFETIME";
 
 export interface Subscription {
   plan: PlanId;
